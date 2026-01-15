@@ -37,8 +37,17 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // protected routes logic can go here
-  // if (!user && !request.nextUrl.pathname.startsWith('/login')) { ... }
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+  }
+
+  if (request.nextUrl.pathname === '/login') {
+    if (user) {
+      return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+    }
+  }
 
   return supabaseResponse
 }

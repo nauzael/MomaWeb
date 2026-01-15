@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
-import { Save, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Save, ToggleLeft, ToggleRight, Shield } from 'lucide-react';
+import Link from 'next/link';
 
 export default function SettingsPage() {
     const [stripeEnabled, setStripeEnabled] = useState(true);
@@ -8,9 +9,23 @@ export default function SettingsPage() {
 
     return (
         <div className="max-w-2xl mx-auto space-y-6">
-            <h1 className="text-2xl font-bold text-stone-900 dark:text-white">Configuración de Pagos</h1>
+            <h1 className="text-2xl font-bold text-stone-900 dark:text-white">Configuración</h1>
+
+            {/* Quick Links */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Link href="/admin/settings/roles" className="bg-white dark:bg-stone-900 p-6 rounded-2xl shadow-sm border border-stone-100 dark:border-stone-800 flex items-center gap-4 hover:border-moma-green transition-colors group">
+                    <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:bg-purple-100 transition-colors">
+                        <Shield className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-stone-900 dark:text-white">Roles y Permisos</h3>
+                        <p className="text-xs text-stone-500">Gestionar acceso de usuarios</p>
+                    </div>
+                </Link>
+            </div>
 
             <div className="bg-white dark:bg-stone-900 rounded-xl shadow-sm border border-stone-100 dark:border-stone-800 p-8 space-y-8">
+                <h2 className="text-lg font-bold text-stone-900 dark:text-white border-b border-stone-100 pb-4">Pasarela de Pagos</h2>
 
                 {/* Stripe Config */}
                 <div className="space-y-4 border-b border-stone-100 dark:border-stone-800 pb-8">

@@ -65,6 +65,14 @@ create table if not exists payments (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- User Profiles & Roles
+create table if not exists public.profiles (
+  id uuid references auth.users on delete cascade not null primary key,
+  email text,
+  role text check (role in ('admin', 'editor', 'user')) default 'user',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- RLS Policies
 
 -- Experiences: Public Read, Admin Write
@@ -81,3 +89,30 @@ create policy "Anyone can create a booking" on bookings for insert with check (t
 
 -- Payments: Connection to bookings
 alter table payments enable row level security;
+
+-- Profiles: View own, Admin view all
+alter table public.profiles enable row level security;
+create policy "Public profiles are viewable by everyone" on public.profiles for select using (true);
+create policy "Users can insert their own profile" on public.profiles for insert with check (auth.uid() = id);
+create policy "Users can update own profile" on public.profiles for update using (auth.uid() = id);
+
+-- Trigger to create profile on signup
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, email, role)
+  values (new.id, new.email, 'user');
+  return new;
+end;
+$$ language plpgsql security definer;
+
+-- Check if trigger exists before creating to avoid errors in repeated runs
+do $$
+begin
+  if not exists (select 1 from pg_trigger where tgname = 'on_auth_user_created') then
+    create trigger on_auth_user_created
+      after insert on auth.users
+      for each row execute procedure public.handle_new_user();
+  end if;
+end
+$$;
