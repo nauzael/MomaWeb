@@ -31,11 +31,18 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
                 // Use the inner container width (without padding) for calculations
                 const width = innerContainerRef.current.offsetWidth;
                 const isMobile = window.innerWidth < 768;
-                const isTablet = window.innerWidth < 1100;
-                const show = isMobile ? 1 : (isTablet ? 2 : 3);
-                const gap = 32; // gap-8
+                const isTablet = window.innerWidth < 1280;
+                
+                // Show more items on larger screens, ensuring uniform distribution
+                let show = 1;
+                if (isMobile) show = 1;
+                else if (isTablet) show = 3;
+                else show = 4; // Full width on desktop
 
+                const gap = 32; // gap-8
+                
                 // Calculate card width based on visible items
+                // This formula ensures cards are evenly distributed across the available width
                 const calculatedCardWidth = (width - (gap * (show - 1))) / show;
                 const calculatedSlideWidth = calculatedCardWidth + gap;
 
@@ -115,10 +122,10 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
             {/* Container with overflow-hidden and padding for shadows */}
             <div
                 ref={containerRef}
-                className="max-w-[calc(80rem+120px)] mx-auto overflow-hidden relative px-[60px]"
+                className="w-full mx-auto overflow-hidden relative px-4 md:px-8 lg:px-12"
             >
                 {/* Inner container for width measurement (without padding) */}
-                <div ref={innerContainerRef} className="max-w-7xl mx-auto">
+                <div ref={innerContainerRef} className="w-full mx-auto">
                     <motion.div
                         ref={contentRef}
                         animate={controls}
@@ -160,19 +167,19 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
                 </div>
             </div>
 
-            {/* Navigation Arrows - Positioned relative to the 7xl content area */}
-            <div className="absolute inset-y-0 left-0 right-0 max-w-7xl mx-auto flex items-center justify-between pointer-events-none z-20 px-4 md:-mx-8">
+            {/* Navigation Arrows - Positioned relative to the content area */}
+            <div className="absolute inset-y-0 left-0 right-0 w-full mx-auto flex items-center justify-between pointer-events-none z-20 px-2 md:px-4">
                 <button
                     onClick={handlePrev}
-                    className="p-4 rounded-full bg-white/80 dark:bg-stone-900/80 backdrop-blur-md shadow-xl text-stone-900 dark:text-white pointer-events-auto opacity-0 group-hover/carousel:opacity-100 transition-all transform hover:scale-110 hover:bg-moma-green hover:text-white"
+                    className="p-3 md:p-4 rounded-full bg-white/80 dark:bg-stone-900/80 backdrop-blur-md shadow-xl text-stone-900 dark:text-white pointer-events-auto opacity-0 group-hover/carousel:opacity-100 transition-all transform hover:scale-110 hover:bg-moma-green hover:text-white"
                 >
-                    <ChevronLeft className="w-6 h-6" />
+                    <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
                 </button>
                 <button
                     onClick={handleNext}
-                    className="p-4 rounded-full bg-white/80 dark:bg-stone-900/80 backdrop-blur-md shadow-xl text-stone-900 dark:text-white pointer-events-auto opacity-0 group-hover/carousel:opacity-100 transition-all transform hover:scale-110 hover:bg-moma-green hover:text-white"
+                    className="p-3 md:p-4 rounded-full bg-white/80 dark:bg-stone-900/80 backdrop-blur-md shadow-xl text-stone-900 dark:text-white pointer-events-auto opacity-0 group-hover/carousel:opacity-100 transition-all transform hover:scale-110 hover:bg-moma-green hover:text-white"
                 >
-                    <ChevronRight className="w-6 h-6" />
+                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
                 </button>
             </div>
         </div>

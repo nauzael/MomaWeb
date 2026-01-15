@@ -145,9 +145,9 @@ export default function Home() {
       </section>
 
       {/* Destinations Section */}
-      <section id="experiencias" className="pt-12 pb-4 px-4 bg-stone-50 dark:bg-stone-950">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-10">
+      <section id="experiencias" className="pt-12 pb-4 px-0 bg-stone-50 dark:bg-stone-950">
+        <div className="w-full">
+          <div className="text-center mb-10 px-4">
             <span className="text-moma-green italic font-serif text-lg mb-2 block">Lugares para ir</span>
             <h2 className="text-4xl font-bold text-stone-900 dark:text-white">Un destino perfecto</h2>
             <p className="text-stone-500 mt-4 max-w-2xl mx-auto">¡Descubre el mundo a tu manera! Te invitamos a embarcarte en una emocionante aventura a través de nuestras rutas turísticas.</p>
