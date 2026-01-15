@@ -46,17 +46,31 @@ function mapRowToExperience(row: any): Experience {
     }
 }
 
+export const dynamicParams = true;
+
 async function getExperienceForPage(slug: string): Promise<Experience | null> {
+    // 1. Try Supabase Server-Side
     if (isSupabaseConfigured()) {
         try {
             const supabase = await createSupabaseServerClient()
             const { data, error } = await supabase.from('experiences').select('*').eq('slug', slug).maybeSingle()
             if (!error && data) return mapRowToExperience(data)
         } catch {
+            // Continue to fallback
         }
     }
 
-    return getExperience(slug)
+    // 2. Try Local Mock Data (Fallback)
+    // IMPORTANT: getExperience() reads from localStorage which is NOT available on server
+    // So we need to use a server-safe way to get mocks, or return null and let client handle it.
+    // However, since we are in a server component, we can only access static mocks here.
+    
+    // Check static mocks first
+    const { MOCK_EXPERIENCES } = await import('@/lib/mock-data');
+    const mock = MOCK_EXPERIENCES.find(e => e.slug === slug);
+    if (mock) return mock as unknown as Experience;
+
+    return null;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
