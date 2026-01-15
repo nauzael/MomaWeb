@@ -34,13 +34,13 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
                 const isTablet = window.innerWidth < 1280;
                 
                 // Show more items on larger screens, ensuring uniform distribution
-                // Always keep 3 cards visible on desktop for better centering and focus
+                // Always keep 5 cards visible on desktop for better centering and focus
                 let show = 1;
                 if (isMobile) show = 1;
-                else if (isTablet) show = 2;
-                else show = 3; // Fixed to 3 for desktop centering
+                else if (isTablet) show = 3;
+                else show = 5; // Fixed to 5 for desktop centering
 
-                const gap = 32; // gap-8
+                const gap = 24; // gap-6 (reduced gap for 5 items)
                 
                 // Calculate card width based on visible items
                 // This formula ensures cards are evenly distributed across the available width
@@ -123,7 +123,7 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
             {/* Container with overflow-hidden and padding for shadows */}
             <div
                 ref={containerRef}
-                className="w-[90%] md:w-[85%] lg:w-[80%] mx-auto overflow-hidden relative px-4"
+                className="w-[95%] xl:w-full max-w-[1800px] mx-auto overflow-hidden relative px-4"
             >
                 {/* Inner container for width measurement (without padding) */}
                 <div ref={innerContainerRef} className="w-full mx-auto">
