@@ -169,7 +169,7 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
             </div>
 
             {/* Navigation Arrows - Positioned relative to the content area */}
-            <div className="absolute inset-y-0 left-0 right-0 w-full mx-auto flex items-center justify-between pointer-events-none z-20 px-2 md:px-4">
+            <div className="absolute inset-y-0 left-0 right-0 w-[94%] lg:w-[89%] max-w-[1480px] mx-auto flex items-center justify-between pointer-events-none z-20">
                 <button
                     onClick={handlePrev}
                     className="p-3 md:p-4 rounded-full bg-white/80 dark:bg-stone-900/80 backdrop-blur-md shadow-xl text-stone-900 dark:text-white pointer-events-auto opacity-0 group-hover/carousel:opacity-100 transition-all transform hover:scale-110 hover:bg-moma-green hover:text-white"
