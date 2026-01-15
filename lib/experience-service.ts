@@ -400,6 +400,12 @@ export async function deleteExperiencePersisted(slugOrId: string) {
 
 export async function migrateLocalExperiencesToSupabase() {
     const experiences = getAllExperiences()
+    
+    // Check if we have anything to migrate
+    if (!experiences || experiences.length === 0) {
+        console.warn('No experiences found to migrate');
+        return { count: 0, partial: false };
+    }
 
     const res = await fetch('/api/admin/experiences/migrate', {
         method: 'POST',
