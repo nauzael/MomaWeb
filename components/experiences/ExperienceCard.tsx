@@ -23,34 +23,34 @@ export default function ExperienceCard({ experience }: ExperienceCardProps) {
 
                 <div className="absolute inset-x-0 bottom-0">
                     <div className="backdrop-blur-xl bg-[linear-gradient(to_top,rgba(0,0,0,0.98)_0%,rgba(0,0,0,0.75)_35%,rgba(0,0,0,0.4)_70%,rgba(0,0,0,0)_100%)]">
-                        <div className="px-4 pb-4 pt-3 text-white">
-                            <h3 className="text-base lg:text-lg font-black mb-1.5 leading-none tracking-tight drop-shadow-md line-clamp-2 h-[2.2em]">
+                        <div className="px-5 pb-5 pt-4 text-white">
+                            <h3 className="text-xl md:text-2xl font-black mb-2 leading-none tracking-tight drop-shadow-md line-clamp-2">
                                 {experience.title}
                             </h3>
-                            <div className="flex flex-col gap-1 mb-2">
-                                <p className="text-[10px] text-stone-200/90 flex items-center gap-1 font-medium">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-moma-green flex-shrink-0">
+                            <div className="flex items-center justify-between mb-3">
+                                <p className="text-xs text-stone-200/90 flex items-center gap-1.5 font-medium">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-moma-green">
                                         <path d="M20 10c0 6-9 13-9 13S2 16 2 10a9 9 0 0 1 18 0Z" />
                                         <circle cx="11" cy="10" r="3" />
                                     </svg>
-                                    <span className="truncate">
+                                    <span className="truncate max-w-[120px]">
                                         {experience.location_name || 'Colombia'}
                                     </span>
                                 </p>
-                                <div className="flex items-center gap-1.5 text-[10px] text-white">
-                                    <span className="uppercase tracking-widest text-[9px] text-stone-300 font-bold">
+                                <div className="flex items-center gap-1.5 text-xs text-white">
+                                    <span className="uppercase tracking-widest text-[10px] text-stone-300 font-bold">
                                         Desde
                                     </span>
-                                    <span className="text-sm font-black text-moma-green">
+                                    <span className="text-base font-black text-moma-green">
                                         ${experience.price_cop.toLocaleString('es-CO')}
                                     </span>
                                 </div>
                             </div>
-                            <div className="mt-1 flex justify-center">
-                                <div className="relative inline-flex w-full items-center justify-center px-3 py-2 rounded-lg bg-white text-stone-900 text-[10px] font-bold uppercase tracking-wide shadow-lg overflow-hidden group-hover:shadow-xl group-hover:-translate-y-0.5 transition-all duration-500">
-                                    <span className="relative z-10 group-hover:text-white flex items-center gap-1.5">
-                                        Ver
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <div className="mt-2 flex justify-center">
+                                <div className="relative inline-flex w-full items-center justify-center px-5 py-2.5 rounded-xl bg-white text-stone-900 text-xs font-bold uppercase tracking-wide shadow-lg overflow-hidden group-hover:shadow-xl group-hover:-translate-y-0.5 transition-all duration-500">
+                                    <span className="relative z-10 group-hover:text-white flex items-center gap-2">
+                                        Ver experiencia
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="M5 12h14" />
                                             <path d="m12 5 7 7-7 7" />
                                         </svg>
