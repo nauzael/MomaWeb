@@ -181,7 +181,7 @@ export function isSupabaseConfigured() {
     return true
 }
 
-export async function getConnectionStatus(): Promise<{ connected: boolean, mode: 'supabase' | 'local', message: string }> {
+export async function getConnectionStatus(retries = 2): Promise<{ connected: boolean, mode: 'supabase' | 'local', message: string }> {
     const configured = isSupabaseConfigured();
     if (!configured) {
         return { 
@@ -193,11 +193,20 @@ export async function getConnectionStatus(): Promise<{ connected: boolean, mode:
 
     try {
         const supabase = createSupabaseBrowserClient();
+        // Use a lightweight query
         const { error } = await supabase.from('experiences').select('count', { count: 'exact', head: true });
         
         if (error) {
-            // Handle AbortError gracefully
-            if (error.message?.includes('AbortError') || error.message?.includes('aborted')) {
+            // Handle empty error objects or abort errors
+            const errMsg = error.message || '';
+            const isAbort = errMsg.includes('AbortError') || errMsg.includes('aborted') || (Object.keys(error).length === 0);
+
+            if (isAbort) {
+                if (retries > 0) {
+                    // Wait a bit and retry
+                    await new Promise(r => setTimeout(r, 1000));
+                    return getConnectionStatus(retries - 1);
+                }
                 return { 
                     connected: false, 
                     mode: 'local', 
@@ -219,7 +228,13 @@ export async function getConnectionStatus(): Promise<{ connected: boolean, mode:
         };
     } catch (e: any) {
         const msg = e?.message || '';
-        if (msg.includes('AbortError') || msg.includes('aborted')) {
+        const isAbort = msg.includes('AbortError') || msg.includes('aborted');
+        
+        if (isAbort) {
+            if (retries > 0) {
+                await new Promise(r => setTimeout(r, 1000));
+                return getConnectionStatus(retries - 1);
+            }
             return { 
                 connected: false, 
                 mode: 'local', 
@@ -249,7 +264,9 @@ async function fetchAllExperiencesFromSupabaseClient(): Promise<Experience[]> {
 
         if (isAbort) {
             console.warn('Supabase fetch aborted or interrupted (ignoring)');
-            throw new Error('ABORTED');
+            // Instead of throwing, we return an empty array to prevent UI crashes
+            // The polling hook will retry anyway
+            return [];
         }
         
         console.error('Supabase fetch error:', error)
@@ -263,23 +280,28 @@ async function fetchExperienceFromSupabaseClient(identifier: string): Promise<Ex
     const supabase = createSupabaseBrowserClient()
     const clean = identifier.trim()
 
-    const bySlug = await supabase.from('experiences').select('*').eq('slug', clean).maybeSingle()
-    if (bySlug.error) {
-        const msg = bySlug.error.message || '';
-        if (!msg.includes('AbortError') && Object.keys(bySlug.error).length > 0) {
-            console.error('Supabase slug error:', bySlug.error)
+    try {
+        const bySlug = await supabase.from('experiences').select('*').eq('slug', clean).maybeSingle()
+        if (bySlug.error) {
+            const msg = bySlug.error.message || '';
+            if (!msg.includes('AbortError') && Object.keys(bySlug.error).length > 0) {
+                console.error('Supabase slug error:', bySlug.error)
+            }
         }
-    }
-    if (bySlug.data) return mapSupabaseRowToExperience(bySlug.data)
+        if (bySlug.data) return mapSupabaseRowToExperience(bySlug.data)
 
-    const byId = await supabase.from('experiences').select('*').eq('id', clean).maybeSingle()
-    if (byId.error) {
-        const msg = byId.error.message || '';
-        if (!msg.includes('AbortError') && Object.keys(byId.error).length > 0) {
-             console.error('Supabase id error:', byId.error)
+        const byId = await supabase.from('experiences').select('*').eq('id', clean).maybeSingle()
+        if (byId.error) {
+            const msg = byId.error.message || '';
+            if (!msg.includes('AbortError') && Object.keys(byId.error).length > 0) {
+                 console.error('Supabase id error:', byId.error)
+            }
         }
+        if (byId.data) return mapSupabaseRowToExperience(byId.data)
+    } catch (e) {
+        // Silently fail on aborts for single items too
+        return getExperience(identifier);
     }
-    if (byId.data) return mapSupabaseRowToExperience(byId.data)
 
     return null
 }
@@ -300,16 +322,13 @@ export async function getAllExperiencesPersisted(): Promise<Experience[]> {
                 return await fetchAllExperiencesFromSupabaseClient()
             }
         } catch (error: any) {
-            // If aborted, rethrow so consumer knows to keep old data
-            if (error.message === 'ABORTED') {
-                throw error;
-            }
-            console.error('Failed to fetch from Supabase:', error)
-            return []
+            console.warn('Failed to fetch from Supabase, falling back to local data:', error);
+            // Fallback to local/mocks so the user sees *something* instead of nothing
+            return getAllExperiences();
         }
     }
 
-    // Fallback only if Supabase is NOT configured (which shouldn't happen in this flow)
+    // Fallback only if Supabase is NOT configured
     try {
         return getAllExperiences();
     } catch (e) {

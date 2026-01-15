@@ -99,6 +99,18 @@ export default function ExperiencesPage() {
         }
     };
 
+    const isUnstable = connectionStatus?.message?.includes('inestable');
+    const statusColor = connectionStatus?.connected 
+        ? 'bg-green-100 text-green-700' 
+        : isUnstable 
+            ? 'bg-amber-100 text-amber-700' 
+            : 'bg-red-100 text-red-700';
+    const dotColor = connectionStatus?.connected 
+        ? 'bg-green-500' 
+        : isUnstable 
+            ? 'bg-amber-500 animate-pulse' 
+            : 'bg-red-500';
+
     return (
         <div className="space-y-8 max-w-[1600px] mx-auto pb-12">
             <div className="flex items-center justify-between">
@@ -108,8 +120,8 @@ export default function ExperiencesPage() {
                 </div>
                 <div className="flex gap-4">
                     {connectionStatus && (
-                        <div className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 ${connectionStatus.connected ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                            <div className={`w-2 h-2 rounded-full ${connectionStatus.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                        <div className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 ${statusColor}`}>
+                            <div className={`w-2 h-2 rounded-full ${dotColor}`}></div>
                             {connectionStatus.message}
                         </div>
                     )}
