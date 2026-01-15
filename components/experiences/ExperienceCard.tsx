@@ -55,7 +55,7 @@ export default function ExperienceCard({ experience }: ExperienceCardProps) {
                                             <path d="m12 5 7 7-7 7" />
                                         </svg>
                                     </span>
-                                    <span className="absolute inset-0 bg-stone-900 scale-x-0 origin-left transition-transform duration-500 ease-[cubic-bezier(0.22,0.61,0.36,1)] group-hover:scale-x-100" />
+                                    <span className="absolute inset-0 bg-moma-green scale-x-0 origin-left transition-transform duration-500 ease-[cubic-bezier(0.22,0.61,0.36,1)] group-hover:scale-x-100" />
                                 </div>
                             </div>
                         </div>
