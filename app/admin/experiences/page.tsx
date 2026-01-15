@@ -5,33 +5,18 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Plus, Edit, Trash2, Search, Map } from 'lucide-react';
 import { getAllExperiencesPersisted, deleteExperiencePersisted, migrateLocalExperiencesToSupabase, resetExperiences, type Experience } from '@/lib/experience-service';
+import { usePollingExperiences } from '@/hooks/usePollingExperiences';
 import { MOCK_EXPERIENCES } from '@/lib/mock-data';
 
 export default function ExperiencesPage() {
-    const [experiences, setExperiences] = useState<Experience[]>([]);
+    const [initialExperiences, setInitialExperiences] = useState<Experience[]>([]);
+    // Use polling hook (free & robust) instead of realtime subscription
+    const { experiences, refresh } = usePollingExperiences(initialExperiences, 4000); 
     const [searchTerm, setSearchTerm] = useState('');
     const [isMigrating, setIsMigrating] = useState(false);
 
     useEffect(() => {
-        getAllExperiencesPersisted().then(setExperiences);
-
-        const handleFocus = () => {
-            getAllExperiencesPersisted().then(setExperiences);
-        };
-
-        const handleVisibilityChange = () => {
-            if (!document.hidden) {
-                getAllExperiencesPersisted().then(setExperiences);
-            }
-        };
-
-        window.addEventListener('focus', handleFocus);
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-
-        return () => {
-            window.removeEventListener('focus', handleFocus);
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-        };
+        getAllExperiencesPersisted().then(setInitialExperiences);
     }, []);
 
     const filteredExperiences = experiences.filter(exp =>
@@ -47,8 +32,7 @@ export default function ExperiencesPage() {
             if (!exp?.slug) throw new Error('No se pudo determinar el slug para eliminar');
 
             await deleteExperiencePersisted(exp.slug);
-            // Instant UI update
-            setExperiences(prev => prev.filter(e => e.slug !== exp.slug));
+            await refresh();
         } catch (err) {
             console.error('Delete failed:', err);
             alert('No se pudo eliminar la experiencia.');
@@ -65,37 +49,17 @@ export default function ExperiencesPage() {
                 <div className="flex gap-4">
                     <button
                         type="button"
-                        onClick={() => {
-                            if (confirm('¿Reiniciar base de datos local? Se perderán todos los cambios personalizados.')) {
-                                resetExperiences();
-                                window.location.reload();
-                            }
-                        }}
-                        className="px-6 py-4 rounded-2xl border border-red-200 text-red-500 hover:bg-red-50 transition-all font-bold text-sm"
+                        onClick={refresh}
+                        className="px-6 py-4 rounded-2xl border border-stone-200 text-stone-500 hover:bg-stone-50 transition-all font-bold text-sm flex items-center gap-2 active:scale-95"
+                        title="Sincronizar ahora"
                     >
-                        Reset Datos
-                    </button>
-                    <button
-                        type="button"
-                        disabled={isMigrating}
-                        onClick={async () => {
-                            if (!confirm('¿Migrar los tours actuales (local) a Supabase para el deploy?')) return;
-                            setIsMigrating(true);
-                            try {
-                                const result = await migrateLocalExperiencesToSupabase();
-                                alert(`Migración completa: ${result.count} experiencias.`);
-                                const refreshed = await getAllExperiencesPersisted();
-                                setExperiences(refreshed);
-                            } catch (err) {
-                                const message = err instanceof Error ? err.message : 'Error desconocido';
-                                alert('No se pudo migrar: ' + message);
-                            } finally {
-                                setIsMigrating(false);
-                            }
-                        }}
-                        className="px-6 py-4 rounded-2xl border border-[#ccfcf3] text-[#00b894] hover:bg-[#ccfcf3] transition-all font-bold text-sm disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                        {isMigrating ? 'Migrando...' : 'Migrar a Supabase'}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
+                            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                            <path d="M3 3v5h5" />
+                            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                            <path d="M16 21h5v-5" />
+                        </svg>
+                        Sincronizar
                     </button>
                     <Link href="/admin/experiences/new" className="bg-[#061a15] text-white px-8 py-4 rounded-2xl flex items-center hover:opacity-90 transition-all shadow-lg font-black text-sm">
                         <Plus className="w-5 h-5 mr-3" />

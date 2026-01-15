@@ -261,7 +261,13 @@ export async function getAllExperiencesPersisted(): Promise<Experience[]> {
         }
     }
 
-    return getAllExperiences()
+    // Fallback only if Supabase is NOT configured (which shouldn't happen in this flow)
+    try {
+        return getAllExperiences();
+    } catch (e) {
+        console.error('Error reading local experiences:', e);
+        return [];
+    }
 }
 
 export async function getExperiencePersisted(identifier: string): Promise<Experience | null> {

@@ -267,6 +267,7 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
             await saveExperiencePersisted(experienceData);
             alert(initialData?.id ? '¡Experiencia actualizada correctamente!' : '¡Experiencia creada correctamente!');
 
+            router.refresh(); // Force data revalidation
             router.push('/admin/experiences');
         } catch (error) {
             console.error('Error during submission', error);
