@@ -13,7 +13,7 @@ export default function ExperiencesPage() {
     // Use polling hook (free & robust) instead of realtime subscription
     const { experiences, refresh } = usePollingExperiences(initialExperiences, 4000); 
     const [searchTerm, setSearchTerm] = useState('');
-    const [isMigrating, setIsMigrating] = useState(false);
+    const [connectionStatus, setConnectionStatus] = useState<{ connected: boolean, message: string } | null>(null);
 
     useEffect(() => {
         getAllExperiencesPersisted().then(setInitialExperiences);
