@@ -1,12 +1,30 @@
-import { CheckCircle, Clock, Search, MoreVertical } from "lucide-react";
+import { createClient } from '@/utils/supabase/server';
+import { CheckCircle, Clock, Search, MoreVertical, AlertCircle, Download, Calendar } from "lucide-react";
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import BookingActions from './BookingActions';
 
-const MOCK_BOOKINGS = [
-    { id: '1', customer: 'Juan Perez', experience: 'Amazonas Salvaje', date: 'Oct 15, 2023', status: 'confirmed', amount: '$2,500,000 COP' },
-    { id: '2', customer: 'Sarah Smith', experience: 'Ciudad Perdida VIP', date: 'Dec 01, 2023', status: 'pending', amount: '$450 USD' },
-    { id: '3', customer: 'Carlos Diaz', experience: 'Desierto Tatacoa', date: 'Dec 10, 2023', status: 'confirmed', amount: '$1,200,000 COP' },
-];
+export const dynamic = 'force-dynamic';
 
-export default function BookingsPage() {
+export default async function BookingsPage() {
+    const supabase = await createClient();
+    
+    const { data: bookings, error } = await supabase
+        .from('bookings')
+        .select(`
+            *,
+            experiences (
+                title
+            )
+        `)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error("Error fetching bookings:", error);
+    }
+
+    const hasBookings = bookings && bookings.length > 0;
+
     return (
         <div className="space-y-8 max-w-[1600px] mx-auto pb-12">
             <div className="flex items-center justify-between">
@@ -14,14 +32,7 @@ export default function BookingsPage() {
                     <h1 className="text-3xl font-black text-[#1a1a1a]">Reservas y Calendario</h1>
                     <p className="text-stone-400 font-medium">Gestiona las reservas y salidas de tus clientes.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button className="bg-white border border-[#eef1f4] text-[#1a1a1a] px-6 py-4 rounded-2xl font-black text-sm hover:bg-stone-50 transition-all shadow-sm">
-                        Exportar Reporte
-                    </button>
-                    <button className="bg-[#061a15] text-white px-6 py-4 rounded-2xl font-black text-sm hover:opacity-90 transition-all shadow-lg">
-                        Ver Calendario
-                    </button>
-                </div>
+                <BookingActions bookings={bookings || []} />
             </div>
 
             <div className="bg-white rounded-[2.5rem] shadow-sm border border-[#eef1f4] overflow-hidden">
@@ -43,42 +54,68 @@ export default function BookingsPage() {
                                 <th className="px-8 py-4">Cliente</th>
                                 <th className="px-8 py-4">Experiencia</th>
                                 <th className="px-8 py-4">Fecha Viaje</th>
+                                <th className="px-8 py-4">Pasajeros</th>
                                 <th className="px-8 py-4">Monto</th>
                                 <th className="px-8 py-4">Estado</th>
                                 <th className="px-8 py-4 text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#f5f7f9]">
-                            {MOCK_BOOKINGS.map((booking) => (
-                                <tr key={booking.id} className="group hover:bg-[#fcfdfd] transition-colors">
-                                    <td className="px-8 py-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-xl bg-moma-green/10 flex items-center justify-center text-[10px] font-black text-moma-green">
-                                                {booking.customer.split(' ').map(n => n[0]).join('')}
-                                            </div>
-                                            <span className="text-sm font-black text-[#1a1a1a]">{booking.customer}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-4 whitespace-nowrap text-sm font-bold text-stone-500">{booking.experience}</td>
-                                    <td className="px-8 py-4 whitespace-nowrap text-sm font-bold text-stone-500">{booking.date}</td>
-                                    <td className="px-8 py-4 whitespace-nowrap text-sm font-black text-[#1a1a1a]">{booking.amount}</td>
-                                    <td className="px-8 py-4 whitespace-nowrap">
-                                        <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black flex items-center w-fit gap-1.5 ${booking.status === 'confirmed' ? 'bg-[#ccfcf3] text-[#00b894]' :
-                                                booking.status === 'pending' ? 'bg-orange-50 text-orange-500' : 'bg-red-50 text-red-500'
-                                            }`}>
-                                            {booking.status === 'confirmed' ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                                            {booking.status.toUpperCase()}
-                                        </span>
-                                    </td>
-                                    <td className="px-8 py-4 whitespace-nowrap">
-                                        <div className="flex justify-center">
-                                            <button className="p-2 hover:bg-stone-50 rounded-lg text-stone-300 hover:text-stone-600 transition-all">
-                                                <MoreVertical className="w-5 h-5" />
-                                            </button>
-                                        </div>
+                            {!hasBookings ? (
+                                <tr>
+                                    <td colSpan={7} className="px-8 py-12 text-center text-stone-400 font-medium">
+                                        No hay reservas registradas aún.
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                bookings.map((booking: any) => (
+                                    <tr key={booking.id} className="group hover:bg-[#fcfdfd] transition-colors">
+                                        <td className="px-8 py-4 whitespace-nowrap">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-xl bg-moma-green/10 flex items-center justify-center text-[10px] font-black text-moma-green uppercase">
+                                                    {booking.customer_name.substring(0, 2)}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-black text-[#1a1a1a]">{booking.customer_name}</span>
+                                                    <span className="text-xs text-stone-400">{booking.customer_email}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-4 whitespace-nowrap text-sm font-bold text-stone-500">
+                                            {booking.experiences?.title || 'Experiencia Eliminada'}
+                                        </td>
+                                        <td className="px-8 py-4 whitespace-nowrap text-sm font-bold text-stone-500">
+                                            {format(new Date(booking.travel_date), 'MMM d, yyyy', { locale: es })}
+                                        </td>
+                                        <td className="px-8 py-4 whitespace-nowrap text-sm font-bold text-stone-500 text-center">
+                                            {booking.guests_count}
+                                        </td>
+                                        <td className="px-8 py-4 whitespace-nowrap text-sm font-black text-[#1a1a1a]">
+                                            ${Number(booking.total_amount).toLocaleString('es-CO')} {booking.currency}
+                                        </td>
+                                        <td className="px-8 py-4 whitespace-nowrap">
+                                            <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black flex items-center w-fit gap-1.5 ${
+                                                booking.status === 'confirmed' ? 'bg-[#ccfcf3] text-[#00b894]' :
+                                                booking.status === 'pending' ? 'bg-orange-50 text-orange-500' : 
+                                                'bg-red-50 text-red-500'
+                                            }`}>
+                                                {booking.status === 'confirmed' ? <CheckCircle className="w-3 h-3" /> : 
+                                                 booking.status === 'cancelled' ? <AlertCircle className="w-3 h-3" /> :
+                                                 <Clock className="w-3 h-3" />}
+                                                {booking.status === 'pending' ? 'PENDIENTE' : 
+                                                 booking.status === 'confirmed' ? 'CONFIRMADO' : 'CANCELADO'}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-4 whitespace-nowrap">
+                                            <div className="flex justify-center">
+                                                <button className="p-2 hover:bg-stone-50 rounded-lg text-stone-300 hover:text-stone-600 transition-all">
+                                                    <MoreVertical className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -86,4 +123,3 @@ export default function BookingsPage() {
         </div>
     );
 }
-

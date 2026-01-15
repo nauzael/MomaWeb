@@ -134,6 +134,7 @@ export default function ExperienceDetails({ experience: initialExperience }: Exp
                         priceUsd={experience.price_usd}
                         maxCapacity={experience.max_capacity}
                         experienceTitle={experience.title}
+                        experienceId={experience.id}
                     />
                 </div>
             </div>

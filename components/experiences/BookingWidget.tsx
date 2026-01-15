@@ -13,6 +13,7 @@ interface BookingWidgetProps {
     priceUsd: number;
     maxCapacity: number;
     experienceTitle: string;
+    experienceId: string;
 }
 
 // Mock occupied dates
@@ -23,7 +24,7 @@ const BOOKED_DATES = [
     new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + 7),
 ];
 
-export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experienceTitle }: BookingWidgetProps) {
+export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experienceTitle, experienceId }: BookingWidgetProps) {
     const [guests, setGuests] = useState(1);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -61,15 +62,41 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
         }
 
         setLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setLoading(false);
+
+        try {
+            const response = await fetch('/api/bookings/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    experience_id: experienceId,
+                    customer_name: contactName,
+                    customer_email: contactEmail,
+                    customer_phone: contactPhone,
+                    travel_date: format(selectedDate!, 'yyyy-MM-dd'),
+                    guests_count: guests,
+                    total_amount: totalCop,
+                    currency: 'COP'
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Error al guardar la reserva');
+            }
+
+            alert(`¡Reserva guardada exitosamente!\n\nReferencia: ${data.booking.id.slice(0, 8).toUpperCase()}`);
             setShowConfirmation(false);
             setContactName('');
             setContactEmail('');
             setContactPhone('');
-            alert(`¡Reserva confirmada exitosamente!\n\nReferencia: MOMA-${Math.floor(Math.random() * 10000)}`);
-        }, 1500);
+            // Optional: Redirect to a success page
+        } catch (error: any) {
+            console.error('Booking error:', error);
+            alert(`Hubo un error al procesar tu reserva: ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Close calendar if clicking outside
