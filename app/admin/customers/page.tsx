@@ -58,36 +58,36 @@ export default async function CustomersPage() {
     const customers = Array.from(customersMap.values());
 
     return (
-        <div className="space-y-8 max-w-[1600px] mx-auto pb-12">
-            <div className="flex items-center justify-between">
+        <div className="space-y-6 md:space-y-8 max-w-[1600px] mx-auto pb-12">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-[#1a1a1a]">Gestión de Clientes</h1>
-                    <p className="text-stone-400 font-medium">Base de datos de tus viajeros y su historial.</p>
+                    <h1 className="text-2xl md:text-3xl font-black text-[#1a1a1a]">Gestión de Clientes</h1>
+                    <p className="text-stone-400 font-medium text-sm md:text-base">Base de datos de tus viajeros y su historial.</p>
                 </div>
             </div>
 
-            <div className="bg-white rounded-[2.5rem] shadow-sm border border-[#eef1f4] overflow-visible">
-                <div className="p-8 border-b border-[#f5f7f9] flex justify-between items-center">
-                    <h3 className="text-xl font-black text-[#1a1a1a]">Lista de Clientes ({customers.length})</h3>
-                    <div className="relative">
+            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-[#eef1f4] overflow-hidden">
+                <div className="p-5 md:p-8 border-b border-[#f5f7f9] flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <h3 className="text-lg md:text-xl font-black text-[#1a1a1a]">Lista de Clientes ({customers.length})</h3>
+                    <div className="relative w-full md:w-auto">
                         <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" />
                         <input
                             type="text"
                             placeholder="Buscar cliente..."
-                            className="bg-[#f5fbf9] border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-moma-green outline-none w-64"
+                            className="bg-[#f5fbf9] border-none rounded-xl pl-10 pr-4 py-3 md:py-2 text-sm focus:ring-2 focus:ring-moma-green outline-none w-full md:w-64"
                         />
                     </div>
                 </div>
-                <div className="w-full">
+                <div className="w-full overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-[#f5fbf9] text-[10px] uppercase tracking-widest font-black text-stone-400">
-                                <th className="px-6 py-4">Cliente</th>
-                                <th className="px-6 py-4">Contacto</th>
-                                <th className="px-6 py-4">Última Experiencia</th>
-                                <th className="px-6 py-4 text-center">Reservas</th>
-                                <th className="px-6 py-4">Total Invertido</th>
-                                <th className="px-6 py-4">Última Actividad</th>
+                                <th className="px-4 md:px-6 py-4 whitespace-nowrap">Cliente</th>
+                                <th className="px-4 md:px-6 py-4 whitespace-nowrap">Contacto</th>
+                                <th className="px-4 md:px-6 py-4 whitespace-nowrap">Última Experiencia</th>
+                                <th className="px-4 md:px-6 py-4 text-center whitespace-nowrap">Reservas</th>
+                                <th className="px-4 md:px-6 py-4 whitespace-nowrap">Total Invertido</th>
+                                <th className="px-4 md:px-6 py-4 whitespace-nowrap">Última Actividad</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#f5f7f9]">
@@ -100,9 +100,9 @@ export default async function CustomersPage() {
                             ) : (
                                 customers.map((customer, index) => (
                                     <tr key={index} className="group hover:bg-[#fcfdfd] transition-colors">
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-xs font-black text-stone-500 uppercase">
+                                                <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-xs font-black text-stone-500 uppercase shrink-0">
                                                     {customer.name.substring(0, 2)}
                                                 </div>
                                                 <div>
@@ -113,7 +113,7 @@ export default async function CustomersPage() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                                             <div className="flex flex-col gap-1">
                                                 <div className="flex items-center gap-2 text-xs text-stone-500 font-medium">
                                                     <Mail className="w-3 h-3 text-stone-400" />
@@ -125,23 +125,23 @@ export default async function CustomersPage() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-2 text-sm font-bold text-stone-600">
                                                 <MapPin className="w-3 h-3 text-moma-green" />
                                                 {customer.lastExperience || 'N/A'}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap text-center">
                                             <span className="inline-flex items-center justify-center w-8 h-6 rounded-lg bg-stone-100 text-stone-700 text-xs font-black">
                                                 {customer.bookingsCount}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                                             <span className="text-sm font-black text-[#1a1a1a]">
                                                 ${customer.totalSpent.toLocaleString('es-CO')}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-stone-500">
+                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-medium text-stone-500">
                                             <div className="flex items-center gap-2">
                                                 <Calendar className="w-3 h-3 text-stone-400" />
                                                 {format(new Date(customer.lastBookingDate), 'd MMM, yyyy', { locale: es })}

@@ -75,8 +75,8 @@ export default async function AdminLayout({
                 <AdminMobileHeader />
                 
                 {/* Header */}
-                <header className="h-16 md:h-20 bg-white border-b border-[#eef1f4] flex items-center justify-between px-4 md:px-8 flex-shrink-0">
-                    <h1 className="text-xl md:text-2xl font-extrabold text-[#1a1a1a]">Hola, Administrador</h1>
+                <header className="hidden md:flex h-20 bg-white border-b border-[#eef1f4] items-center justify-between px-8 flex-shrink-0">
+                    <h1 className="text-2xl font-extrabold text-[#1a1a1a]">Hola, Administrador</h1>
                 </header>
 
                 {/* Main Scrollable Content */}

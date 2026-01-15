@@ -122,13 +122,13 @@ export default function ExperiencesPage() {
             : 'bg-red-500';
 
     return (
-        <div className="space-y-8 max-w-[1600px] mx-auto pb-12">
-            <div className="flex items-center justify-between">
+        <div className="space-y-6 md:space-y-8 max-w-[1600px] mx-auto pb-12">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-[#1a1a1a]">Gestión de Experiencias</h1>
-                    <p className="text-stone-400 font-medium">Administra tu catálogo de rutas y tours.</p>
+                    <h1 className="text-2xl md:text-3xl font-black text-[#1a1a1a]">Gestión de Experiencias</h1>
+                    <p className="text-stone-400 font-medium text-sm md:text-base">Administra tu catálogo de rutas y tours.</p>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex flex-wrap gap-2 md:gap-4">
                     {connectionStatus && (
                         <div className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 ${statusColor}`}>
                             <div className={`w-2 h-2 rounded-full ${dotColor}`}></div>
@@ -144,46 +144,28 @@ export default function ExperiencesPage() {
                         </button>
                     )}
                     {connectionStatus?.connected && (
-                        <button
-                            onClick={() => handleMigration(true)}
-                            className="px-4 py-2 bg-blue-100 text-blue-700 rounded-xl text-xs font-bold hover:bg-blue-200 transition-colors flex items-center gap-2"
-                            title="Subir todos los productos (Mocks + Locales) a la nube"
-                        >
-                            ☁️ Cargar Todo a BD
-                        </button>
+                        <div className="hidden">
+                             {/* Buttons removed but connection status check kept */}
+                        </div>
                     )}
-                    <button
-                        type="button"
-                        onClick={handleManualSync}
-                        className="px-6 py-4 rounded-2xl border border-stone-200 text-stone-500 hover:bg-stone-50 transition-all font-bold text-sm flex items-center gap-2 active:scale-95"
-                        title="Sincronizar ahora"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
-                            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                            <path d="M3 3v5h5" />
-                            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
-                            <path d="M16 21h5v-5" />
-                        </svg>
-                        Sincronizar
-                    </button>
-                    <Link href="/admin/experiences/new" className="bg-[#061a15] text-white px-8 py-4 rounded-2xl flex items-center hover:opacity-90 transition-all shadow-lg font-black text-sm">
-                        <Plus className="w-5 h-5 mr-3" />
-                        Nueva Experiencia
+                    <Link href="/admin/experiences/new" className="bg-[#061a15] text-white px-8 py-4 rounded-2xl flex items-center hover:opacity-90 transition-all shadow-lg font-black text-sm flex-1 md:flex-none justify-center">
+                        <Plus className="w-5 h-5 md:mr-3" />
+                        <span className="ml-2 md:ml-0">Nueva Experiencia</span>
                     </Link>
                 </div>
             </div>
 
-            <div className="bg-white rounded-[2.5rem] shadow-sm border border-[#eef1f4] overflow-hidden">
-                <div className="p-8 border-b border-[#f5f7f9] flex justify-between items-center">
-                    <h3 className="text-xl font-black text-[#1a1a1a]">Todas las Experiencias</h3>
-                    <div className="relative">
+            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-[#eef1f4] overflow-hidden">
+                <div className="p-5 md:p-8 border-b border-[#f5f7f9] flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <h3 className="text-lg md:text-xl font-black text-[#1a1a1a]">Todas las Experiencias</h3>
+                    <div className="relative w-full md:w-auto">
                         <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" />
                         <input
                             type="text"
                             placeholder="Buscar experiencia..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="bg-[#f5fbf9] border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-moma-green outline-none w-64"
+                            className="bg-[#f5fbf9] border-none rounded-xl pl-10 pr-4 py-3 md:py-2 text-sm focus:ring-2 focus:ring-moma-green outline-none w-full md:w-64"
                         />
                     </div>
                 </div>
@@ -191,16 +173,16 @@ export default function ExperiencesPage() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-[#f5fbf9] text-[10px] uppercase tracking-widest font-black text-stone-400">
-                                <th className="px-8 py-4">Título</th>
-                                <th className="px-8 py-4">Precio COP</th>
-                                <th className="px-8 py-4">Capacidad</th>
-                                <th className="px-8 py-4 text-center">Acciones</th>
+                                <th className="px-4 md:px-8 py-4 whitespace-nowrap">Título</th>
+                                <th className="px-4 md:px-8 py-4 whitespace-nowrap">Precio COP</th>
+                                <th className="px-4 md:px-8 py-4 whitespace-nowrap">Capacidad</th>
+                                <th className="px-4 md:px-8 py-4 text-center whitespace-nowrap">Acciones</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#f5f7f9]">
                             {filteredExperiences.map((exp) => (
                                 <tr key={exp.id} className="group hover:bg-[#fcfdfd] transition-colors">
-                                    <td className="px-8 py-5">
+                                    <td className="px-4 md:px-8 py-5">
                                         <div className="flex items-center gap-4">
                                             <div className="h-12 w-12 bg-stone-100 rounded-xl overflow-hidden flex-shrink-0 relative border border-[#eef1f4]">
                                                 {exp.image ? (
@@ -217,18 +199,18 @@ export default function ExperiencesPage() {
                                                     </div>
                                                 )}
                                             </div>
-                                            <span className="text-sm font-black text-[#1a1a1a]">{exp.title}</span>
+                                            <span className="text-sm font-black text-[#1a1a1a] min-w-[120px]">{exp.title}</span>
                                         </div>
                                     </td>
-                                    <td className="px-8 py-5 text-sm font-bold text-stone-600">
+                                    <td className="px-4 md:px-8 py-5 text-sm font-bold text-stone-600 whitespace-nowrap">
                                         ${typeof exp.price_cop === 'number' ? exp.price_cop.toLocaleString('es-CO') : exp.price_cop}
                                     </td>
-                                    <td className="px-8 py-5">
+                                    <td className="px-4 md:px-8 py-5 whitespace-nowrap">
                                         <span className="bg-stone-100 text-stone-600 text-[10px] font-black px-3 py-1 rounded-lg">
                                             {exp.max_capacity} pax
                                         </span>
                                     </td>
-                                    <td className="px-8 py-5">
+                                    <td className="px-4 md:px-8 py-5 whitespace-nowrap">
                                         <div className="flex justify-center gap-3">
                                             <Link
                                                 href={`/admin/experiences/${exp.slug}`}

@@ -11,8 +11,19 @@ export default function AdminMobileHeader() {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div className="md:hidden flex items-center justify-between px-4 py-3 bg-[#061a15] text-white flex-shrink-0">
-             <Link href="/" className="relative w-24 h-8">
+        <div className="md:hidden flex items-center justify-between px-4 py-3 bg-[#061a15] text-white flex-shrink-0 sticky top-0 z-50 shadow-md">
+             <div className="flex items-center gap-3">
+                 <button 
+                    onClick={() => setIsOpen(true)}
+                    className="p-2 -ml-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+                    aria-label="Abrir menú"
+                >
+                    <Menu className="w-6 h-6" />
+                </button>
+                <span className="font-bold text-lg">Moma Admin</span>
+             </div>
+
+             <Link href="/" className="relative w-20 h-8">
                 <Image
                     src="/images/logo.png"
                     alt="Moma Logo"
@@ -21,14 +32,6 @@ export default function AdminMobileHeader() {
                     priority
                 />
             </Link>
-
-            <button 
-                onClick={() => setIsOpen(true)}
-                className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
-                aria-label="Abrir menú"
-            >
-                <Menu className="w-6 h-6" />
-            </button>
 
             {/* Mobile Drawer */}
             {isOpen && (

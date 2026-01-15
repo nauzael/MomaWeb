@@ -27,38 +27,38 @@ export default async function BookingsPage() {
     const hasBookings = bookings && bookings.length > 0;
 
     return (
-        <div className="space-y-8 max-w-[1600px] mx-auto pb-12">
-            <div className="flex items-center justify-between">
+        <div className="space-y-6 md:space-y-8 max-w-[1600px] mx-auto pb-12">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-[#1a1a1a]">Reservas y Calendario</h1>
-                    <p className="text-stone-400 font-medium">Gestiona las reservas y salidas de tus clientes.</p>
+                    <h1 className="text-2xl md:text-3xl font-black text-[#1a1a1a]">Reservas y Calendario</h1>
+                    <p className="text-stone-400 font-medium text-sm md:text-base">Gestiona las reservas y salidas de tus clientes.</p>
                 </div>
                 <BookingActions bookings={bookings || []} />
             </div>
 
-            <div className="bg-white rounded-[2.5rem] shadow-sm border border-[#eef1f4] overflow-visible">
-                <div className="p-8 border-b border-[#f5f7f9] flex justify-between items-center">
-                    <h3 className="text-xl font-black text-[#1a1a1a]">Registro de Reservas</h3>
-                    <div className="relative">
+            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-[#eef1f4] overflow-hidden">
+                <div className="p-5 md:p-8 border-b border-[#f5f7f9] flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <h3 className="text-lg md:text-xl font-black text-[#1a1a1a]">Registro de Reservas</h3>
+                    <div className="relative w-full md:w-auto">
                         <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" />
                         <input
                             type="text"
                             placeholder="Buscar reserva..."
-                            className="bg-[#f5fbf9] border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-moma-green outline-none w-64"
+                            className="bg-[#f5fbf9] border-none rounded-xl pl-10 pr-4 py-3 md:py-2 text-sm focus:ring-2 focus:ring-moma-green outline-none w-full md:w-64"
                         />
                     </div>
                 </div>
-                <div className="w-full">
+                <div className="w-full overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-[#f5fbf9] text-[10px] uppercase tracking-widest font-black text-stone-400">
-                                <th className="px-6 py-4">Cliente</th>
-                                <th className="px-6 py-4">Experiencia</th>
-                                <th className="px-6 py-4">Fecha Viaje</th>
-                                <th className="px-6 py-4">Pasajeros</th>
-                                <th className="px-6 py-4">Monto</th>
-                                <th className="px-6 py-4">Estado</th>
-                                <th className="px-6 py-4 text-center">Acciones</th>
+                                <th className="px-4 md:px-6 py-4 whitespace-nowrap">Cliente</th>
+                                <th className="px-4 md:px-6 py-4 whitespace-nowrap">Experiencia</th>
+                                <th className="px-4 md:px-6 py-4 whitespace-nowrap">Fecha Viaje</th>
+                                <th className="px-4 md:px-6 py-4 whitespace-nowrap">Pasajeros</th>
+                                <th className="px-4 md:px-6 py-4 whitespace-nowrap">Monto</th>
+                                <th className="px-4 md:px-6 py-4 whitespace-nowrap">Estado</th>
+                                <th className="px-4 md:px-6 py-4 text-center whitespace-nowrap">Acciones</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#f5f7f9]">
@@ -71,7 +71,7 @@ export default async function BookingsPage() {
                             ) : (
                                 bookings.map((booking: any) => (
                                     <tr key={booking.id} className="group hover:bg-[#fcfdfd] transition-colors">
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 rounded-xl bg-moma-green/10 flex items-center justify-center text-[10px] font-black text-moma-green uppercase shrink-0">
                                                     {booking.customer_name.substring(0, 2)}
@@ -89,19 +89,19 @@ export default async function BookingsPage() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-stone-500 truncate max-w-[180px]">
+                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-bold text-stone-500 truncate max-w-[180px]">
                                             {booking.experiences?.title || 'Experiencia Eliminada'}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-stone-500">
+                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-bold text-stone-500">
                                             {format(new Date(booking.travel_date), 'MMM d, yyyy', { locale: es })}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-stone-500 text-center">
+                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-bold text-stone-500 text-center">
                                             {booking.guests_count}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-black text-[#1a1a1a]">
+                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-black text-[#1a1a1a]">
                                             ${Number(booking.total_amount).toLocaleString('es-CO')} {booking.currency}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                                             <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black flex items-center w-fit gap-1.5 ${
                                                 booking.status === 'confirmed' ? 'bg-[#ccfcf3] text-[#00b894]' :
                                                 booking.status === 'pending' ? 'bg-orange-50 text-orange-500' : 
@@ -114,7 +114,7 @@ export default async function BookingsPage() {
                                                  booking.status === 'confirmed' ? 'CONFIRMADO' : 'CANCELADO'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                                             <div className="flex justify-center">
                                                 <BookingRowActions booking={booking} />
                                             </div>

@@ -71,24 +71,24 @@ export default async function ReportsPage() {
     }));
 
     return (
-        <div className="space-y-8 max-w-[1600px] mx-auto pb-12">
-            <div className="flex items-center justify-between">
+        <div className="space-y-6 md:space-y-8 max-w-[1600px] mx-auto pb-12">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-[#1a1a1a]">Reportes y Análisis</h1>
-                    <p className="text-stone-400 font-medium">Resumen financiero y operativo de Moma.</p>
+                    <h1 className="text-2xl md:text-3xl font-black text-[#1a1a1a]">Reportes y Análisis</h1>
+                    <p className="text-stone-400 font-medium text-sm md:text-base">Resumen financiero y operativo de Moma.</p>
                 </div>
                 <ReportsExportBtn data={exportData} filename="Reporte_General_Moma" />
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-[#061a15] text-white p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden group">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                <div className="bg-[#061a15] text-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
                         <DollarSign className="w-24 h-24" />
                     </div>
                     <div className="relative z-10">
                         <p className="text-moma-green font-bold text-sm uppercase tracking-wider mb-2">Ingresos Totales (Confirmados)</p>
-                        <h3 className="text-4xl font-black mb-4">${totalRevenue.toLocaleString('es-CO')}</h3>
+                        <h3 className="text-3xl md:text-4xl font-black mb-4">${totalRevenue.toLocaleString('es-CO')}</h3>
                         <div className="flex items-center gap-2 text-sm text-stone-300">
                             <TrendingUp className="w-4 h-4 text-moma-green" />
                             <span>{confirmedBookings.length} reservas exitosas</span>
@@ -96,13 +96,13 @@ export default async function ReportsPage() {
                     </div>
                 </div>
 
-                <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-[#eef1f4] relative overflow-hidden">
+                <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-[#eef1f4] relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-8 text-stone-100">
                         <Activity className="w-24 h-24" />
                     </div>
                     <div className="relative z-10">
                         <p className="text-stone-400 font-bold text-sm uppercase tracking-wider mb-2">Ingresos Potenciales (Pendientes)</p>
-                        <h3 className="text-4xl font-black text-[#1a1a1a] mb-4">${potentialRevenue.toLocaleString('es-CO')}</h3>
+                        <h3 className="text-3xl md:text-4xl font-black text-[#1a1a1a] mb-4">${potentialRevenue.toLocaleString('es-CO')}</h3>
                         <div className="flex items-center gap-2 text-sm text-stone-500">
                             <span className="bg-orange-100 text-orange-600 px-2 py-0.5 rounded-md font-bold text-xs">{pendingBookings.length} reservas</span>
                             <span>pendientes de pago/confirmación</span>
@@ -110,13 +110,13 @@ export default async function ReportsPage() {
                     </div>
                 </div>
 
-                <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-[#eef1f4] relative overflow-hidden">
+                <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-[#eef1f4] relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-8 text-stone-100">
                         <Users className="w-24 h-24" />
                     </div>
                     <div className="relative z-10">
                         <p className="text-stone-400 font-bold text-sm uppercase tracking-wider mb-2">Total Pasajeros</p>
-                        <h3 className="text-4xl font-black text-[#1a1a1a] mb-4">
+                        <h3 className="text-3xl md:text-4xl font-black text-[#1a1a1a] mb-4">
                             {confirmedBookings.reduce((sum: number, b: any) => sum + b.guests_count, 0)}
                         </h3>
                         <p className="text-sm text-stone-500">Personas han viajado con Moma</p>
@@ -124,10 +124,10 @@ export default async function ReportsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                 {/* Top Experiences Table */}
-                <div className="bg-white rounded-[2.5rem] shadow-sm border border-[#eef1f4] p-8">
-                    <h3 className="text-xl font-black text-[#1a1a1a] mb-6 flex items-center gap-2">
+                <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-[#eef1f4] p-6 md:p-8">
+                    <h3 className="text-lg md:text-xl font-black text-[#1a1a1a] mb-6 flex items-center gap-2">
                         <MapPin className="w-5 h-5 text-moma-green" />
                         Experiencias Más Rentables
                     </h3>
@@ -142,11 +142,11 @@ export default async function ReportsPage() {
                                             {i + 1}
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-[#1a1a1a]">{exp.title}</h4>
+                                            <h4 className="font-bold text-[#1a1a1a] text-sm md:text-base">{exp.title}</h4>
                                             <p className="text-xs text-stone-400 font-bold">{exp.count} reservas confirmadas</p>
                                         </div>
                                     </div>
-                                    <span className="font-black text-[#1a1a1a]">${exp.amount.toLocaleString('es-CO')}</span>
+                                    <span className="font-black text-[#1a1a1a] text-sm md:text-base">${exp.amount.toLocaleString('es-CO')}</span>
                                 </div>
                             ))
                         )}
@@ -154,8 +154,8 @@ export default async function ReportsPage() {
                 </div>
 
                 {/* Recent Activity Log (Simplified) */}
-                <div className="bg-white rounded-[2.5rem] shadow-sm border border-[#eef1f4] p-8">
-                    <h3 className="text-xl font-black text-[#1a1a1a] mb-6 flex items-center gap-2">
+                <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-[#eef1f4] p-6 md:p-8">
+                    <h3 className="text-lg md:text-xl font-black text-[#1a1a1a] mb-6 flex items-center gap-2">
                         <Calendar className="w-5 h-5 text-moma-green" />
                         Actividad Reciente
                     </h3>

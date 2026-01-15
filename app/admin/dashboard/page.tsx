@@ -44,16 +44,16 @@ export default async function AdminDashboard() {
     const recentBookings = allBookings.slice(0, 5);
 
     return (
-        <div className="space-y-8 max-w-[1600px] mx-auto pb-12">
+        <div className="space-y-6 md:space-y-8 max-w-[1600px] mx-auto pb-12">
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 {[
                     { title: "Total Reservas", value: totalBookings.toString(), change: "Global", color: "#00f5c4" },
                     { title: "Ingresos Totales", value: `$${totalRevenue.toLocaleString('es-CO')}`, change: "COP", color: "#00f5c4" },
                     { title: "Experiencias Activas", value: activeTours.toString(), change: "Reservadas", color: "#00f5c4" },
                     { title: "Clientes Únicos", value: uniqueCustomers.toString(), change: "Total", color: "#00f5c4" },
                 ].map((stat, i) => (
-                    <div key={i} className="bg-white p-6 rounded-[2rem] shadow-sm border border-[#eef1f4] relative overflow-hidden group">
+                    <div key={i} className="bg-white p-5 md:p-6 rounded-[2rem] shadow-sm border border-[#eef1f4] relative overflow-hidden group">
                         <div className="flex justify-between items-start mb-4">
                             <span className="text-sm font-bold text-stone-400 uppercase tracking-tight">{stat.title}</span>
                             <span className="bg-[#ccfcf3] text-[#00b894] text-[10px] font-extrabold px-2 py-1 rounded-lg">
@@ -75,7 +75,7 @@ export default async function AdminDashboard() {
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
                 {/* Next Departure & Pending Actions */}
                 <DashboardNextDeparture bookings={allBookings} />
 
