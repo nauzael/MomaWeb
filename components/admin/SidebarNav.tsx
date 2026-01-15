@@ -47,8 +47,16 @@ export default function SidebarNav() {
                 // If user is 'admin' (legacy string) OR has role 'Admin' (via relation), give full access
                 if (profile.role === 'admin') {
                     setPermissions(['all']);
-                } else if (profile.roles && profile.roles.permissions) {
-                    setPermissions(profile.roles.permissions);
+                } else if (profile.roles) {
+                    const rolesData = profile.roles as any;
+                    // Handle case where relation is returned as array or single object
+                    if (Array.isArray(rolesData) && rolesData[0]?.permissions) {
+                        setPermissions(rolesData[0].permissions);
+                    } else if (rolesData?.permissions) {
+                         setPermissions(rolesData.permissions);
+                    } else {
+                         setPermissions(['dashboard']);
+                    }
                 } else {
                     // Fallback for users without role assigned yet or failed relation fetch
                     // Default to viewing nothing or dashboard only to avoid empty sidebar confusion
