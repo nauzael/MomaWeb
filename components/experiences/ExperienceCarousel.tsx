@@ -34,10 +34,11 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
                 const isTablet = window.innerWidth < 1280;
                 
                 // Show more items on larger screens, ensuring uniform distribution
+                // Always keep 3 cards visible on desktop for better centering and focus
                 let show = 1;
                 if (isMobile) show = 1;
-                else if (isTablet) show = 3;
-                else show = 4; // Full width on desktop
+                else if (isTablet) show = 2;
+                else show = 3; // Fixed to 3 for desktop centering
 
                 const gap = 32; // gap-8
                 
