@@ -12,7 +12,7 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({ initialExperiences }: HomeClientProps) {
-  const [experiences, setExperiences] = useState<Experience[]>(initialExperiences);
+  const [experiences, setExperiences] = useState<Experience[]>(initialExperiences || []);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(1);
 

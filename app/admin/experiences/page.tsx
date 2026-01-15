@@ -8,7 +8,7 @@ import { getAllExperiencesPersisted, deleteExperiencePersisted, migrateLocalExpe
 import { MOCK_EXPERIENCES } from '@/lib/mock-data';
 
 export default function ExperiencesPage() {
-    const [experiences, setExperiences] = useState<Experience[]>(MOCK_EXPERIENCES as unknown as Experience[]);
+    const [experiences, setExperiences] = useState<Experience[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isMigrating, setIsMigrating] = useState(false);
 

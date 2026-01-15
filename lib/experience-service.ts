@@ -13,7 +13,7 @@ export interface Experience {
     max_capacity: number;
     includes: string[];
     excludes: string[];
-     location_name?: string;
+    location_name?: string;
     location_coords: { lat: number; lng: number };
     created_at?: string;
     updated_at?: string;
@@ -209,41 +209,55 @@ function mapSupabaseRowToExperience(row: any): Experience {
     }
 }
 
-async function fetchAllExperiencesFromSupabase(): Promise<Experience[]> {
+// Separate client-side fetch logic
+async function fetchAllExperiencesFromSupabaseClient(): Promise<Experience[]> {
     const supabase = createSupabaseBrowserClient()
     const { data, error } = await supabase
         .from('experiences')
         .select('*')
         .order('created_at', { ascending: false })
 
-    if (error) throw new Error(error.message)
+    if (error) {
+        console.error('Supabase fetch error:', error)
+        throw new Error(error.message)
+    }
     if (!Array.isArray(data)) return []
     return data.map(mapSupabaseRowToExperience)
 }
 
-async function fetchExperienceFromSupabase(identifier: string): Promise<Experience | null> {
+async function fetchExperienceFromSupabaseClient(identifier: string): Promise<Experience | null> {
     const supabase = createSupabaseBrowserClient()
     const clean = identifier.trim()
 
     const bySlug = await supabase.from('experiences').select('*').eq('slug', clean).maybeSingle()
-    if (bySlug.error) throw new Error(bySlug.error.message)
+    if (bySlug.error) console.error('Supabase slug error:', bySlug.error)
     if (bySlug.data) return mapSupabaseRowToExperience(bySlug.data)
 
     const byId = await supabase.from('experiences').select('*').eq('id', clean).maybeSingle()
-    if (byId.error) throw new Error(byId.error.message)
+    if (byId.error) console.error('Supabase id error:', byId.error)
     if (byId.data) return mapSupabaseRowToExperience(byId.data)
 
     return null
 }
 
 export async function getAllExperiencesPersisted(): Promise<Experience[]> {
-    if (typeof window === 'undefined') return MOCK_EXPERIENCES as unknown as Experience[]
+    const isServer = typeof window === 'undefined'
 
     if (isSupabaseConfigured()) {
         try {
-            const remote = await fetchAllExperiencesFromSupabase()
-            if (remote.length > 0) return remote
-        } catch {
+            // Use different functions based on environment
+            if (isServer) {
+                // If this is called on the server, we can't use dynamic imports of server modules here
+                // because this file is imported by client components.
+                // Instead, we return empty or fallback. Server components should use lib/experience-service-server.ts
+                console.warn('SERVER WARNING: getAllExperiencesPersisted called on server from client-safe module. Returning empty.')
+                return []
+            } else {
+                return await fetchAllExperiencesFromSupabaseClient()
+            }
+        } catch (error) {
+            console.error('Failed to fetch from Supabase:', error)
+            return []
         }
     }
 
@@ -251,13 +265,19 @@ export async function getAllExperiencesPersisted(): Promise<Experience[]> {
 }
 
 export async function getExperiencePersisted(identifier: string): Promise<Experience | null> {
-    if (typeof window === 'undefined') return null
+    const isServer = typeof window === 'undefined'
 
     if (isSupabaseConfigured()) {
         try {
-            const remote = await fetchExperienceFromSupabase(identifier)
-            if (remote) return remote
+            if (isServer) {
+                 // See warning above
+                 console.warn('SERVER WARNING: getExperiencePersisted called on server from client-safe module.')
+                 return null
+            } else {
+                return await fetchExperienceFromSupabaseClient(identifier)
+            }
         } catch {
+            return null
         }
     }
 
