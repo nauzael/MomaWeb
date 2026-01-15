@@ -4,9 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Plus, Edit, Trash2, Search, Map } from 'lucide-react';
-import { getAllExperiencesPersisted, deleteExperiencePersisted, migrateLocalExperiencesToSupabase, resetExperiences, getConnectionStatus, getAllExperiences, type Experience } from '@/lib/experience-service';
+import { getAllExperiencesPersisted, deleteExperiencePersisted, migrateLocalExperiencesToSupabase, getConnectionStatus, type Experience } from '@/lib/experience-service';
 import { usePollingExperiences } from '@/hooks/usePollingExperiences';
-import { MOCK_EXPERIENCES } from '@/lib/mock-data';
 
 export default function ExperiencesPage() {
     const [initialExperiences, setInitialExperiences] = useState<Experience[]>([]);
@@ -23,28 +22,23 @@ export default function ExperiencesPage() {
             message: status.message
         });
 
-        // Check for orphaned local data
-        // FORCE READ from localStorage to debug
         if (typeof window !== 'undefined') {
             try {
                 const rawData = localStorage.getItem('moma_experiences');
-                console.log('DEBUG: Local Storage raw data:', rawData);
-                
+
                 if (rawData) {
                     const parsed = JSON.parse(rawData);
-                    console.log('DEBUG: Parsed local experiences:', parsed);
-                    
+
                     if (Array.isArray(parsed) && parsed.length > 0) {
                         setLocalCount(parsed.length);
-                        console.log(`DEBUG: Found ${parsed.length} local items to migrate`);
                     } else {
-                        console.log('DEBUG: Local storage array is empty or invalid');
+                        setLocalCount(0);
                     }
                 } else {
-                    console.log('DEBUG: No local storage data found for key "moma_experiences"');
+                    setLocalCount(0);
                 }
-            } catch (e) {
-                console.error('DEBUG: Error checking local storage:', e);
+            } catch {
+                setLocalCount(0);
             }
         }
     };

@@ -16,14 +16,6 @@ interface BookingWidgetProps {
     experienceId: string;
 }
 
-// Mock occupied dates
-const TODAY = new Date();
-const BOOKED_DATES = [
-    new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + 2),
-    new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + 5),
-    new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + 7),
-];
-
 export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experienceTitle, experienceId }: BookingWidgetProps) {
     const [guests, setGuests] = useState(1);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
