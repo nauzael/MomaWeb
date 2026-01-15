@@ -19,9 +19,15 @@ export default function Home() {
     let cancelled = false;
     const id = window.setTimeout(() => {
       if (cancelled) return;
-      getAllExperiencesPersisted().then((data) => {
-        if (!cancelled) setExperiences(data);
-      });
+      getAllExperiencesPersisted()
+        .then((data) => {
+          if (!cancelled) setExperiences(data);
+        })
+        .catch((error) => {
+          if (error?.message !== 'ABORTED') {
+            console.error('Failed to load experiences:', error);
+          }
+        });
     }, 0);
 
     return () => {

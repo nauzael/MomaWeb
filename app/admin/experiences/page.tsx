@@ -66,7 +66,11 @@ export default function ExperiencesPage() {
     };
 
     useEffect(() => {
-        getAllExperiencesPersisted().then(setInitialExperiences);
+        getAllExperiencesPersisted()
+            .then(setInitialExperiences)
+            .catch((e) => {
+                if (e?.message !== 'ABORTED') console.error(e);
+            });
         checkConnection();
     }, []);
 
