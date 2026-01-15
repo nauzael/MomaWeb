@@ -16,18 +16,8 @@ export default async function AdminLayout({
         data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user && process.env.NODE_ENV !== 'development') {
-        // In dev we might want to skip real auth if no keys, but ideally we redirect.
-        // However, without keys, getUser will fail or return null.
-        // redirect("/login");
-    }
-
-    // Note: For this demo, if no keys are set, we might get an error or null user.
-    // I'll allow access if we are in dev and no user, JUST for demonstration purposes if the user hasn't set up supabase yet.
-    // BUT proper implementation requires auth.
-    // I will uncomment the redirect for production readiness.
     if (!user) {
-        // redirect("/login"); // Commented out to allow viewing dashboard layout without keys for now.
+        // redirect("/login");
     }
 
     return (
