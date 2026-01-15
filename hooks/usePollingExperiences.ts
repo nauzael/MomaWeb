@@ -16,11 +16,13 @@ export function usePollingExperiences(initialExperiences: Experience[] = [], int
             try {
                 const data = await getAllExperiencesPersisted();
                 if (isMounted) {
-                    // Simple equality check could be added here to avoid re-renders
-                    // but for now we just update to ensure freshness
                     setExperiences(data);
                 }
-            } catch (error) {
+            } catch (error: any) {
+                if (error?.message === 'ABORTED') {
+                    // Ignore abort errors to prevent flashing empty state
+                    return;
+                }
                 console.error("Polling error:", error);
             }
         };

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Plus, Edit, Trash2, Search, Map } from 'lucide-react';
-import { getAllExperiencesPersisted, deleteExperiencePersisted, migrateLocalExperiencesToSupabase, resetExperiences, getConnectionStatus, type Experience } from '@/lib/experience-service';
+import { getAllExperiencesPersisted, deleteExperiencePersisted, migrateLocalExperiencesToSupabase, resetExperiences, getConnectionStatus, getAllExperiences, type Experience } from '@/lib/experience-service';
 import { usePollingExperiences } from '@/hooks/usePollingExperiences';
 import { MOCK_EXPERIENCES } from '@/lib/mock-data';
 
@@ -14,6 +14,7 @@ export default function ExperiencesPage() {
     const { experiences, refresh } = usePollingExperiences(initialExperiences, 4000); 
     const [searchTerm, setSearchTerm] = useState('');
     const [connectionStatus, setConnectionStatus] = useState<{ connected: boolean, message: string } | null>(null);
+    const [localCount, setLocalCount] = useState(0);
 
     const checkConnection = async () => {
         const status = await getConnectionStatus();
@@ -21,6 +22,47 @@ export default function ExperiencesPage() {
             connected: status.connected,
             message: status.message
         });
+
+        // Check for orphaned local data
+        // FORCE READ from localStorage to debug
+        if (typeof window !== 'undefined') {
+            try {
+                const rawData = localStorage.getItem('moma_experiences');
+                console.log('DEBUG: Local Storage raw data:', rawData);
+                
+                if (rawData) {
+                    const parsed = JSON.parse(rawData);
+                    console.log('DEBUG: Parsed local experiences:', parsed);
+                    
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        setLocalCount(parsed.length);
+                        console.log(`DEBUG: Found ${parsed.length} local items to migrate`);
+                    } else {
+                        console.log('DEBUG: Local storage array is empty or invalid');
+                    }
+                } else {
+                    console.log('DEBUG: No local storage data found for key "moma_experiences"');
+                }
+            } catch (e) {
+                console.error('DEBUG: Error checking local storage:', e);
+            }
+        }
+    };
+
+    const handleMigration = async () => {
+        if (!confirm(`Se encontraron ${localCount} experiencias guardadas localmente. ¿Deseas subirlas a Supabase para que sean visibles en la web?`)) return;
+        
+        try {
+            const result = await migrateLocalExperiencesToSupabase();
+            alert(`¡Éxito! Se migraron ${result.count} experiencias a la nube.`);
+            // Clear local storage after successful migration to avoid duplicates/confusion
+            localStorage.removeItem('moma_experiences');
+            setLocalCount(0);
+            await refresh();
+        } catch (e) {
+            console.error(e);
+            alert('Error al migrar. Verifica tu conexión.');
+        }
     };
 
     useEffect(() => {
@@ -66,6 +108,14 @@ export default function ExperiencesPage() {
                             <div className={`w-2 h-2 rounded-full ${connectionStatus.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
                             {connectionStatus.message}
                         </div>
+                    )}
+                    {localCount > 0 && (
+                        <button
+                            onClick={handleMigration}
+                            className="px-4 py-2 bg-amber-100 text-amber-700 rounded-xl text-xs font-bold hover:bg-amber-200 transition-colors flex items-center gap-2 animate-bounce"
+                        >
+                            ⚠️ Subir {localCount} locales
+                        </button>
                     )}
                     <button
                         type="button"
