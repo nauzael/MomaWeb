@@ -46,13 +46,34 @@ export async function POST(request: Request) {
         }
 
         const supabase = createAdminClient()
-        const { error } = await supabase.from('experiences').upsert(rows, { onConflict: 'slug' })
+        
+        // Chunking the upsert to avoid payload limits
+        const chunkSize = 10;
+        let successCount = 0;
+        const errors: string[] = [];
 
-        if (error) {
-            return NextResponse.json({ error: error.message }, { status: 500 })
+        for (let i = 0; i < rows.length; i += chunkSize) {
+            const chunk = rows.slice(i, i + chunkSize);
+            const { error } = await supabase.from('experiences').upsert(chunk, { onConflict: 'slug' });
+            
+            if (error) {
+                console.error('Migration chunk error:', error);
+                errors.push(error.message);
+            } else {
+                successCount += chunk.length;
+            }
         }
 
-        return NextResponse.json({ ok: true, count: rows.length })
+        if (successCount === 0 && errors.length > 0) {
+            return NextResponse.json({ error: `All migrations failed. First error: ${errors[0]}` }, { status: 500 })
+        }
+
+        return NextResponse.json({ 
+            ok: true, 
+            count: successCount, 
+            partial: errors.length > 0,
+            errors: errors.length > 0 ? errors : undefined
+        })
     } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'
         return NextResponse.json({ error: message }, { status: 500 })

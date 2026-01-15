@@ -57,7 +57,12 @@ export default function ExperiencesPage() {
         
         try {
             const result = await migrateLocalExperiencesToSupabase();
-            alert(`¡Éxito! Se migraron ${result.count} experiencias a la nube.`);
+            if (result.partial) {
+                alert(`⚠️ Migración parcial: Se subieron ${result.count} experiencias, pero hubo errores. Revisa la consola.`);
+            } else {
+                alert(`¡Éxito! Se migraron ${result.count} experiencias a la nube.`);
+            }
+            
             // Clear local storage after successful migration to avoid duplicates/confusion
             if (!forceAll && localCount > 0) {
                  localStorage.removeItem('moma_experiences');

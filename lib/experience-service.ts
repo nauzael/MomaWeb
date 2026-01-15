@@ -343,14 +343,16 @@ export async function getExperiencePersisted(identifier: string): Promise<Experi
     if (isSupabaseConfigured()) {
         try {
             if (isServer) {
-                 // See warning above
-                 console.warn('SERVER WARNING: getExperiencePersisted called on server from client-safe module.')
-                 return null
+                console.warn('SERVER WARNING: getExperiencePersisted called on server from client-safe module.')
+                return null
             } else {
-                return await fetchExperienceFromSupabaseClient(identifier)
+                const result = await fetchExperienceFromSupabaseClient(identifier)
+                // If Supabase returns null but we have local data (e.g. migration lag or fallback), try local
+                return result || getExperience(identifier)
             }
         } catch {
-            return null
+             // Fallback on error
+            return getExperience(identifier)
         }
     }
 
@@ -411,5 +413,8 @@ export async function migrateLocalExperiencesToSupabase() {
     }
 
     const json = await res.json()
-    return { count: Number(json?.count) || 0 }
+    return { 
+        count: Number(json?.count) || 0,
+        partial: !!json?.partial
+    }
 }
