@@ -49,15 +49,20 @@ export default function ExperiencesPage() {
         }
     };
 
-    const handleMigration = async () => {
-        if (!confirm(`Se encontraron ${localCount} experiencias guardadas localmente. ¿Deseas subirlas a Supabase para que sean visibles en la web?`)) return;
+    const handleMigration = async (forceAll: boolean = false) => {
+        const count = forceAll ? 'todos los' : localCount;
+        const source = forceAll ? 'datos locales y predeterminados (Mocks)' : 'experiencias guardadas localmente';
+        
+        if (!confirm(`¿Estás seguro de subir ${count} ${source} a Supabase? Esto actualizará la base de datos en la nube.`)) return;
         
         try {
             const result = await migrateLocalExperiencesToSupabase();
             alert(`¡Éxito! Se migraron ${result.count} experiencias a la nube.`);
             // Clear local storage after successful migration to avoid duplicates/confusion
-            localStorage.removeItem('moma_experiences');
-            setLocalCount(0);
+            if (!forceAll && localCount > 0) {
+                 localStorage.removeItem('moma_experiences');
+                 setLocalCount(0);
+            }
             await refresh();
         } catch (e) {
             console.error(e);
@@ -127,10 +132,19 @@ export default function ExperiencesPage() {
                     )}
                     {localCount > 0 && (
                         <button
-                            onClick={handleMigration}
+                            onClick={() => handleMigration(false)}
                             className="px-4 py-2 bg-amber-100 text-amber-700 rounded-xl text-xs font-bold hover:bg-amber-200 transition-colors flex items-center gap-2 animate-bounce"
                         >
                             ⚠️ Subir {localCount} locales
+                        </button>
+                    )}
+                    {connectionStatus?.connected && (
+                        <button
+                            onClick={() => handleMigration(true)}
+                            className="px-4 py-2 bg-blue-100 text-blue-700 rounded-xl text-xs font-bold hover:bg-blue-200 transition-colors flex items-center gap-2"
+                            title="Subir todos los productos (Mocks + Locales) a la nube"
+                        >
+                            ☁️ Cargar Todo a BD
                         </button>
                     )}
                     <button
