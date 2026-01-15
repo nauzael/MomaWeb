@@ -122,7 +122,7 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
             {/* Container with overflow-hidden and padding for shadows */}
             <div
                 ref={containerRef}
-                className="w-full mx-auto overflow-hidden relative px-4 md:px-8 lg:px-12"
+                className="w-[90%] md:w-[85%] lg:w-[80%] mx-auto overflow-hidden relative px-4"
             >
                 {/* Inner container for width measurement (without padding) */}
                 <div ref={innerContainerRef} className="w-full mx-auto">
