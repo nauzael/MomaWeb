@@ -25,9 +25,9 @@ export default function DashboardCalendarWidget({ bookings }: DashboardCalendarW
         : [];
 
     return (
-        <div className="lg:col-span-2 bg-white rounded-[2.5rem] shadow-sm border border-[#eef1f4] overflow-hidden flex flex-col md:flex-row h-[450px]">
+        <div className="lg:col-span-2 bg-white rounded-[2.5rem] shadow-sm border border-[#eef1f4] overflow-hidden flex flex-col md:flex-row h-auto md:h-[450px]">
             {/* Calendar Side */}
-            <div className="p-6 md:p-8 flex-1 border-r border-[#f5f7f9] flex flex-col">
+            <div className="p-6 md:p-8 flex-1 border-r-0 md:border-r border-b md:border-b-0 border-[#f5f7f9] flex flex-col">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-black text-[#1a1a1a] flex items-center gap-2">
                         <CalendarIcon className="w-5 h-5 text-moma-green" />
@@ -67,7 +67,7 @@ export default function DashboardCalendarWidget({ bookings }: DashboardCalendarW
             </div>
 
             {/* Details Side */}
-            <div className="p-6 md:p-8 flex-1 bg-[#fcfdfd] flex flex-col overflow-hidden">
+            <div className="p-6 md:p-8 flex-1 bg-[#fcfdfd] flex flex-col overflow-hidden min-h-[300px] md:min-h-0">
                 <h4 className="text-sm font-bold text-stone-400 uppercase tracking-wide mb-4">
                     {selectedDate ? format(selectedDate, 'EEEE d, MMMM', { locale: es }) : 'Selecciona una fecha'}
                 </h4>

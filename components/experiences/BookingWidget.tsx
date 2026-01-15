@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Calendar as CalendarIcon, Users, Minus, Plus, Loader2, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Users, Minus, Plus, Loader2, X, CheckCircle } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -29,6 +29,8 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [lastBookingId, setLastBookingId] = useState('');
     const [loading, setLoading] = useState(false);
     const [contactName, setContactName] = useState('');
     const [contactEmail, setContactEmail] = useState('');
@@ -105,18 +107,26 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
                 throw new Error(data.error || 'Error al guardar la reserva');
             }
 
-            alert(`¡Reserva guardada exitosamente!\n\nReferencia: ${data.booking.id.slice(0, 8).toUpperCase()}`);
+            setLastBookingId(data.booking.id);
             setShowConfirmation(false);
-            setContactName('');
-            setContactEmail('');
-            setContactPhone('');
-            // Optional: Redirect to a success page
+            setShowSuccess(true);
+            
         } catch (error: any) {
             console.error('Booking error:', error);
             alert(`Hubo un error al procesar tu reserva: ${error.message}`);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleCloseSuccess = () => {
+        setShowSuccess(false);
+        setContactName('');
+        setContactEmail('');
+        setContactPhone('');
+        setGuests(1);
+        setSelectedDate(undefined);
+        setLastBookingId('');
     };
 
     // Close calendar if clicking outside
@@ -361,6 +371,73 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
                                 className="flex-1 px-4 py-3 rounded-xl bg-moma-green text-white font-bold hover:bg-opacity-90 transition-colors flex items-center justify-center shadow-lg shadow-moma-green/20"
                             >
                                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Aceptar y Pagar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Success Modal */}
+            {showSuccess && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-stone-200 dark:border-stone-800">
+                        <div className="px-5 py-6 flex flex-col items-center text-center">
+                            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
+                                <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                            </div>
+                            <h3 className="text-2xl font-black text-stone-900 dark:text-white">¡Gracias por tu compra!</h3>
+                            <p className="text-stone-500 mt-2 text-sm max-w-[80%]">
+                                Tu reserva ha sido confirmada exitosamente. Hemos enviado los detalles a tu correo.
+                            </p>
+                        </div>
+
+                        <div className="px-6 py-4 bg-stone-50 dark:bg-stone-800/50 space-y-3">
+                            <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Resumen de la Reserva</h4>
+                            
+                            <div className="flex justify-between items-start">
+                                <span className="text-sm text-stone-500">Referencia</span>
+                                <span className="text-sm font-mono font-bold text-stone-900 dark:text-white bg-white dark:bg-stone-800 px-2 py-0.5 rounded border border-stone-200 dark:border-stone-700">
+                                    {lastBookingId.slice(0, 8).toUpperCase()}
+                                </span>
+                            </div>
+
+                            <div className="h-px bg-stone-200 dark:bg-stone-700 my-2" />
+
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-stone-500">Experiencia</span>
+                                <span className="text-sm font-bold text-stone-900 dark:text-white text-right max-w-[60%] truncate">
+                                    {experienceTitle}
+                                </span>
+                            </div>
+
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-stone-500">Fecha</span>
+                                <span className="text-sm font-bold text-stone-900 dark:text-white">
+                                    {selectedDate ? format(selectedDate, 'PPP', { locale: es }) : '-'}
+                                </span>
+                            </div>
+
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-stone-500">Pasajeros</span>
+                                <span className="text-sm font-bold text-stone-900 dark:text-white">
+                                    {guests} personas
+                                </span>
+                            </div>
+
+                            <div className="flex justify-between items-center pt-2">
+                                <span className="text-sm font-bold text-stone-700 dark:text-stone-300">Total Pagado</span>
+                                <span className="text-lg font-black text-moma-green">
+                                    ${totalCop.toLocaleString('es-CO')}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="p-4 border-t border-stone-100 dark:border-stone-800">
+                            <button
+                                onClick={handleCloseSuccess}
+                                className="w-full py-3.5 rounded-xl bg-stone-900 dark:bg-white text-white dark:text-stone-900 font-bold hover:opacity-90 transition-all shadow-lg flex items-center justify-center gap-2"
+                            >
+                                Entendido, gracias
                             </button>
                         </div>
                     </div>

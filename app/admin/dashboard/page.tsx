@@ -85,7 +85,7 @@ export default async function AdminDashboard() {
 
             {/* Recent Bookings Table */}
             <div className="bg-white rounded-[2.5rem] shadow-sm border border-[#eef1f4] overflow-hidden">
-                <div className="p-8 flex justify-between items-center border-b border-[#f5f7f9]">
+                <div className="p-4 md:p-8 flex justify-between items-center border-b border-[#f5f7f9]">
                     <h3 className="text-xl font-black text-[#1a1a1a]">Reservas Recientes</h3>
                     <a href="/admin/bookings" className="bg-[#061a15] text-white px-6 py-3 rounded-2xl text-sm font-black hover:opacity-90 transition-all">
                         Ver Todas
@@ -95,25 +95,25 @@ export default async function AdminDashboard() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-[#f5fbf9] text-[10px] uppercase tracking-widest font-black text-stone-400">
-                                <th className="px-8 py-4">Fecha Viaje</th>
-                                <th className="px-8 py-4">Cliente</th>
-                                <th className="px-8 py-4">Experiencia</th>
-                                <th className="px-8 py-4">Estado</th>
-                                <th className="px-8 py-4">Monto</th>
+                                <th className="px-4 md:px-8 py-4">Fecha Viaje</th>
+                                <th className="px-4 md:px-8 py-4">Cliente</th>
+                                <th className="px-4 md:px-8 py-4">Experiencia</th>
+                                <th className="px-4 md:px-8 py-4">Estado</th>
+                                <th className="px-4 md:px-8 py-4">Monto</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#f5f7f9]">
                             {recentBookings.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-8 py-8 text-center text-stone-400 font-medium">No hay reservas recientes.</td>
+                                    <td colSpan={5} className="px-4 md:px-8 py-8 text-center text-stone-400 font-medium">No hay reservas recientes.</td>
                                 </tr>
                             ) : (
                                 recentBookings.map((booking: any) => (
                                     <tr key={booking.id} className="group hover:bg-[#fcfdfd] transition-colors">
-                                        <td className="px-8 py-5 text-sm font-bold text-stone-500">
+                                        <td className="px-4 md:px-8 py-5 text-sm font-bold text-stone-500">
                                             {format(new Date(booking.travel_date), 'MMM d, yyyy', { locale: es })}
                                         </td>
-                                        <td className="px-8 py-5">
+                                        <td className="px-4 md:px-8 py-5">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 rounded-xl bg-moma-green/20 flex items-center justify-center text-[10px] font-black text-moma-green uppercase">
                                                     {booking.customer_name.substring(0, 2)}
@@ -123,10 +123,10 @@ export default async function AdminDashboard() {
                                                 </span>
                                             </div>
                                         </td>
-                                        <td className="px-8 py-5 text-sm font-bold text-stone-600 truncate max-w-[200px]">
+                                        <td className="px-4 md:px-8 py-5 text-sm font-bold text-stone-600 truncate max-w-[200px]">
                                             {booking.experiences?.title || 'Experiencia Eliminada'}
                                         </td>
-                                        <td className="px-8 py-5">
+                                        <td className="px-4 md:px-8 py-5">
                                             <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black flex items-center w-fit gap-1.5 ${
                                                 booking.status === 'confirmed' ? 'bg-[#ccfcf3] text-[#00b894]' :
                                                 booking.status === 'pending' ? 'bg-orange-50 text-orange-500' : 
@@ -139,7 +139,7 @@ export default async function AdminDashboard() {
                                                  booking.status === 'confirmed' ? 'CONFIRMADO' : 'CANCELADO'}
                                             </span>
                                         </td>
-                                        <td className="px-8 py-5 text-sm font-black text-[#1a1a1a]">
+                                        <td className="px-4 md:px-8 py-5 text-sm font-black text-[#1a1a1a]">
                                             ${Number(booking.total_amount).toLocaleString('es-CO')}
                                         </td>
                                     </tr>

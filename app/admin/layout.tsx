@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Map, Calendar, Settings, Users } from "lucide-react";
 import SidebarNav from "@/components/admin/SidebarNav";
 import LogoutButton from "@/components/admin/LogoutButton";
+import AdminMobileHeader from "@/components/admin/AdminMobileHeader";
 
 export default async function AdminLayout({
     children,
@@ -71,13 +72,15 @@ export default async function AdminLayout({
 
             {/* Content Overflow Area */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+                <AdminMobileHeader />
+                
                 {/* Header */}
-                <header className="h-20 bg-white border-b border-[#eef1f4] flex items-center justify-between px-8 flex-shrink-0">
-                    <h1 className="text-2xl font-extrabold text-[#1a1a1a]">Hola, Administrador</h1>
+                <header className="h-16 md:h-20 bg-white border-b border-[#eef1f4] flex items-center justify-between px-4 md:px-8 flex-shrink-0">
+                    <h1 className="text-xl md:text-2xl font-extrabold text-[#1a1a1a]">Hola, Administrador</h1>
                 </header>
 
                 {/* Main Scrollable Content */}
-                <main className="flex-1 p-8 overflow-y-auto">
+                <main className="flex-1 p-4 md:p-8 overflow-y-auto">
                     {children}
                 </main>
             </div>

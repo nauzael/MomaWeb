@@ -48,14 +48,14 @@ export default function DashboardNextDeparture({ bookings }: DashboardNextDepart
                             <div className="absolute inset-0 bg-gradient-to-t from-[#061a15] via-[#061a15]/80 to-transparent" />
                         </div>
 
-                        <div className="relative z-10 p-8 flex flex-col h-full justify-between">
+                        <div className="relative z-10 p-6 md:p-8 flex flex-col h-full justify-between">
                             <div className="flex justify-between items-start">
                                 <div>
                                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-moma-green/20 text-moma-green text-[10px] font-black uppercase tracking-wider backdrop-blur-sm border border-moma-green/20">
                                         <Clock className="w-3 h-3" />
                                         Próxima Salida
                                     </span>
-                                    <h3 className="text-3xl font-black text-white mt-4 leading-tight">
+                                    <h3 className="text-2xl md:text-3xl font-black text-white mt-4 leading-tight">
                                         {getRelativeTime(nextBooking.travel_date)}
                                     </h3>
                                     <p className="text-stone-300 font-bold text-sm">
@@ -67,15 +67,15 @@ export default function DashboardNextDeparture({ bookings }: DashboardNextDepart
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
+                            <div className="space-y-4 mt-6 md:mt-0">
                                 <div>
                                     <p className="text-xs font-bold text-stone-400 uppercase tracking-wide mb-1">Experiencia</p>
-                                    <h4 className="text-xl font-bold text-white leading-snug">
+                                    <h4 className="text-lg md:text-xl font-bold text-white leading-snug">
                                         {nextBooking.experiences?.title || 'Experiencia'}
                                     </h4>
                                 </div>
 
-                                <div className="flex items-center gap-4">
+                                <div className="flex flex-wrap items-center gap-4">
                                     <div className="flex items-center gap-2">
                                         <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
                                             <Users className="w-4 h-4 text-moma-green" />
@@ -85,7 +85,7 @@ export default function DashboardNextDeparture({ bookings }: DashboardNextDepart
                                             <p className="text-sm font-bold text-white">{nextBooking.guests_count} Personas</p>
                                         </div>
                                     </div>
-                                    <div className="h-8 w-px bg-white/10" />
+                                    <div className="hidden md:block h-8 w-px bg-white/10" />
                                     <div>
                                         <p className="text-[10px] font-bold text-stone-400 uppercase">Cliente</p>
                                         <p className="text-sm font-bold text-white truncate max-w-[120px]">

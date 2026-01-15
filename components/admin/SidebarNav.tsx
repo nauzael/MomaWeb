@@ -16,7 +16,7 @@ const NAV_ITEMS = [
     { key: 'settings', label: "Configuración", href: "/admin/settings", icon: Settings },
 ];
 
-export default function SidebarNav() {
+export default function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
     const pathname = usePathname();
     const [permissions, setPermissions] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
@@ -92,6 +92,7 @@ export default function SidebarNav() {
                     <Link
                         key={item.href}
                         href={item.href}
+                        onClick={onLinkClick}
                         className={cn(
                             "group flex items-center px-6 py-4 rounded-full transition-all duration-300 relative overflow-hidden",
                             isActive
