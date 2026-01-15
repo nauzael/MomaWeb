@@ -47,6 +47,12 @@ export default function ExperiencesPage() {
                     <p className="text-stone-400 font-medium">Administra tu catálogo de rutas y tours.</p>
                 </div>
                 <div className="flex gap-4">
+                    {connectionStatus && (
+                        <div className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 ${connectionStatus.connected ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            <div className={`w-2 h-2 rounded-full ${connectionStatus.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                            {connectionStatus.message}
+                        </div>
+                    )}
                     <button
                         type="button"
                         onClick={refresh}
