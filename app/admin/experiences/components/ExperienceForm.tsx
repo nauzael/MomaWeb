@@ -36,6 +36,7 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
 
     const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.image || null);
     const [galleryPreviews, setGalleryPreviews] = useState<string[]>(initialData?.gallery || []);
+    const [optimizationProgress, setOptimizationProgress] = useState({ current: 0, total: 0 });
     const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
     // Auto-resize description textarea
@@ -108,6 +109,14 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
         const files = Array.from(e.target.files || []);
         if (files.length === 0) return;
 
+        setOptimizationProgress(prev => {
+            const isFinished = prev.total > 0 && prev.current === prev.total;
+            return {
+                current: isFinished ? 0 : prev.current,
+                total: (isFinished ? 0 : prev.total) + files.length
+            };
+        });
+
         for (const file of files) {
             const tempUrl = URL.createObjectURL(file);
 
@@ -130,6 +139,11 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                     // Replace the tempUrl with the webpDataUrl
                     setGalleryPreviews(prev => prev.map(p => p === tempUrl ? webpDataUrl : p));
                     URL.revokeObjectURL(tempUrl);
+
+                    setOptimizationProgress(prev => ({
+                        ...prev,
+                        current: prev.current + 1
+                    }));
                 };
             };
             reader.readAsDataURL(file);
@@ -146,7 +160,7 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
         // Prevent saving if we still have temporary blob URLs (optimization in progress)
         const hasBlob = previewUrl?.startsWith('blob:') || galleryPreviews.some(url => url.startsWith('blob:'));
         if (hasBlob) {
-            alert('Las imágenes se están optimizando. Por favor espera un segundo...');
+            alert(`Las imágenes se están optimizando (${optimizationProgress.current}/${optimizationProgress.total}). Por favor espera un segundo...`);
             return;
         }
 
@@ -536,6 +550,21 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                         className="hidden"
                         accept="image/*"
                     />
+
+                    {optimizationProgress.total > 0 && optimizationProgress.current < optimizationProgress.total && (
+                        <div className="w-full mb-4">
+                            <div className="flex justify-between text-xs text-stone-500 mb-1">
+                                <span>Optimizando imágenes...</span>
+                                <span>{Math.round((optimizationProgress.current / optimizationProgress.total) * 100)}%</span>
+                            </div>
+                            <div className="w-full bg-[#eef1f4] rounded-full h-1.5 overflow-hidden">
+                                <div 
+                                    className="bg-moma-green h-full transition-all duration-300 ease-out"
+                                    style={{ width: `${(optimizationProgress.current / optimizationProgress.total) * 100}%` }}
+                                />
+                            </div>
+                        </div>
+                    )}
 
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                         {galleryPreviews.map((url, index) => (
