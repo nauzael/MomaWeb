@@ -172,13 +172,49 @@ export function resetExperiences() {
     localStorage.removeItem(DELETED_KEY);
 }
 
-function isSupabaseConfigured() {
+export function isSupabaseConfigured() {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL
     const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     if (!url || !anonKey) return false
     if (url === 'https://example.com') return false
     if (anonKey === 'mock-key') return false
     return true
+}
+
+export async function getConnectionStatus(): Promise<{ connected: boolean, mode: 'supabase' | 'local', message: string }> {
+    const configured = isSupabaseConfigured();
+    if (!configured) {
+        return { 
+            connected: false, 
+            mode: 'local', 
+            message: 'Modo Local (Sin conexión a base de datos)' 
+        };
+    }
+
+    try {
+        const supabase = createSupabaseBrowserClient();
+        const { error } = await supabase.from('experiences').select('count', { count: 'exact', head: true });
+        
+        if (error) {
+            return { 
+                connected: false, 
+                mode: 'local', 
+                message: `Error de conexión: ${error.message}` 
+            };
+        }
+
+        return { 
+            connected: true, 
+            mode: 'supabase', 
+            message: 'Sincronizado con Supabase' 
+        };
+    } catch (e) {
+        return { 
+            connected: false, 
+            mode: 'local', 
+            message: 'Error inesperado de conexión' 
+        };
+    }
 }
 
 // Separate client-side fetch logic

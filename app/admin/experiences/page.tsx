@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Plus, Edit, Trash2, Search, Map } from 'lucide-react';
-import { getAllExperiencesPersisted, deleteExperiencePersisted, migrateLocalExperiencesToSupabase, resetExperiences, type Experience } from '@/lib/experience-service';
+import { getAllExperiencesPersisted, deleteExperiencePersisted, migrateLocalExperiencesToSupabase, resetExperiences, getConnectionStatus, type Experience } from '@/lib/experience-service';
 import { usePollingExperiences } from '@/hooks/usePollingExperiences';
 import { MOCK_EXPERIENCES } from '@/lib/mock-data';
 
@@ -15,9 +15,23 @@ export default function ExperiencesPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [connectionStatus, setConnectionStatus] = useState<{ connected: boolean, message: string } | null>(null);
 
+    const checkConnection = async () => {
+        const status = await getConnectionStatus();
+        setConnectionStatus({
+            connected: status.connected,
+            message: status.message
+        });
+    };
+
     useEffect(() => {
         getAllExperiencesPersisted().then(setInitialExperiences);
+        checkConnection();
     }, []);
+
+    const handleManualSync = async () => {
+        await checkConnection();
+        await refresh();
+    };
 
     const filteredExperiences = experiences.filter(exp =>
         exp.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -55,7 +69,7 @@ export default function ExperiencesPage() {
                     )}
                     <button
                         type="button"
-                        onClick={refresh}
+                        onClick={handleManualSync}
                         className="px-6 py-4 rounded-2xl border border-stone-200 text-stone-500 hover:bg-stone-50 transition-all font-bold text-sm flex items-center gap-2 active:scale-95"
                         title="Sincronizar ahora"
                     >
