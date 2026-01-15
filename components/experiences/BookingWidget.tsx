@@ -109,30 +109,38 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
                 <div className="space-y-4">
                     {/* Date Selection */}
                     <div className="relative" ref={calendarRef}>
-                        <div
+                        <button
+                            type="button"
                             onClick={() => setIsCalendarOpen(!isCalendarOpen)}
                             className={cn(
-                                "p-4 bg-stone-50 rounded-xl border cursor-pointer transition-colors group flex items-center justify-between",
+                                "w-full p-4 bg-stone-50 rounded-xl border cursor-pointer transition-colors group flex items-center justify-between text-left",
                                 isCalendarOpen ? "border-moma-green ring-1 ring-moma-green" : "border-stone-100 hover:border-moma-green/50 dark:bg-stone-800 dark:border-stone-700"
                             )}
+                            aria-haspopup="dialog"
+                            aria-expanded={isCalendarOpen}
+                            aria-label={selectedDate ? `Fecha seleccionada: ${format(selectedDate, 'PPP', { locale: es })}` : "Seleccionar fecha de viaje"}
                         >
                             <div className="flex-1">
-                                <label className="block text-xs font-bold uppercase text-stone-400 mb-2 group-hover:text-moma-green transition-colors cursor-pointer">Fecha de Viaje</label>
+                                <span className="block text-xs font-bold uppercase text-stone-400 mb-2 group-hover:text-moma-green transition-colors">Fecha de Viaje</span>
                                 <div className="flex items-center text-stone-700 dark:text-stone-200">
-                                    <CalendarIcon className="w-5 h-5 mr-3 text-stone-400 group-hover:text-moma-green" />
+                                    <CalendarIcon className="w-5 h-5 mr-3 text-stone-400 group-hover:text-moma-green" aria-hidden="true" />
                                     <span className={cn("text-sm font-medium", !selectedDate && "text-stone-400 font-normal")}>
                                         {selectedDate ? format(selectedDate, 'PPP', { locale: es }) : 'Seleccionar fecha'}
                                     </span>
                                 </div>
                             </div>
-                        </div>
+                        </button>
 
                         {/* Calendar Popup */}
                         {isCalendarOpen && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl shadow-2xl z-50 p-4 animate-in fade-in zoom-in-95 duration-200">
+                            <div 
+                                className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl shadow-2xl z-50 p-4 animate-in fade-in zoom-in-95 duration-200"
+                                role="dialog"
+                                aria-label="Calendario de disponibilidad"
+                            >
                                 <div className="flex justify-between items-center mb-2 px-2">
                                     <span className="text-xs font-bold uppercase text-stone-500">Disponibilidad</span>
-                                    <button onClick={() => setIsCalendarOpen(false)} className="text-stone-400 hover:text-stone-600">
+                                    <button onClick={() => setIsCalendarOpen(false)} className="text-stone-400 hover:text-stone-600" aria-label="Cerrar calendario">
                                         <X className="w-4 h-4" />
                                     </button>
                                 </div>
@@ -178,6 +186,7 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
                                     onClick={() => handleGuestChange(-1)}
                                     disabled={guests <= 1}
                                     className="w-8 h-8 rounded-full bg-white dark:bg-stone-700 flex items-center justify-center text-stone-500 hover:bg-stone-200 disabled:opacity-50 transition-colors shadow-sm"
+                                    aria-label="Disminuir número de viajeros"
                                 >
                                     <Minus className="w-4 h-4" />
                                 </button>
@@ -185,6 +194,7 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
                                     onClick={() => handleGuestChange(1)}
                                     disabled={guests >= maxCapacity}
                                     className="w-8 h-8 rounded-full bg-white dark:bg-stone-700 flex items-center justify-center text-stone-500 hover:bg-stone-200 disabled:opacity-50 transition-colors shadow-sm"
+                                    aria-label="Aumentar número de viajeros"
                                 >
                                     <Plus className="w-4 h-4" />
                                 </button>
@@ -240,8 +250,9 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
                                 <h4 className="text-sm font-bold text-stone-800 dark:text-stone-100">Datos de contacto</h4>
                                 <div className="space-y-2">
                                     <div className="space-y-1">
-                                        <label className="text-xs font-bold uppercase text-stone-400">Nombre completo</label>
+                                        <label htmlFor="contact-name" className="text-xs font-bold uppercase text-stone-400">Nombre completo</label>
                                         <input
+                                            id="contact-name"
                                             type="text"
                                             value={contactName}
                                             onChange={(e) => setContactName(e.target.value)}
@@ -250,8 +261,9 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-bold uppercase text-stone-400">Correo electrónico</label>
+                                        <label htmlFor="contact-email" className="text-xs font-bold uppercase text-stone-400">Correo electrónico</label>
                                         <input
+                                            id="contact-email"
                                             type="email"
                                             value={contactEmail}
                                             onChange={(e) => setContactEmail(e.target.value)}
@@ -260,8 +272,9 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-bold uppercase text-stone-400">Teléfono</label>
+                                        <label htmlFor="contact-phone" className="text-xs font-bold uppercase text-stone-400">Teléfono</label>
                                         <input
+                                            id="contact-phone"
                                             type="tel"
                                             value={contactPhone}
                                             onChange={(e) => setContactPhone(e.target.value)}

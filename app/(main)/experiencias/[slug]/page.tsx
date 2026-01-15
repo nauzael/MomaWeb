@@ -1,138 +1,115 @@
-'use client';
-
-import { use } from 'react';
+import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import Image from 'next/image';
-import DynamicMap from '@/components/map/DynamicMap';
-import { Check, X, MapPin, Users, Clock } from 'lucide-react';
-import BookingWidget from '@/components/experiences/BookingWidget';
-import { getExperience } from '@/lib/experience-service';
-import ExperienceDetailCarousel from '@/components/experiences/ExperienceDetailCarousel';
+import { getExperience, type Experience } from '@/lib/experience-service';
+import ExperienceDetails from './ExperienceDetails';
+import { createClient as createSupabaseServerClient } from '@/utils/supabase/server';
 
 interface PageProps {
     params: Promise<{ slug: string }>;
 }
 
-export default function ExperiencePage({ params }: PageProps) {
-    const { slug } = use(params);
-    const experience = getExperience(slug);
+function isSupabaseConfigured() {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!url || !anonKey) return false
+    if (url === 'https://example.com') return false
+    if (anonKey === 'mock-key') return false
+    return true
+}
+
+function toStringArray(value: unknown): string[] {
+    if (!Array.isArray(value)) return []
+    return value.map(v => String(v)).filter(v => v.trim().length > 0)
+}
+
+function mapRowToExperience(row: any): Experience {
+    const locationLat = Number(row?.location_lat)
+    const locationLng = Number(row?.location_lng)
+    const hasCoords = Number.isFinite(locationLat) && Number.isFinite(locationLng)
+
+    return {
+        id: String(row?.id ?? ''),
+        title: String(row?.title ?? ''),
+        slug: String(row?.slug ?? ''),
+        description: String(row?.description ?? ''),
+        image: String(row?.image ?? ''),
+        gallery: toStringArray(row?.gallery),
+        price_cop: Number(row?.price_cop) || 0,
+        price_usd: Number(row?.price_usd) || 0,
+        max_capacity: Number(row?.max_capacity) || 0,
+        includes: toStringArray(row?.includes),
+        excludes: toStringArray(row?.excludes),
+        location_name: row?.location_name ? String(row.location_name) : undefined,
+        location_coords: hasCoords ? { lat: locationLat, lng: locationLng } : { lat: 4.5709, lng: -74.2973 },
+        created_at: row?.created_at ? String(row.created_at) : undefined,
+        updated_at: row?.updated_at ? String(row.updated_at) : undefined
+    }
+}
+
+async function getExperienceForPage(slug: string): Promise<Experience | null> {
+    if (isSupabaseConfigured()) {
+        try {
+            const supabase = await createSupabaseServerClient()
+            const { data, error } = await supabase.from('experiences').select('*').eq('slug', slug).maybeSingle()
+            if (!error && data) return mapRowToExperience(data)
+        } catch {
+        }
+    }
+
+    return getExperience(slug)
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { slug } = await params;
+    const experience = await getExperienceForPage(slug);
+
+    if (!experience) {
+        return {
+            title: 'Experiencia no encontrada',
+        };
+    }
+
+    return {
+        title: experience.title,
+        description: experience.description.slice(0, 160),
+        openGraph: {
+            title: experience.title,
+            description: experience.description.slice(0, 160),
+            images: [experience.image || '/images/hero-bg.jpg'],
+        },
+    };
+}
+
+export default async function ExperiencePage({ params }: PageProps) {
+    const { slug } = await params;
+    const experience = await getExperienceForPage(slug);
 
     if (!experience) {
         notFound();
     }
-
-    const heroImage = experience.image || 'https://images.unsplash.com/photo-1544979590-37e9b47cd705?q=80&w=2574&auto=format&fit=crop';
+    
+    // JSON-LD Structured Data
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: experience.title,
+        description: experience.description,
+        image: experience.image,
+        offers: {
+            '@type': 'Offer',
+            price: experience.price_cop,
+            priceCurrency: 'COP',
+            availability: 'https://schema.org/InStock',
+        },
+    };
 
     return (
-        <div className="min-h-screen bg-white dark:bg-stone-950 pb-20">
-            {/* Hero / Gallery */}
-            <div className="relative h-[60vh] w-full bg-stone-200">
-                <Image
-                    src={heroImage}
-                    alt={experience.title}
-                    fill
-                    unoptimized
-                    className="object-cover"
-                    priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-8 max-w-7xl mx-auto">
-                    <h1 className="text-4xl md:text-6xl font-heading font-bold text-white mb-2">{experience.title}</h1>
-                    <div className="flex items-center text-white/90 space-x-6 text-sm md:text-base">
-                        <span className="flex items-center"><MapPin className="w-4 h-4 mr-2" /> {experience.location_name || 'Colombia'}</span>
-                        <span className="flex items-center"><Clock className="w-4 h-4 mr-2" /> 3-5 Días</span>
-                        <span className="flex items-center"><Users className="w-4 h-4 mr-2" /> Max {experience.max_capacity} pax</span>
-                    </div>
-                </div>
-            </div>
-
-            {experience.gallery && experience.gallery.length > 0 && (
-                <section className="w-full bg-white dark:bg-stone-950">
-                    <div className="w-full">
-                        <ExperienceDetailCarousel images={experience.gallery} />
-                    </div>
-                </section>
-            )}
-
-            <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
-                {/* Main Content */}
-                <div className="lg:col-span-2 space-y-12">
-                    <section className="space-y-10">
-                        <div className="prose prose-stone dark:prose-invert max-w-none">
-                            <h2 className="text-3xl font-black text-[#061a15] dark:text-white mb-8 flex items-center gap-3">
-                                <span className="w-8 h-1 bg-moma-green rounded-full" />
-                                Descripción del Tour
-                            </h2>
-                            <div className="space-y-6">
-                                {experience.description
-                                    .split('\n')
-                                    .filter((p: string) => p.trim() !== '')
-                                    .map((paragraph: string, idx: number) => (
-                                        <p
-                                            key={idx}
-                                            className="text-stone-600 dark:text-stone-300 leading-[1.8] text-lg tracking-tight"
-                                        >
-                                            {paragraph}
-                                        </p>
-                                    ))}
-                            </div>
-                        </div>
-                    </section>
-
-                    {experience.includes && experience.excludes && (
-                        <section>
-                            <h2 className="text-2xl font-bold text-moma-earth mb-6">Incluye & No Incluye</h2>
-                            <div className="grid md:grid-cols-2 gap-8">
-                                <div className="bg-stone-50 p-6 rounded-xl dark:bg-stone-900/50">
-                                    <h3 className="font-bold text-lg mb-4 flex items-center text-stone-900 dark:text-white">
-                                        <Check className="w-5 h-5 mr-2 text-moma-green" /> Incluye
-                                    </h3>
-                                    <ul className="space-y-3">
-                                        {experience.includes.map((item: string, i: number) => (
-                                            <li key={i} className="flex items-start text-stone-600 dark:text-stone-400">
-                                                <span className="w-1.5 h-1.5 bg-moma-green rounded-full mt-2 mr-2 flex-shrink-0" />
-                                                {item}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                                <div className="bg-stone-50 p-6 rounded-xl dark:bg-stone-900/50">
-                                    <h3 className="font-bold text-lg mb-4 flex items-center text-stone-900 dark:text-white">
-                                        <X className="w-5 h-5 mr-2 text-red-400" /> No Incluye
-                                    </h3>
-                                    <ul className="space-y-3">
-                                        {experience.excludes.map((item: string, i: number) => (
-                                            <li key={i} className="flex items-start text-stone-600 dark:text-stone-400">
-                                                <span className="w-1.5 h-1.5 bg-stone-300 rounded-full mt-2 mr-2 flex-shrink-0" />
-                                                {item}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            </div>
-                        </section>
-                    )}
-
-                    {experience.location_coords && (
-                        <section>
-                            <h2 className="text-2xl font-bold text-moma-earth mb-4">Ubicación</h2>
-                            <div className="h-[400px] w-full rounded-xl overflow-hidden shadow-lg border border-stone-100">
-                                <DynamicMap coords={[experience.location_coords.lat, experience.location_coords.lng]} popupText={experience.title} />
-                            </div>
-                        </section>
-                    )}
-                </div>
-
-                {/* Sidebar Booking Widget */}
-                <div className="relative">
-                    <BookingWidget
-                        priceCop={experience.price_cop}
-                        priceUsd={experience.price_usd}
-                        maxCapacity={experience.max_capacity}
-                        experienceTitle={experience.title}
-                    />
-                </div>
-            </div>
-        </div>
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <ExperienceDetails experience={experience} />
+        </>
     );
 }

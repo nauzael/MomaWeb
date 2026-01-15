@@ -1,5 +1,7 @@
 import { Experience } from '@/types/database';
 
+const STATIC_DATE = '2024-01-01T00:00:00.000Z';
+
 export const MOCK_EXPERIENCES: Experience[] = [
     {
         id: '1',
@@ -20,7 +22,7 @@ export const MOCK_EXPERIENCES: Experience[] = [
             'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2568&auto=format&fit=crop',
             'https://images.unsplash.com/photo-1523538415841-86088863f600?q=80&w=2574&auto=format&fit=crop'
         ],
-        created_at: new Date().toISOString()
+        created_at: STATIC_DATE
     },
     {
         id: '2',
@@ -36,7 +38,7 @@ export const MOCK_EXPERIENCES: Experience[] = [
         recommendations: 'Protector solar alto, cámara fotográfica.',
         max_capacity: 4,
         image: 'https://images.unsplash.com/photo-1444491741275-3747c53c99b4?q=80&w=2570&auto=format&fit=crop',
-        created_at: new Date().toISOString()
+        created_at: STATIC_DATE
     },
     {
         id: '3',
@@ -52,6 +54,6 @@ export const MOCK_EXPERIENCES: Experience[] = [
         recommendations: 'Botas de trekking, buena condición física.',
         max_capacity: 10,
         image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2670&auto=format&fit=crop',
-        created_at: new Date().toISOString()
+        created_at: STATIC_DATE
     }
 ];

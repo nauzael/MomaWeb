@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Save, Upload, X, Image as ImageIcon, Loader2, Plus } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { saveExperience, type Experience } from '@/lib/experience-service';
+import { saveExperiencePersisted, type Experience } from '@/lib/experience-service';
 import DynamicMap from '@/components/map/DynamicMap';
 
 interface ExperienceFormProps {
@@ -264,7 +264,7 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                 location_coords: locationCoords
             };
 
-            saveExperience(experienceData);
+            await saveExperiencePersisted(experienceData);
             alert(initialData?.id ? '¡Experiencia actualizada correctamente!' : '¡Experiencia creada correctamente!');
 
             router.push('/admin/experiences');

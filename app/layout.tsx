@@ -17,8 +17,40 @@ const poppinsHeading = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Moma | Nature Tourism",
-  description: "Discover the wilderness with luxury.",
+  metadataBase: new URL('https://momanature.com'),
+  title: {
+    default: "Moma | Turismo de Naturaleza y Aventura en Colombia",
+    template: "%s | Moma Nature"
+  },
+  description: "Descubre experiencias únicas en la naturaleza colombiana con Moma. Turismo sostenible, aventura y conexión con comunidades locales.",
+  keywords: ["turismo de naturaleza", "colombia", "ecoturismo", "aventura", "viajes sostenibles", "moma nature"],
+  authors: [{ name: "Moma Nature Team" }],
+  creator: "Moma Nature",
+  openGraph: {
+    type: "website",
+    locale: "es_CO",
+    url: "https://momanature.com",
+    title: "Moma | Turismo de Naturaleza",
+    description: "Descubre la magia de la naturaleza colombiana con experiencias únicas y sostenibles.",
+    siteName: "Moma Nature",
+    images: [
+      {
+        url: "/images/hero-bg.jpg", // Ensure this exists or use a valid public image path
+        width: 1200,
+        height: 630,
+        alt: "Moma Nature - Turismo de Naturaleza en Colombia",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Moma | Turismo de Naturaleza",
+    description: "Explora Colombia con Moma Nature. Experiencias auténticas y sostenibles.",
+    images: ["/images/hero-bg.jpg"],
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
@@ -36,10 +68,35 @@ export default function RootLayout({
         )}
         suppressHydrationWarning
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'Moma Nature',
+              url: 'https://momanature.com',
+              logo: 'https://momanature.com/images/logo.png',
+              sameAs: [
+                'https://facebook.com/momanature',
+                'https://instagram.com/momanature',
+                'https://twitter.com/momanature'
+              ],
+              contactPoint: {
+                '@type': 'ContactPoint',
+                telephone: '+57 321 456 7890',
+                contactType: 'customer service',
+                areaServed: 'CO',
+                availableLanguage: 'es'
+              }
+            })
+          }}
+        />
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
+          enableSystem={false}
+          forcedTheme="light"
           disableTransitionOnChange
         >
           {children}

@@ -1,3 +1,5 @@
+import { Facebook, Instagram } from 'lucide-react';
+
 export default function Footer() {
     return (
         <footer className="bg-[#1A202C] border-t border-stone-800 text-stone-400 pt-20 pb-10">
@@ -11,13 +13,11 @@ export default function Footer() {
                         Excursiones Montes de María es una iniciativa que busca mostrar el majestuoso aporte visual y cultural de nuestra región a través del turismo sostenible.
                     </p>
                     <div className="flex space-x-4">
-                        <a href="#" className="w-10 h-10 bg-stone-800 rounded-full flex items-center justify-center hover:bg-moma-green hover:text-white transition-all">
-                            <span className="sr-only">Instagram</span>
-                            📷
+                        <a href="#" className="w-10 h-10 bg-stone-800 rounded-full flex items-center justify-center hover:bg-moma-green hover:text-white transition-all" aria-label="Síguenos en Instagram">
+                            <Instagram className="w-5 h-5" />
                         </a>
-                        <a href="#" className="w-10 h-10 bg-stone-800 rounded-full flex items-center justify-center hover:bg-moma-green hover:text-white transition-all">
-                            <span className="sr-only">Facebook</span>
-                            f
+                        <a href="#" className="w-10 h-10 bg-stone-800 rounded-full flex items-center justify-center hover:bg-moma-green hover:text-white transition-all" aria-label="Síguenos en Facebook">
+                            <Facebook className="w-5 h-5" />
                         </a>
                     </div>
                 </div>

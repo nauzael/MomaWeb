@@ -1,17 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import ExperienceCarousel from '@/components/experiences/ExperienceCarousel';
 import Link from 'next/link';
 import { Phone, Mail, MapPin, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getAllExperiencesPersisted, type Experience } from '@/lib/experience-service';
-import { MOCK_EXPERIENCES } from '@/lib/mock-data';
 
-export default function Home() {
-  const [experiences, setExperiences] = useState<Experience[]>(MOCK_EXPERIENCES as unknown as Experience[]);
+interface HomeClientProps {
+  initialExperiences: Experience[];
+}
+
+export default function HomeClient({ initialExperiences }: HomeClientProps) {
+  const [experiences, setExperiences] = useState<Experience[]>(initialExperiences);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [direction, setDirection] = useState(1); // 1 for next, -1 for prev
+  const [direction, setDirection] = useState(1);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -30,7 +33,6 @@ export default function Home() {
     };
   }, []);
 
-  // Auto-slide effect
   useEffect(() => {
     if (experiences.length <= 1) return;
     const timer = setInterval(() => {
@@ -56,9 +58,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Hero Section / Carousel */}
       <section className="relative h-screen flex items-center overflow-hidden bg-stone-900">
-        {/* Background Images with Framer Motion */}
         <div className="absolute inset-0 z-0">
           <AnimatePresence>
             <motion.div
@@ -124,21 +124,17 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Indicators */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex gap-2">
           {experiences.map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrentSlide(i)}
               className={`w-12 h-1 rounded-full transition-all ${i === currentSlide ? 'bg-moma-green' : 'bg-white/30'}`}
-              aria-label={`Ir a la diapositiva ${i + 1}`}
-              aria-current={i === currentSlide ? 'true' : 'false'}
             />
           ))}
         </div>
       </section>
 
-      {/* Destinations Section */}
       <section id="experiencias" className="pt-12 pb-4 px-4 bg-stone-50 dark:bg-stone-950">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-10">
@@ -151,7 +147,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why Choose Us */}
       <section id="nosotros" className="py-24 bg-white dark:bg-stone-900">
         <div className="max-w-7xl mx-auto px-4 text-center mb-16">
           <span className="text-moma-green italic font-serif text-lg mb-2 block">Una elección brillante</span>
@@ -167,7 +162,7 @@ export default function Home() {
           ].map((item, i) => (
             <div key={i} className="text-center group p-6 rounded-2xl hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
               <div className="w-20 h-20 bg-white shadow-lg rounded-full flex items-center justify-center mx-auto mb-6 text-3xl group-hover:scale-110 transition-transform text-moma-green">
-                <span role="img" aria-label={item.title}>{item.icon}</span>
+                {item.icon}
               </div>
               <h3 className="text-xl font-bold mb-3 text-stone-900 dark:text-white">{item.title}</h3>
               <p className="text-stone-500 text-sm leading-relaxed">
@@ -178,12 +173,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-24 bg-stone-900 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-20 filter grayscale"></div>
         <div className="max-w-7xl mx-auto px-4 relative z-10 grid md:grid-cols-2 gap-12 items-center">
           <div className="bg-moma-green/10 p-8 rounded-3xl border border-moma-green/20 backdrop-blur-sm">
-            {/* Abstract Mountain Graphic Placeholder */}
             <div className="h-48 flex items-center justify-center border border-white/20 rounded-xl mb-4">
               <span className="text-white/50 text-xs tracking-widest uppercase">Visual Mountain Safe Rock Work</span>
             </div>
@@ -198,7 +191,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Contact Section */}
       <section id="contacto" className="py-24 bg-stone-50 dark:bg-stone-950">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
@@ -207,7 +199,6 @@ export default function Home() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Contact Info Cards */}
             <div className="space-y-4">
               <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl shadow-sm flex items-center">
                 <div className="w-12 h-12 bg-moma-green/10 rounded-full flex items-center justify-center text-moma-green mr-4">
@@ -238,23 +229,22 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Form */}
             <div className="lg:col-span-2 bg-white dark:bg-stone-900 p-8 rounded-3xl shadow-sm">
               <form className="grid md:grid-cols-2 gap-6">
                 <div className="col-span-2 md:col-span-1">
-                  <label htmlFor="name" className="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">Nombre</label>
-                  <input id="name" type="text" className="w-full bg-stone-50 dark:bg-stone-800 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-moma-green transition-all" placeholder="Tu nombre" />
+                  <label className="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">Nombre</label>
+                  <input type="text" className="w-full bg-stone-50 dark:bg-stone-800 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-moma-green transition-all" placeholder="Tu nombre" />
                 </div>
                 <div className="col-span-2 md:col-span-1">
-                  <label htmlFor="email" className="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">Email</label>
-                  <input id="email" type="email" className="w-full bg-stone-50 dark:bg-stone-800 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-moma-green transition-all" placeholder="tucorreo@email.com" />
+                  <label className="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">Email</label>
+                  <input type="email" className="w-full bg-stone-50 dark:bg-stone-800 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-moma-green transition-all" placeholder="tucorreo@email.com" />
                 </div>
                 <div className="col-span-2">
-                  <label htmlFor="message" className="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">Mensaje</label>
-                  <textarea id="message" rows={4} className="w-full bg-stone-50 dark:bg-stone-800 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-moma-green transition-all" placeholder="Cuéntanos tus planes..."></textarea>
+                  <label className="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">Mensaje</label>
+                  <textarea rows={4} className="w-full bg-stone-50 dark:bg-stone-800 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-moma-green transition-all" placeholder="Cuéntanos tus planes..."></textarea>
                 </div>
                 <div className="col-span-2">
-                  <button type="submit" className="bg-moma-green text-white px-8 py-4 rounded-full font-bold hover:bg-opacity-90 transition-all w-full md:w-auto">
+                  <button className="bg-moma-green text-white px-8 py-4 rounded-full font-bold hover:bg-opacity-90 transition-all w-full md:w-auto">
                     Enviar Mensaje
                   </button>
                 </div>
@@ -266,3 +256,4 @@ export default function Home() {
     </div>
   );
 }
+

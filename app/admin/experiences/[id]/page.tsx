@@ -1,9 +1,9 @@
 'use client';
-import { use } from 'react';
+import { use, useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import Link from 'next/link';
 import ExperienceForm from '../components/ExperienceForm';
-import { getExperience } from '@/lib/experience-service';
+import { getExperiencePersisted, type Experience } from '@/lib/experience-service';
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -11,7 +11,31 @@ interface PageProps {
 
 export default function EditExperiencePage({ params }: PageProps) {
     const { id } = use(params);
-    const experience = getExperience(id);
+    const [experience, setExperience] = useState<Experience | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+        setIsLoading(true);
+        getExperiencePersisted(id)
+            .then((data) => {
+                if (!cancelled) setExperience(data);
+            })
+            .finally(() => {
+                if (!cancelled) setIsLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [id]);
+
+    if (isLoading) {
+        return (
+            <div className="bg-white p-12 rounded-[2.5rem] border border-[#eef1f4] text-center">
+                <p className="text-stone-400">Cargando...</p>
+            </div>
+        );
+    }
 
     if (!experience) {
         return (

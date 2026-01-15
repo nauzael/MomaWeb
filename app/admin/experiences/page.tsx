@@ -4,20 +4,24 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Plus, Edit, Trash2, Search, Map } from 'lucide-react';
-import { getAllExperiences, deleteExperience, resetExperiences, type Experience } from '@/lib/experience-service';
+import { getAllExperiencesPersisted, deleteExperiencePersisted, migrateLocalExperiencesToSupabase, resetExperiences, type Experience } from '@/lib/experience-service';
+import { MOCK_EXPERIENCES } from '@/lib/mock-data';
 
 export default function ExperiencesPage() {
-    const [experiences, setExperiences] = useState<Experience[]>(() => getAllExperiences());
+    const [experiences, setExperiences] = useState<Experience[]>(MOCK_EXPERIENCES as unknown as Experience[]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isMigrating, setIsMigrating] = useState(false);
 
     useEffect(() => {
+        getAllExperiencesPersisted().then(setExperiences);
+
         const handleFocus = () => {
-            setExperiences(getAllExperiences());
+            getAllExperiencesPersisted().then(setExperiences);
         };
 
         const handleVisibilityChange = () => {
             if (!document.hidden) {
-                setExperiences(getAllExperiences());
+                getAllExperiencesPersisted().then(setExperiences);
             }
         };
 
@@ -34,14 +38,17 @@ export default function ExperiencesPage() {
         exp.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const handleDelete = (id: string | number) => {
+    const handleDelete = async (id: string | number) => {
         if (!confirm('¿Estás seguro de eliminar esta experiencia?')) return;
 
         try {
-            deleteExperience(id);
+            const identifier = String(id).trim();
+            const exp = experiences.find(e => e.slug === identifier || String(e.id).trim() === identifier);
+            if (!exp?.slug) throw new Error('No se pudo determinar el slug para eliminar');
+
+            await deleteExperiencePersisted(exp.slug);
             // Instant UI update
-            setExperiences(prev => prev.filter(exp => String(exp.id).trim() !== String(id).trim()));
-            console.log('Deleted:', id);
+            setExperiences(prev => prev.filter(e => e.slug !== exp.slug));
         } catch (err) {
             console.error('Delete failed:', err);
             alert('No se pudo eliminar la experiencia.');
@@ -67,6 +74,28 @@ export default function ExperiencesPage() {
                         className="px-6 py-4 rounded-2xl border border-red-200 text-red-500 hover:bg-red-50 transition-all font-bold text-sm"
                     >
                         Reset Datos
+                    </button>
+                    <button
+                        type="button"
+                        disabled={isMigrating}
+                        onClick={async () => {
+                            if (!confirm('¿Migrar los tours actuales (local) a Supabase para el deploy?')) return;
+                            setIsMigrating(true);
+                            try {
+                                const result = await migrateLocalExperiencesToSupabase();
+                                alert(`Migración completa: ${result.count} experiencias.`);
+                                const refreshed = await getAllExperiencesPersisted();
+                                setExperiences(refreshed);
+                            } catch (err) {
+                                const message = err instanceof Error ? err.message : 'Error desconocido';
+                                alert('No se pudo migrar: ' + message);
+                            } finally {
+                                setIsMigrating(false);
+                            }
+                        }}
+                        className="px-6 py-4 rounded-2xl border border-[#ccfcf3] text-[#00b894] hover:bg-[#ccfcf3] transition-all font-bold text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                        {isMigrating ? 'Migrando...' : 'Migrar a Supabase'}
                     </button>
                     <Link href="/admin/experiences/new" className="bg-[#061a15] text-white px-8 py-4 rounded-2xl flex items-center hover:opacity-90 transition-all shadow-lg font-black text-sm">
                         <Plus className="w-5 h-5 mr-3" />
@@ -133,7 +162,7 @@ export default function ExperiencesPage() {
                                     <td className="px-8 py-5">
                                         <div className="flex justify-center gap-3">
                                             <Link
-                                                href={`/admin/experiences/${exp.id}`}
+                                                href={`/admin/experiences/${exp.slug}`}
                                                 className="p-2.5 bg-[#ccfcf3] text-[#00b894] hover:bg-moma-green hover:text-white rounded-xl transition-all"
                                             >
                                                 <Edit className="w-4 h-4" />
@@ -143,7 +172,7 @@ export default function ExperiencesPage() {
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     e.stopPropagation();
-                                                    handleDelete(exp.id);
+                                                    void handleDelete(exp.id);
                                                 }}
                                                 className="p-2.5 bg-red-50 text-red-400 hover:bg-red-500 hover:text-white rounded-xl transition-all"
                                             >

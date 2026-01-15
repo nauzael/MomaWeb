@@ -29,7 +29,7 @@ export default function ExperienceCard({ experience }: ExperienceCardProps) {
                             </h3>
                             <div className="flex items-center justify-between mb-3">
                                 <p className="text-[11px] md:text-xs text-stone-200/80 flex items-center gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                                         <path d="M20 10c0 6-9 13-9 13S2 16 2 10a9 9 0 0 1 18 0Z" />
                                         <circle cx="11" cy="10" r="3" />
                                     </svg>

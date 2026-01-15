@@ -7,15 +7,29 @@ create table if not exists experiences (
   title text not null,
   slug text unique not null,
   description text,
+  image text default ''::text,
+  gallery jsonb default '[]'::jsonb,
   price_cop numeric,
   price_usd numeric,
+  location_name text,
+  location_lat double precision,
+  location_lng double precision,
   location_coords geography(Point, 4326),
   includes jsonb default '[]'::jsonb,
   excludes jsonb default '[]'::jsonb,
   recommendations text,
   max_capacity integer,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
+
+alter table experiences add column if not exists description text;
+alter table experiences add column if not exists image text default ''::text;
+alter table experiences add column if not exists gallery jsonb default '[]'::jsonb;
+alter table experiences add column if not exists location_name text;
+alter table experiences add column if not exists location_lat double precision;
+alter table experiences add column if not exists location_lng double precision;
+alter table experiences add column if not exists updated_at timestamp with time zone default timezone('utc'::text, now()) not null;
 
 -- Experience Media Table
 create table if not exists experience_media (

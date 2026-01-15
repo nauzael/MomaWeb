@@ -1,4 +1,5 @@
 import { MOCK_EXPERIENCES } from './mock-data';
+import { createClient as createSupabaseBrowserClient } from '@/utils/supabase/client';
 
 export interface Experience {
     id: string;
@@ -168,4 +169,154 @@ export function resetExperiences() {
     if (typeof window === 'undefined') return;
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(DELETED_KEY);
+}
+
+function isSupabaseConfigured() {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!url || !anonKey) return false
+    if (url === 'https://example.com') return false
+    if (anonKey === 'mock-key') return false
+    return true
+}
+
+function toStringArray(value: unknown): string[] {
+    if (!Array.isArray(value)) return []
+    return value.map(v => String(v)).filter(v => v.trim().length > 0)
+}
+
+function mapSupabaseRowToExperience(row: any): Experience {
+    const locationLat = Number(row?.location_lat)
+    const locationLng = Number(row?.location_lng)
+    const hasCoords = Number.isFinite(locationLat) && Number.isFinite(locationLng)
+
+    return {
+        id: String(row?.id ?? ''),
+        title: String(row?.title ?? ''),
+        slug: String(row?.slug ?? ''),
+        description: String(row?.description ?? ''),
+        image: String(row?.image ?? ''),
+        gallery: toStringArray(row?.gallery),
+        price_cop: Number(row?.price_cop) || 0,
+        price_usd: Number(row?.price_usd) || 0,
+        max_capacity: Number(row?.max_capacity) || 0,
+        includes: toStringArray(row?.includes),
+        excludes: toStringArray(row?.excludes),
+        location_name: row?.location_name ? String(row.location_name) : undefined,
+        location_coords: hasCoords ? { lat: locationLat, lng: locationLng } : { lat: 4.5709, lng: -74.2973 },
+        created_at: row?.created_at ? String(row.created_at) : undefined,
+        updated_at: row?.updated_at ? String(row.updated_at) : undefined
+    }
+}
+
+async function fetchAllExperiencesFromSupabase(): Promise<Experience[]> {
+    const supabase = createSupabaseBrowserClient()
+    const { data, error } = await supabase
+        .from('experiences')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+    if (error) throw new Error(error.message)
+    if (!Array.isArray(data)) return []
+    return data.map(mapSupabaseRowToExperience)
+}
+
+async function fetchExperienceFromSupabase(identifier: string): Promise<Experience | null> {
+    const supabase = createSupabaseBrowserClient()
+    const clean = identifier.trim()
+
+    const bySlug = await supabase.from('experiences').select('*').eq('slug', clean).maybeSingle()
+    if (bySlug.error) throw new Error(bySlug.error.message)
+    if (bySlug.data) return mapSupabaseRowToExperience(bySlug.data)
+
+    const byId = await supabase.from('experiences').select('*').eq('id', clean).maybeSingle()
+    if (byId.error) throw new Error(byId.error.message)
+    if (byId.data) return mapSupabaseRowToExperience(byId.data)
+
+    return null
+}
+
+export async function getAllExperiencesPersisted(): Promise<Experience[]> {
+    if (typeof window === 'undefined') return MOCK_EXPERIENCES as unknown as Experience[]
+
+    if (isSupabaseConfigured()) {
+        try {
+            const remote = await fetchAllExperiencesFromSupabase()
+            if (remote.length > 0) return remote
+        } catch {
+        }
+    }
+
+    return getAllExperiences()
+}
+
+export async function getExperiencePersisted(identifier: string): Promise<Experience | null> {
+    if (typeof window === 'undefined') return null
+
+    if (isSupabaseConfigured()) {
+        try {
+            const remote = await fetchExperienceFromSupabase(identifier)
+            if (remote) return remote
+        } catch {
+        }
+    }
+
+    return getExperience(identifier)
+}
+
+export async function saveExperiencePersisted(data: Partial<Experience> & { id?: string | number }) {
+    if (isSupabaseConfigured()) {
+        const res = await fetch('/api/admin/experiences/upsert', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ experience: data })
+        })
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            throw new Error(err?.error || 'Error al guardar en Supabase')
+        }
+
+        const json = await res.json()
+        if (json?.experience) return mapSupabaseRowToExperience(json.experience)
+    }
+
+    return saveExperience(data)
+}
+
+export async function deleteExperiencePersisted(slugOrId: string) {
+    if (isSupabaseConfigured()) {
+        const res = await fetch('/api/admin/experiences/delete', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ slug: slugOrId })
+        })
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            throw new Error(err?.error || 'Error al eliminar en Supabase')
+        }
+
+        return
+    }
+
+    deleteExperience(slugOrId)
+}
+
+export async function migrateLocalExperiencesToSupabase() {
+    const experiences = getAllExperiences()
+
+    const res = await fetch('/api/admin/experiences/migrate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ experiences })
+    })
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.error || 'Error al migrar a Supabase')
+    }
+
+    const json = await res.json()
+    return { count: Number(json?.count) || 0 }
 }
