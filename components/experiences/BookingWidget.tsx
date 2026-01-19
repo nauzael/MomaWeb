@@ -16,6 +16,8 @@ interface BookingWidgetProps {
     experienceId: string;
 }
 
+import ButtonFlex from '@/components/ui/ButtonFlex';
+
 export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experienceTitle, experienceId }: BookingWidgetProps) {
     const [guests, setGuests] = useState(1);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -266,12 +268,15 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
                         </div>
                     </div>
 
-                    <button
-                        onClick={handleBookingClick}
-                        className="w-full bg-moma-earth text-white font-bold py-4 rounded-xl hover:bg-opacity-90 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
-                    >
-                        Reservar Ahora
-                    </button>
+                    <div className="flex justify-center w-full">
+                        <ButtonFlex 
+                            onClick={handleBookingClick}
+                            text="Reservar Ahora"
+                            className="w-full"
+                            disabled={guests < 1}
+                        />
+                    </div>
+                    
                     <p className="text-xs text-center text-stone-400 mt-4">
                         No se cobrará nada todavía.
                     </p>

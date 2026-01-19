@@ -52,21 +52,13 @@ export default function ExperienceDetailCarousel({ images }: ExperienceDetailCar
         if (!isModalOpen) return;
 
         if (e.key === 'ArrowLeft') {
-            setCurrent((prev) => {
-                const nextIndex = (prev - 1 + images.length) % images.length;
-                scrollToImage(nextIndex);
-                return nextIndex;
-            });
+            setCurrent((prev) => (prev - 1 + images.length) % images.length);
         } else if (e.key === 'ArrowRight') {
-            setCurrent((prev) => {
-                const nextIndex = (prev + 1) % images.length;
-                scrollToImage(nextIndex);
-                return nextIndex;
-            });
+            setCurrent((prev) => (prev + 1) % images.length);
         } else if (e.key === 'Escape') {
             setIsModalOpen(false);
         }
-    }, [isModalOpen, images.length, scrollToImage]);
+    }, [isModalOpen, images.length]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
@@ -74,39 +66,29 @@ export default function ExperienceDetailCarousel({ images }: ExperienceDetailCar
     }, [handleKeyDown]);
 
     useEffect(() => {
-        scrollToImage(current);
-    }, [current, scrollToImage]);
+        if (!isModalOpen) {
+            scrollToImage(current);
+        }
+    }, [current, scrollToImage, isModalOpen]);
 
     useEffect(() => {
         if (images.length <= 1 || isModalOpen || isPaused) return;
 
         const interval = window.setInterval(() => {
-            setCurrent((prev) => {
-                const nextIndex = (prev + 1) % images.length;
-                scrollToImage(nextIndex);
-                return nextIndex;
-            });
+            setCurrent((prev) => (prev + 1) % images.length);
         }, 3500);
 
         return () => window.clearInterval(interval);
-    }, [images.length, isModalOpen, isPaused, scrollToImage]);
+    }, [images.length, isModalOpen, isPaused]);
 
     const next = (e?: React.MouseEvent) => {
         e?.stopPropagation();
-        setCurrent((prev) => {
-            const nextIndex = (prev + 1) % images.length;
-            scrollToImage(nextIndex);
-            return nextIndex;
-        });
+        setCurrent((prev) => (prev + 1) % images.length);
     };
 
     const prev = (e?: React.MouseEvent) => {
         e?.stopPropagation();
-        setCurrent((prev) => {
-            const nextIndex = (prev - 1 + images.length) % images.length;
-            scrollToImage(nextIndex);
-            return nextIndex;
-        });
+        setCurrent((prev) => (prev - 1 + images.length) % images.length);
     };
 
     if (!images || images.length === 0) return null;

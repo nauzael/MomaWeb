@@ -1,19 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Plus, Edit, Trash2, Search, Map } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Map, LayoutGrid, List, Wifi, WifiOff, UploadCloud, Users, Tag } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getAllExperiencesPersisted, deleteExperiencePersisted, migrateLocalExperiencesToSupabase, getConnectionStatus, type Experience } from '@/lib/experience-service';
 import { usePollingExperiences } from '@/hooks/usePollingExperiences';
+import { cn } from '@/lib/utils';
 
 export default function ExperiencesPage() {
     const [initialExperiences, setInitialExperiences] = useState<Experience[]>([]);
-    // Use polling hook (free & robust) instead of realtime subscription
-    const { experiences, refresh } = usePollingExperiences(initialExperiences, 4000); 
+    const { experiences, refresh } = usePollingExperiences(initialExperiences, 4000);
     const [searchTerm, setSearchTerm] = useState('');
     const [connectionStatus, setConnectionStatus] = useState<{ connected: boolean, message: string } | null>(null);
     const [localCount, setLocalCount] = useState(0);
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
     const checkConnection = async () => {
         const status = await getConnectionStatus();
@@ -25,15 +27,9 @@ export default function ExperiencesPage() {
         if (typeof window !== 'undefined') {
             try {
                 const rawData = localStorage.getItem('moma_experiences');
-
                 if (rawData) {
                     const parsed = JSON.parse(rawData);
-
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        setLocalCount(parsed.length);
-                    } else {
-                        setLocalCount(0);
-                    }
+                    setLocalCount(Array.isArray(parsed) ? parsed.length : 0);
                 } else {
                     setLocalCount(0);
                 }
@@ -46,9 +42,9 @@ export default function ExperiencesPage() {
     const handleMigration = async (forceAll: boolean = false) => {
         const count = forceAll ? 'todos los' : localCount;
         const source = forceAll ? 'datos locales y predeterminados (Mocks)' : 'experiencias guardadas localmente';
-        
+
         if (!confirm(`¿Estás seguro de subir ${count} ${source} a Supabase? Esto actualizará la base de datos en la nube.`)) return;
-        
+
         try {
             const result = await migrateLocalExperiencesToSupabase();
             if (result.partial) {
@@ -56,11 +52,10 @@ export default function ExperiencesPage() {
             } else {
                 alert(`¡Éxito! Se migraron ${result.count} experiencias a la nube.`);
             }
-            
-            // Clear local storage after successful migration to avoid duplicates/confusion
+
             if (!forceAll && localCount > 0) {
-                 localStorage.removeItem('moma_experiences');
-                 setLocalCount(0);
+                localStorage.removeItem('moma_experiences');
+                setLocalCount(0);
             }
             await refresh();
         } catch (e) {
@@ -78,24 +73,18 @@ export default function ExperiencesPage() {
         checkConnection();
     }, []);
 
-    const handleManualSync = async () => {
-        await checkConnection();
-        await refresh();
-    };
-
-    const filteredExperiences = experiences.filter(exp =>
+    const filteredExperiences = useMemo(() => experiences.filter(exp =>
         exp.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    ), [experiences, searchTerm]);
 
-    const handleDelete = async (id: string | number) => {
+    const handleDelete = async (slug?: string) => {
+        if (!slug) {
+            alert('No se pudo identificar la experiencia para eliminar.');
+            return;
+        }
         if (!confirm('¿Estás seguro de eliminar esta experiencia?')) return;
-
         try {
-            const identifier = String(id).trim();
-            const exp = experiences.find(e => e.slug === identifier || String(e.id).trim() === identifier);
-            if (!exp?.slug) throw new Error('No se pudo determinar el slug para eliminar');
-
-            await deleteExperiencePersisted(exp.slug);
+            await deleteExperiencePersisted(slug);
             await refresh();
         } catch (err) {
             console.error('Delete failed:', err);
@@ -103,136 +92,274 @@ export default function ExperiencesPage() {
         }
     };
 
+    const isConnected = connectionStatus?.connected;
     const isUnstable = connectionStatus?.message?.includes('inestable');
-    const statusColor = connectionStatus?.connected 
-        ? 'bg-green-100 text-green-700' 
-        : isUnstable 
-            ? 'bg-amber-100 text-amber-700' 
-            : 'bg-red-100 text-red-700';
-    const dotColor = connectionStatus?.connected 
-        ? 'bg-green-500' 
-        : isUnstable 
-            ? 'bg-amber-500 animate-pulse' 
-            : 'bg-red-500';
 
     return (
-        <div className="space-y-6 md:space-y-8 max-w-[1600px] mx-auto pb-12">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-black text-[#1a1a1a]">Gestión de Experiencias</h1>
-                    <p className="text-stone-400 font-medium text-sm md:text-base">Administra tu catálogo de rutas y tours.</p>
+        <div className="max-w-[1600px] mx-auto pb-20 space-y-8">
+            {/* Header Section */}
+            <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="space-y-2">
+                    <h1 className="text-4xl md:text-5xl font-black text-moma-dark tracking-tight">Experiencias</h1>
+                    <p className="text-stone-500 font-medium text-lg">
+                        Gestiona el catálogo de tours y aventuras de Moma.
+                    </p>
                 </div>
-                <div className="flex flex-wrap gap-2 md:gap-4">
-                    {connectionStatus && (
-                        <div className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 ${statusColor}`}>
-                            <div className={`w-2 h-2 rounded-full ${dotColor}`}></div>
+                
+                {/* Status Badges */}
+                <div className="flex flex-wrap items-center gap-3">
+                     {connectionStatus && (
+                        <div className={cn(
+                            "px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition-colors border",
+                            isConnected ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
+                            isUnstable ? "bg-amber-50 text-amber-700 border-amber-100" : "bg-rose-50 text-rose-700 border-rose-100"
+                        )}>
+                            {isConnected ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
                             {connectionStatus.message}
                         </div>
                     )}
                     {localCount > 0 && (
                         <button
                             onClick={() => handleMigration(false)}
-                            className="px-4 py-2 bg-amber-100 text-amber-700 rounded-xl text-xs font-bold hover:bg-amber-200 transition-colors flex items-center gap-2 animate-bounce"
+                            className="px-4 py-2 bg-amber-100 text-amber-800 border border-amber-200 rounded-full text-xs font-bold hover:bg-amber-200 transition-colors flex items-center gap-2"
                         >
-                            ⚠️ Subir {localCount} locales
+                            <UploadCloud className="w-3.5 h-3.5" />
+                            Sincronizar {localCount} locales
                         </button>
                     )}
-                    {connectionStatus?.connected && (
-                        <div className="hidden">
-                             {/* Buttons removed but connection status check kept */}
-                        </div>
-                    )}
-                    <Link href="/admin/experiences/new" className="bg-[#061a15] text-white px-8 py-4 rounded-2xl flex items-center hover:opacity-90 transition-all shadow-lg font-black text-sm flex-1 md:flex-none justify-center">
-                        <Plus className="w-5 h-5 md:mr-3" />
-                        <span className="ml-2 md:ml-0">Nueva Experiencia</span>
+                </div>
+            </header>
+
+            {/* Toolbar Section */}
+            <div className="sticky top-0 z-10 bg-[#f5f7f9]/80 backdrop-blur-md py-4 -mx-4 px-4 md:mx-0 md:px-0 flex flex-col md:flex-row gap-4 justify-between items-center transition-all">
+                <div className="relative w-full md:w-96 group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Search className="h-4 w-4 text-stone-400 group-focus-within:text-moma-green transition-colors" />
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Buscar por nombre..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="block w-full pl-10 pr-4 py-3 bg-white border border-stone-200 rounded-2xl text-sm focus:ring-2 focus:ring-moma-green/20 focus:border-moma-green transition-all shadow-sm outline-none"
+                    />
+                </div>
+
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="bg-white p-1 rounded-xl border border-stone-200 flex shadow-sm">
+                        <button
+                            onClick={() => setViewMode('grid')}
+                            className={cn(
+                                "p-2 rounded-lg transition-all",
+                                viewMode === 'grid' ? "bg-moma-dark text-white shadow-md" : "text-stone-400 hover:text-stone-600 hover:bg-stone-50"
+                            )}
+                            aria-label="Vista de cuadrícula"
+                        >
+                            <LayoutGrid className="w-4 h-4" />
+                        </button>
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={cn(
+                                "p-2 rounded-lg transition-all",
+                                viewMode === 'list' ? "bg-moma-dark text-white shadow-md" : "text-stone-400 hover:text-stone-600 hover:bg-stone-50"
+                            )}
+                            aria-label="Vista de lista"
+                        >
+                            <List className="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    <Link 
+                        href="/admin/experiences/new" 
+                        className="flex-1 md:flex-none bg-moma-green hover:bg-[#229ca3] text-white px-6 py-3 rounded-2xl flex items-center justify-center gap-2 font-bold shadow-lg shadow-moma-green/20 hover:shadow-xl hover:shadow-moma-green/30 transition-all active:scale-95"
+                    >
+                        <Plus className="w-5 h-5" />
+                        <span>Nueva</span>
                     </Link>
                 </div>
             </div>
 
-            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-[#eef1f4] overflow-hidden">
-                <div className="p-5 md:p-8 border-b border-[#f5f7f9] flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <h3 className="text-lg md:text-xl font-black text-[#1a1a1a]">Todas las Experiencias</h3>
-                    <div className="relative w-full md:w-auto">
-                        <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" />
-                        <input
-                            type="text"
-                            placeholder="Buscar experiencia..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="bg-[#f5fbf9] border-none rounded-xl pl-10 pr-4 py-3 md:py-2 text-sm focus:ring-2 focus:ring-moma-green outline-none w-full md:w-64"
-                        />
-                    </div>
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-[#f5fbf9] text-[10px] uppercase tracking-widest font-black text-stone-400">
-                                <th className="px-4 md:px-8 py-4 whitespace-nowrap">Título</th>
-                                <th className="px-4 md:px-8 py-4 whitespace-nowrap">Precio COP</th>
-                                <th className="px-4 md:px-8 py-4 whitespace-nowrap">Capacidad</th>
-                                <th className="px-4 md:px-8 py-4 text-center whitespace-nowrap">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#f5f7f9]">
-                            {filteredExperiences.map((exp) => (
-                                <tr key={exp.id} className="group hover:bg-[#fcfdfd] transition-colors">
-                                    <td className="px-4 md:px-8 py-5">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-12 w-12 bg-stone-100 rounded-xl overflow-hidden flex-shrink-0 relative border border-[#eef1f4]">
-                                                {exp.image ? (
-                                                    <Image
-                                                        src={exp.image}
-                                                        alt={exp.title}
-                                                        fill
-                                                        unoptimized
-                                                        className="object-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full bg-moma-green/10 flex items-center justify-center text-moma-green font-bold text-xs">
-                                                        <Map className="w-5 h-5" />
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <span className="text-sm font-black text-[#1a1a1a] min-w-[120px]">{exp.title}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 md:px-8 py-5 text-sm font-bold text-stone-600 whitespace-nowrap">
-                                        ${typeof exp.price_cop === 'number' ? exp.price_cop.toLocaleString('es-CO') : exp.price_cop}
-                                    </td>
-                                    <td className="px-4 md:px-8 py-5 whitespace-nowrap">
-                                        <span className="bg-stone-100 text-stone-600 text-[10px] font-black px-3 py-1 rounded-lg">
-                                            {exp.max_capacity} pax
-                                        </span>
-                                    </td>
-                                    <td className="px-4 md:px-8 py-5 whitespace-nowrap">
-                                        <div className="flex justify-center gap-3">
-                                            <Link
-                                                href={`/admin/experiences/${exp.slug}`}
-                                                className="p-2.5 bg-[#ccfcf3] text-[#00b894] hover:bg-moma-green hover:text-white rounded-xl transition-all"
-                                            >
-                                                <Edit className="w-4 h-4" />
-                                            </Link>
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    void handleDelete(exp.id);
-                                                }}
-                                                className="p-2.5 bg-red-50 text-red-400 hover:bg-red-500 hover:text-white rounded-xl transition-all"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            {/* Content Area */}
+            <AnimatePresence mode="wait">
+                {filteredExperiences.length === 0 ? (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="flex flex-col items-center justify-center py-20 text-center"
+                    >
+                        <div className="w-24 h-24 bg-stone-100 rounded-full flex items-center justify-center mb-6">
+                            <Search className="w-10 h-10 text-stone-300" />
+                        </div>
+                        <h3 className="text-xl font-bold text-stone-700 mb-2">No se encontraron experiencias</h3>
+                        <p className="text-stone-500 max-w-md">
+                            No hay resultados para "{searchTerm}". Intenta con otro término o crea una nueva experiencia.
+                        </p>
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key={viewMode}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        {viewMode === 'grid' ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {filteredExperiences.map((exp, index) => (
+                                    <ExperienceCard 
+                                        key={exp.id || exp.slug} 
+                                        experience={exp} 
+                                        onDelete={() => handleDelete(exp.slug)} 
+                                        index={index}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="bg-white rounded-3xl border border-stone-200 shadow-sm overflow-hidden">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr className="bg-stone-50/50 border-b border-stone-100 text-xs uppercase tracking-wider font-bold text-stone-400">
+                                                <th className="px-6 py-4">Experiencia</th>
+                                                <th className="px-6 py-4">Precio</th>
+                                                <th className="px-6 py-4">Capacidad</th>
+                                                <th className="px-6 py-4 text-right">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-stone-100">
+                                            {filteredExperiences.map((exp) => (
+                                                <ExperienceRow 
+                                                    key={exp.id || exp.slug} 
+                                                    experience={exp} 
+                                                    onDelete={() => handleDelete(exp.slug)} 
+                                                />
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
 
+function ExperienceCard({ experience, onDelete, index }: { experience: Experience, onDelete: () => void, index: number }) {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+            className="group bg-white rounded-[2rem] border border-stone-100 overflow-hidden hover:shadow-xl hover:shadow-stone-200/50 hover:border-stone-200 transition-all duration-300 flex flex-col h-full"
+        >
+            <div className="relative aspect-[4/3] bg-stone-100 overflow-hidden">
+                {experience.image ? (
+                    <Image
+                        src={experience.image}
+                        alt={experience.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-stone-300">
+                        <Map className="w-10 h-10" />
+                    </div>
+                )}
+                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">
+                    <Link
+                        href={`/admin/experiences/${experience.slug}`}
+                        className="p-2 bg-white/90 backdrop-blur text-moma-dark hover:text-moma-green rounded-xl shadow-lg hover:scale-110 transition-all"
+                        aria-label="Editar"
+                    >
+                        <Edit className="w-4 h-4" />
+                    </Link>
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onDelete();
+                        }}
+                        className="p-2 bg-white/90 backdrop-blur text-red-500 hover:bg-red-50 rounded-xl shadow-lg hover:scale-110 transition-all"
+                        aria-label="Eliminar"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+            
+            <div className="p-6 flex flex-col flex-1">
+                <div className="flex-1 space-y-2">
+                    <h3 className="font-bold text-lg text-moma-dark line-clamp-2 leading-tight group-hover:text-moma-green transition-colors">
+                        {experience.title}
+                    </h3>
+                    <div className="flex items-center gap-4 text-xs font-medium text-stone-500">
+                         <div className="flex items-center gap-1.5">
+                            <Tag className="w-3.5 h-3.5" />
+                            <span>${experience.price_cop?.toLocaleString('es-CO')}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <Users className="w-3.5 h-3.5" />
+                            <span>Max {experience.max_capacity}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </motion.div>
+    );
+}
 
+function ExperienceRow({ experience, onDelete }: { experience: Experience, onDelete: () => void }) {
+    return (
+        <tr className="group hover:bg-stone-50/50 transition-colors">
+            <td className="px-6 py-4">
+                <div className="flex items-center gap-4">
+                    <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-stone-100 flex-shrink-0 border border-stone-200">
+                         {experience.image ? (
+                            <Image
+                                src={experience.image}
+                                alt={experience.title}
+                                fill
+                                className="object-cover"
+                                sizes="48px"
+                            />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-stone-300">
+                                <Map className="w-5 h-5" />
+                            </div>
+                        )}
+                    </div>
+                    <span className="font-bold text-moma-dark">{experience.title}</span>
+                </div>
+            </td>
+            <td className="px-6 py-4 text-sm font-medium text-stone-600">
+                ${experience.price_cop?.toLocaleString('es-CO')}
+            </td>
+            <td className="px-6 py-4">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium bg-stone-100 text-stone-700">
+                    {experience.max_capacity} pax
+                </span>
+            </td>
+            <td className="px-6 py-4 text-right">
+                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Link
+                        href={`/admin/experiences/${experience.slug}`}
+                        className="p-2 text-stone-400 hover:text-moma-green hover:bg-moma-green/10 rounded-lg transition-all"
+                        aria-label="Editar"
+                    >
+                        <Edit className="w-4 h-4" />
+                    </Link>
+                    <button
+                        onClick={onDelete}
+                        className="p-2 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                        aria-label="Eliminar"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </button>
+                </div>
+            </td>
+        </tr>
+    );
+}

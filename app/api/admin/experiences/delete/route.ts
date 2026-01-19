@@ -1,8 +1,26 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/utils/supabase/admin'
+import { createClient } from '@/utils/supabase/server'
 
 export async function POST(request: Request) {
     try {
+        // 1. Security Check
+        const supabaseAuth = await createClient()
+        const { data: { user }, error: authError } = await supabaseAuth.auth.getUser()
+        if (authError || !user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        const { data: profile } = await supabaseAuth
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        if (profile && profile.role !== 'admin' && profile.role !== 'editor') {
+            return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 })
+        }
+
         const body = await request.json()
         const slug = String(body?.slug || '').trim()
 

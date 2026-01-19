@@ -78,7 +78,7 @@ export default function Navbar() {
                     </div>
 
                     <div className="hidden md:flex items-center gap-4">
-                        <Link href="/admin/dashboard" className="bg-moma-earth text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-opacity-90 transition-all">
+                        <Link href="/admin/dashboard" className="bg-moma-green text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-opacity-90 transition-all">
                             Agencia
                         </Link>
                     </div>
@@ -132,7 +132,7 @@ export default function Navbar() {
                             </Link>
                             <Link
                                 href="/admin/dashboard"
-                                className="block px-3 py-2 rounded-md text-base font-medium text-moma-earth hover:text-moma-earth/80 hover:bg-stone-100 dark:hover:bg-stone-800"
+                                className="block px-3 py-2 rounded-md text-base font-medium text-moma-green hover:text-moma-green/80 hover:bg-stone-100 dark:hover:bg-stone-800"
                             >
                                 Agencia
                             </Link>
