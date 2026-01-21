@@ -155,7 +155,7 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
 
     return (
         <>
-            <div className="sticky top-24 bg-white border border-stone-200 shadow-xl rounded-2xl p-6 dark:bg-stone-900 dark:border-stone-800 transition-all font-sans relative z-10">
+            <div className="sticky top-24 bg-white shadow-2xl rounded-2xl p-6 dark:bg-stone-900 transition-all font-sans relative z-10">
                 <div className="mb-6">
                     <span className="text-stone-500 text-sm font-medium">Precio por persona</span>
                     <div className="flex items-baseline">

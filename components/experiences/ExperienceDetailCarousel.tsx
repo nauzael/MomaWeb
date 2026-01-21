@@ -95,7 +95,11 @@ export default function ExperienceDetailCarousel({ images }: ExperienceDetailCar
 
     return (
         <>
-            <div
+            <motion.div
+                initial={{ scale: 1.1, opacity: 0.5 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
                 className="relative w-full bg-stone-100 dark:bg-stone-900 rounded-3xl py-4"
                 onMouseEnter={() => setIsPaused(true)}
                 onMouseLeave={() => setIsPaused(false)}
@@ -105,19 +109,27 @@ export default function ExperienceDetailCarousel({ images }: ExperienceDetailCar
                     className="flex gap-4 px-4 sm:px-8 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                 >
                     {images.map((img, index) => (
-                        <button
+                        <motion.button
                             key={index}
                             type="button"
+                            initial={{ opacity: 0, scale: 1.1 }}
+                            whileInView={{ 
+                                opacity: index === current ? 1 : 0.8, 
+                                scale: index === current ? 1.02 : 1 
+                            }}
+                            whileHover={{ opacity: 1 }}
+                            viewport={{ once: true, margin: "-20%" }}
+                            transition={{ duration: 0.5, ease: "easeOut" }}
                             onClick={() => {
                                 setCurrent(index);
                                 setIsModalOpen(true);
                             }}
                             className={cn(
-                                "relative flex-shrink-0 overflow-hidden transition-transform duration-500 ease-out",
+                                "relative flex-shrink-0 overflow-hidden",
                                 orientations[index] === 'portrait' && "h-60 sm:h-64 md:h-72 w-40 sm:w-44 md:w-48",
                                 orientations[index] === 'landscape' && "h-60 sm:h-64 md:h-72 w-72 sm:w-80 md:w-96",
                                 orientations[index] === 'square' && "h-60 sm:h-64 md:h-72 w-56 sm:w-60 md:w-64",
-                                index === current ? "scale-[1.02] shadow-2xl" : "opacity-80 hover:opacity-100"
+                                index === current && "shadow-2xl"
                             )}
                         >
                             <Image
@@ -130,11 +142,11 @@ export default function ExperienceDetailCarousel({ images }: ExperienceDetailCar
                                     handleImageLoaded(index, result.naturalWidth, result.naturalHeight)
                                 }
                             />
-                        </button>
+                        </motion.button>
                     ))}
                 </div>
 
-            </div>
+            </motion.div>
 
             <AnimatePresence>
                 {isModalOpen && (
