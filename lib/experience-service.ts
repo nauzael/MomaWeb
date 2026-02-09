@@ -184,10 +184,10 @@ export function isSupabaseConfigured() {
 export async function getConnectionStatus(retries = 2): Promise<{ connected: boolean, mode: 'supabase' | 'local', message: string }> {
     const configured = isSupabaseConfigured();
     if (!configured) {
-        return { 
-            connected: false, 
-            mode: 'local', 
-            message: 'Modo Local (Sin conexión a base de datos)' 
+        return {
+            connected: false,
+            mode: 'local',
+            message: 'Modo Local (Sin conexión a base de datos)'
         };
     }
 
@@ -195,7 +195,7 @@ export async function getConnectionStatus(retries = 2): Promise<{ connected: boo
         const supabase = createSupabaseBrowserClient();
         // Use a lightweight query
         const { error } = await supabase.from('experiences').select('count', { count: 'exact', head: true });
-        
+
         if (error) {
             // Handle empty error objects or abort errors
             const errMsg = error.message || '';
@@ -207,44 +207,44 @@ export async function getConnectionStatus(retries = 2): Promise<{ connected: boo
                     await new Promise(r => setTimeout(r, 1000));
                     return getConnectionStatus(retries - 1);
                 }
-                return { 
-                    connected: false, 
-                    mode: 'local', 
-                    message: 'Conexión inestable (reintentando...)' 
+                return {
+                    connected: false,
+                    mode: 'local',
+                    message: 'Conexión inestable (reintentando...)'
                 };
             }
 
-            return { 
-                connected: false, 
-                mode: 'local', 
-                message: `Error de conexión: ${error.message}` 
+            return {
+                connected: false,
+                mode: 'local',
+                message: `Error de conexión: ${error.message}`
             };
         }
 
-        return { 
-            connected: true, 
-            mode: 'supabase', 
-            message: 'Sincronizado con Supabase' 
+        return {
+            connected: true,
+            mode: 'supabase',
+            message: 'Sincronizado con Supabase'
         };
     } catch (e: any) {
         const msg = e?.message || '';
         const isAbort = msg.includes('AbortError') || msg.includes('aborted');
-        
+
         if (isAbort) {
             if (retries > 0) {
                 await new Promise(r => setTimeout(r, 1000));
                 return getConnectionStatus(retries - 1);
             }
-            return { 
-                connected: false, 
-                mode: 'local', 
-                message: 'Conexión inestable (reintentando...)' 
+            return {
+                connected: false,
+                mode: 'local',
+                message: 'Conexión inestable (reintentando...)'
             };
         }
-        return { 
-            connected: false, 
-            mode: 'local', 
-            message: 'Error inesperado de conexión' 
+        return {
+            connected: false,
+            mode: 'local',
+            message: 'Error inesperado de conexión'
         };
     }
 }
@@ -268,8 +268,14 @@ async function fetchAllExperiencesFromSupabaseClient(): Promise<Experience[]> {
             // The polling hook will retry anyway
             return [];
         }
-        
-        console.error('Supabase fetch error:', error)
+
+        // Log as warning instead of error because we have a fallback mechanism
+        // and a full console.error triggers an intrusive error overlay in Dev
+        console.warn(`Supabase fetch notice: ${errMsg}. falling back to local data.`);
+        if (Object.keys(error).length > 0) {
+            console.debug('Detailed Supabase error:', error);
+        }
+
         throw new Error(errMsg || 'Unknown Supabase Error')
     }
     if (!Array.isArray(data)) return []
@@ -294,7 +300,7 @@ async function fetchExperienceFromSupabaseClient(identifier: string): Promise<Ex
         if (byId.error) {
             const msg = byId.error.message || '';
             if (!msg.includes('AbortError') && Object.keys(byId.error).length > 0) {
-                 console.error('Supabase id error:', byId.error)
+                console.error('Supabase id error:', byId.error)
             }
         }
         if (byId.data) return mapSupabaseRowToExperience(byId.data)
@@ -351,7 +357,7 @@ export async function getExperiencePersisted(identifier: string): Promise<Experi
                 return result || getExperience(identifier)
             }
         } catch {
-             // Fallback on error
+            // Fallback on error
             return getExperience(identifier)
         }
     }
@@ -400,7 +406,7 @@ export async function deleteExperiencePersisted(slugOrId: string) {
 
 export async function migrateLocalExperiencesToSupabase() {
     const experiences = getAllExperiences()
-    
+
     // Check if we have anything to migrate
     if (!experiences || experiences.length === 0) {
         console.warn('No experiences found to migrate');
@@ -419,7 +425,7 @@ export async function migrateLocalExperiencesToSupabase() {
     }
 
     const json = await res.json()
-    return { 
+    return {
         count: Number(json?.count) || 0,
         partial: !!json?.partial
     }

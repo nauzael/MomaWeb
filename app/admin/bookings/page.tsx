@@ -6,10 +6,11 @@ import BookingActions from './BookingActions';
 import BookingRowActions from './BookingRowActions';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function BookingsPage() {
     const supabase = await createClient();
-    
+
     const { data: bookings, error } = await supabase
         .from('bookings')
         .select(`
@@ -36,7 +37,7 @@ export default async function BookingsPage() {
                 <BookingActions bookings={bookings || []} />
             </div>
 
-            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-[#eef1f4] overflow-hidden">
+            <div className="bg-white rounded-4xl md:rounded-[2.5rem] shadow-sm border border-[#eef1f4]">
                 <div className="p-5 md:p-8 border-b border-[#f5f7f9] flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <h3 className="text-lg md:text-xl font-black text-[#1a1a1a]">Registro de Reservas</h3>
                     <div className="relative w-full md:w-auto">
@@ -102,16 +103,15 @@ export default async function BookingsPage() {
                                             ${Number(booking.total_amount).toLocaleString('es-CO')} {booking.currency}
                                         </td>
                                         <td className="px-4 md:px-6 py-4 whitespace-nowrap">
-                                            <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black flex items-center w-fit gap-1.5 ${
-                                                booking.status === 'confirmed' ? 'bg-[#ccfcf3] text-[#00b894]' :
-                                                booking.status === 'pending' ? 'bg-orange-50 text-orange-500' : 
-                                                'bg-red-50 text-red-500'
-                                            }`}>
-                                                {booking.status === 'confirmed' ? <CheckCircle className="w-3 h-3 shrink-0" /> : 
-                                                 booking.status === 'cancelled' ? <AlertCircle className="w-3 h-3 shrink-0" /> :
-                                                 <Clock className="w-3 h-3 shrink-0" />}
-                                                {booking.status === 'pending' ? 'PENDIENTE' : 
-                                                 booking.status === 'confirmed' ? 'CONFIRMADO' : 'CANCELADO'}
+                                            <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black flex items-center w-fit gap-1.5 ${booking.status === 'confirmed' ? 'bg-[#ccfcf3] text-[#00b894]' :
+                                                booking.status === 'pending' ? 'bg-orange-50 text-orange-500' :
+                                                    'bg-red-50 text-red-500'
+                                                }`}>
+                                                {booking.status === 'confirmed' ? <CheckCircle className="w-3 h-3 shrink-0" /> :
+                                                    booking.status === 'cancelled' ? <AlertCircle className="w-3 h-3 shrink-0" /> :
+                                                        <Clock className="w-3 h-3 shrink-0" />}
+                                                {booking.status === 'pending' ? 'PENDIENTE' :
+                                                    booking.status === 'confirmed' ? 'CONFIRMADO' : 'CANCELADO'}
                                             </span>
                                         </td>
                                         <td className="px-4 md:px-6 py-4 whitespace-nowrap">

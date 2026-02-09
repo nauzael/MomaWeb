@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import ExperienceCarousel from '@/components/experiences/ExperienceCarousel';
 import Link from 'next/link';
-import { Phone, Mail, MapPin, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Phone, Mail, MapPin, ArrowRight, ChevronLeft, ChevronRight, Leaf, Sprout, Tent, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getAllExperiencesPersisted, type Experience } from '@/lib/experience-service';
 import { MOCK_EXPERIENCES } from '@/lib/mock-data';
@@ -80,7 +80,7 @@ export default function Home() {
                 style={{ backgroundImage: `url(${currentExperience?.image || '/images/hero-bg.jpg'})` }}
               ></div>
               <div className="absolute inset-0 bg-black/40"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent"></div>
+              <div className="absolute inset-0 bg-linear-to-r from-black/80 via-black/20 to-transparent"></div>
             </motion.div>
           </AnimatePresence>
         </div>
@@ -166,14 +166,14 @@ export default function Home() {
 
         <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-4 gap-8">
           {[
-            { title: 'Autenticidad y Cultura', icon: '🌿' },
-            { title: 'Conservación', icon: '🌱' },
-            { title: 'Experiencias Únicas', icon: '🌵' },
-            { title: 'Apoyo Local', icon: '👥' }
+            { title: 'Autenticidad y Cultura', icon: Leaf },
+            { title: 'Conservación', icon: Sprout },
+            { title: 'Experiencias Únicas', icon: Tent },
+            { title: 'Apoyo Local', icon: Users }
           ].map((item, i) => (
             <div key={i} className="text-center group p-6 rounded-2xl hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
               <div className="w-20 h-20 bg-white shadow-lg rounded-full flex items-center justify-center mx-auto mb-6 text-3xl group-hover:scale-110 transition-transform text-moma-green">
-                <span role="img" aria-label={item.title}>{item.icon}</span>
+                <item.icon className="w-10 h-10" />
               </div>
               <h3 className="text-xl font-bold mb-3 text-stone-900 dark:text-white">{item.title}</h3>
               <p className="text-stone-500 text-sm leading-relaxed">

@@ -11,7 +11,7 @@ export default function ExperienceCard({ experience }: ExperienceCardProps) {
 
     return (
         <div className="group relative rounded-3xl overflow-hidden shadow-lg bg-transparent h-full flex flex-col hover:-translate-y-1.5 transition-transform duration-500">
-            <div className="relative aspect-[3/4] overflow-hidden">
+            <div className="relative aspect-3/4 overflow-hidden">
                 <Image
                     src={coverImage}
                     alt={experience.title}
@@ -19,7 +19,7 @@ export default function ExperienceCard({ experience }: ExperienceCardProps) {
                     unoptimized
                     className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/0" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/10 to-black/0" />
 
                 <div className="absolute inset-x-0 bottom-0">
                     <div className="backdrop-blur-xl bg-[linear-gradient(to_top,rgba(0,0,0,0.98)_0%,rgba(0,0,0,0.75)_35%,rgba(0,0,0,0.4)_70%,rgba(0,0,0,0)_100%)]">

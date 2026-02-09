@@ -32,7 +32,7 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
                 const width = innerContainerRef.current.offsetWidth;
                 const isMobile = window.innerWidth < 768;
                 const isTablet = window.innerWidth < 1280;
-                
+
                 // Show more items on larger screens, ensuring uniform distribution
                 // Always keep 3 cards visible on desktop for better centering and focus
                 let show = 1;
@@ -41,7 +41,7 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
                 else show = 3; // Fixed to 3 for desktop centering
 
                 const gap = 40; // gap-10 (generous spacing for 3 items)
-                
+
                 // Calculate card width based on visible items
                 // This formula ensures cards are evenly distributed across the available width
                 const calculatedCardWidth = (width - (gap * (show - 1))) / show;
@@ -49,7 +49,7 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
 
                 setSlideWidth(calculatedSlideWidth);
                 setContentWidth(experiences.length * 2 * calculatedSlideWidth);
-                
+
                 // Reset position to aligned state
                 x.set(0);
                 setCurrentIndex(0);
@@ -64,7 +64,7 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
 
     const handleNext = useCallback(async () => {
         if (slideWidth === 0) return;
-        
+
         const newIndex = currentIndex + 1;
         const targetX = -newIndex * slideWidth;
 
@@ -84,22 +84,22 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
 
     const handlePrev = useCallback(async () => {
         if (slideWidth === 0) return;
-        
+
         let newIndex = currentIndex - 1;
-        
+
         // If at the beginning, jump to the end of the first set
         if (newIndex < 0) {
             newIndex = experiences.length - 1;
             x.set(-experiences.length * slideWidth);
         }
-        
+
         const targetX = -newIndex * slideWidth;
 
         await controls.start({
             x: targetX,
             transition: { duration: 0.8, ease: [0.32, 0.72, 0, 1] }
         });
-        
+
         setCurrentIndex(newIndex);
     }, [currentIndex, experiences.length, slideWidth, controls, x]);
 
@@ -139,17 +139,17 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
                         onDragStart={() => setIsPaused(true)}
                         onDragEnd={() => {
                             if (slideWidth === 0) return;
-                            
+
                             const currentX = x.get();
-                            
+
                             // Calculate nearest slide index
                             const nearestIndex = Math.round(-currentX / slideWidth);
                             const clampedIndex = Math.max(0, Math.min(nearestIndex, experiences.length - 1));
                             const snappedX = -clampedIndex * slideWidth;
 
-                            controls.start({ 
-                                x: snappedX, 
-                                transition: { type: 'spring', stiffness: 300, damping: 30 } 
+                            controls.start({
+                                x: snappedX,
+                                transition: { type: 'spring', stiffness: 300, damping: 30 }
                             });
                             setCurrentIndex(clampedIndex);
                         }}
@@ -159,7 +159,7 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
                             <div
                                 key={`${exp.id}-${index}`}
                                 style={{ width: slideWidth > 0 ? slideWidth - 32 : 400 }}
-                                className="flex-shrink-0"
+                                className="shrink-0"
                             >
                                 <ExperienceCard experience={exp} />
                             </div>
