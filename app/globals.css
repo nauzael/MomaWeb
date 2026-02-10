@@ -57,8 +57,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-heading: var(--font-heading);
+  --font-sans: var(--font-sans), system-ui, sans-serif;
+  --font-heading: var(--font-heading), Georgia, serif;
   --color-moma-green: #29afb7;
   --color-moma-cream: #FDFBF7;
   --color-moma-earth: #A0522D;

@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils";
 
-const poppins = Poppins({
+const fontSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  weight: ["300", "400", "500", "600", "700"],
   variable: "--font-sans",
 });
 
-const poppinsHeading = Poppins({
+const fontHeading = Playfair_Display({
   subsets: ["latin"],
-  weight: ["600", "700", "800", "900"],
+  weight: ["400", "500", "600", "700", "800", "900"],
   variable: "--font-heading",
 });
 
@@ -63,8 +63,8 @@ export default function RootLayout({
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased text-foreground selection:bg-moma-green/30",
-          poppinsHeading.variable,
-          poppins.variable
+          fontHeading.variable,
+          fontSans.variable
         )}
         suppressHydrationWarning
       >
@@ -84,10 +84,15 @@ export default function RootLayout({
               ],
               contactPoint: {
                 '@type': 'ContactPoint',
-                telephone: '+57 321 456 7890',
+                telephone: '+57 301 6566932',
                 contactType: 'customer service',
                 areaServed: 'CO',
                 availableLanguage: 'es'
+              },
+              address: {
+                '@type': 'PostalAddress',
+                addressLocality: 'Sucre',
+                addressCountry: 'CO'
               }
             })
           }}

@@ -104,7 +104,7 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
             setLastBookingId(data.booking.id);
             setShowConfirmation(false);
             setShowSuccess(true);
-            
+
         } catch (error: any) {
             console.error('Booking error:', error);
             alert(`Hubo un error al procesar tu reserva: ${error.message}`);
@@ -145,24 +145,24 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
 
     const isDateDisabled = (date: Date) => {
         if (date < new Date(new Date().setHours(0, 0, 0, 0))) return true; // Past dates
-        
+
         const dateStr = format(date, 'yyyy-MM-dd');
         const bookedCount = availability[dateStr] || 0;
-        
+
         // Disable if capacity is reached or if adding current guests would exceed capacity
         return (bookedCount + guests) > maxCapacity;
     };
 
     return (
         <>
-            <div className="sticky top-24 bg-white shadow-2xl rounded-2xl p-6 dark:bg-stone-900 transition-all font-sans relative z-10">
+            <div id="booking-widget-container" className="sticky top-24 bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border border-white/20 shadow-xl rounded-2xl p-6 transition-all font-sans z-10">
                 <div className="mb-6">
                     <span className="text-stone-500 text-sm font-medium">Precio por persona</span>
-                    <div className="flex items-baseline">
-                        <span className="text-3xl font-heading font-bold text-moma-green bg-clip-text text-transparent bg-gradient-to-r from-moma-green to-teal-500">
+                    <div className="flex items-baseline font-heading">
+                        <span className="text-3xl font-bold bg-clip-text text-transparent bg-linear-to-r from-moma-green to-teal-500">
                             ${numPriceCop.toLocaleString('es-CO')}
                         </span>
-                        <span className="text-sm text-stone-400 ml-2 font-bold">COP</span>
+                        <span className="text-sm text-stone-400 ml-2 font-bold font-sans">COP</span>
                     </div>
                     <p className="text-xs text-stone-400 mt-1">Aprox. ${Math.round(numPriceUsd)} USD</p>
                 </div>
@@ -194,7 +194,7 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
 
                         {/* Calendar Popup */}
                         {isCalendarOpen && (
-                            <div 
+                            <div
                                 className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl shadow-2xl z-50 p-4 animate-in fade-in zoom-in-95 duration-200"
                                 role="dialog"
                                 aria-label="Calendario de disponibilidad"
@@ -262,21 +262,21 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
 
                     {/* Payment Summary (Conditional) */}
                     <div className="pt-2 pb-2">
-                        <div className="flex justify-between items-center text-sm font-medium text-stone-600 dark:text-stone-300">
+                        <div className="flex justify-between items-center text-sm font-medium text-stone-600 dark:text-stone-300 font-sans">
                             <span>Total estimado</span>
-                            <span className="text-lg font-bold text-stone-900 dark:text-white">${totalCop.toLocaleString('es-CO')}</span>
+                            <span className="text-lg font-bold text-stone-900 dark:text-white font-heading">${totalCop.toLocaleString('es-CO')}</span>
                         </div>
                     </div>
 
                     <div className="flex justify-center w-full">
-                        <ButtonFlex 
+                        <ButtonFlex
                             onClick={handleBookingClick}
                             text="Reservar Ahora"
                             className="w-full"
                             disabled={guests < 1}
                         />
                     </div>
-                    
+
                     <p className="text-xs text-center text-stone-400 mt-4">
                         No se cobrará nada todavía.
                     </p>
@@ -285,10 +285,10 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
 
             {/* Confirmation Modal */}
             {showConfirmation && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-stone-200 dark:border-stone-800">
-                        <div className="px-5 py-3 border-b border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900 text-center">
-                            <h3 className="text-xl font-bold text-stone-900 dark:text-white">Confirma tu Reserva</h3>
+                        <div className="px-5 py-3 border-b border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900 text-center font-sans">
+                            <h3 className="text-xl font-heading font-bold text-stone-900 dark:text-white">Confirma tu Reserva</h3>
                             <p className="text-xs text-stone-500 mt-0.5">Revisa los detalles antes de continuar.</p>
                         </div>
 
@@ -307,8 +307,8 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
                                 <span className="text-stone-500 text-xs font-medium">Pasajeros</span>
                                 <span className="font-bold text-stone-900 dark:text-white text-sm">{guests} personas</span>
                             </div>
-                            <div className="pt-2 space-y-2">
-                                <h4 className="text-xs font-bold text-stone-800 dark:text-stone-100 uppercase tracking-wide">Datos de contacto</h4>
+                            <div className="pt-2 space-y-2 font-sans">
+                                <h4 className="text-xs font-heading font-bold text-stone-800 dark:text-stone-100 uppercase tracking-wide">Datos de contacto</h4>
                                 <div className="space-y-2">
                                     <div className="space-y-0.5">
                                         <label htmlFor="contact-name" className="text-[10px] font-bold uppercase text-stone-400">Nombre completo</label>
@@ -347,10 +347,10 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
                                     </div>
                                 </div>
                             </div>
-                            <div className="pt-2 mt-0">
+                            <div className="pt-2 mt-0 font-sans">
                                 <div className="flex justify-between items-center bg-stone-50 dark:bg-stone-800 px-3 py-2 rounded-xl">
                                     <span className="font-bold text-sm text-stone-700 dark:text-stone-300">Total a Pagar</span>
-                                    <span className="font-bold text-xl text-moma-earth">${totalCop.toLocaleString('es-CO')}</span>
+                                    <span className="font-bold text-xl text-moma-earth font-heading">${totalCop.toLocaleString('es-CO')}</span>
                                 </div>
                             </div>
                         </div>
@@ -376,13 +376,13 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
 
             {/* Success Modal */}
             {showSuccess && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-stone-200 dark:border-stone-800">
-                        <div className="px-5 py-6 flex flex-col items-center text-center">
+                        <div className="px-5 py-6 flex flex-col items-center text-center font-sans">
                             <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
                                 <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
                             </div>
-                            <h3 className="text-2xl font-black text-stone-900 dark:text-white">¡Gracias por tu compra!</h3>
+                            <h3 className="text-2xl font-heading font-black text-stone-900 dark:text-white">¡Gracias por tu compra!</h3>
                             <p className="text-stone-500 mt-2 text-sm max-w-[80%]">
                                 Tu reserva ha sido confirmada exitosamente. Hemos enviado los detalles a tu correo.
                             </p>
@@ -390,7 +390,7 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
 
                         <div className="px-6 py-4 bg-stone-50 dark:bg-stone-800/50 space-y-3">
                             <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Resumen de la Reserva</h4>
-                            
+
                             <div className="flex justify-between items-start">
                                 <span className="text-sm text-stone-500">Referencia</span>
                                 <span className="text-sm font-mono font-bold text-stone-900 dark:text-white bg-white dark:bg-stone-800 px-2 py-0.5 rounded border border-stone-200 dark:border-stone-700">

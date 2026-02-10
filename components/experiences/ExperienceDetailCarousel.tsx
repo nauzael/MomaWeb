@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
@@ -10,20 +10,38 @@ type ImageOrientation = 'portrait' | 'landscape' | 'square';
 
 interface ExperienceDetailCarouselProps {
     images: string[];
+    experienceTitle?: string;
 }
 
-export default function ExperienceDetailCarousel({ images }: ExperienceDetailCarouselProps) {
+export default function ExperienceDetailCarousel({ images, experienceTitle = "Experiencia turística" }: ExperienceDetailCarouselProps) {
     const [current, setCurrent] = useState(0);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const rowRef = useRef<HTMLDivElement | null>(null);
-    const [orientations, setOrientations] = useState<ImageOrientation[]>(() =>
-        images.map(() => 'landscape')
-    );
+
+    // Ensure we have enough images to look good (at least 12 or more to fill wide screens)
+    // using a while loop to fill up to the target count
+    // Ensure we have enough images to look good (at least 12 or more to fill wide screens)
+    // using a while loop to fill up to the target count
+    const displayImages = useMemo(() => {
+        if (!images || images.length === 0) return [];
+        let result = [...images];
+        while (result.length < 12) {
+            result = [...result, ...images];
+        }
+        return result;
+    }, [images]);
+
+    const [orientations, setOrientations] = useState<ImageOrientation[]>([]);
+
+    useEffect(() => {
+        setOrientations(new Array(displayImages.length).fill('landscape'));
+    }, [displayImages]);
 
     const handleImageLoaded = useCallback(
         (index: number, width: number, height: number) => {
             setOrientations((prev) => {
+                if (!prev[index]) return prev; // Guard against stale state
                 const next = [...prev];
                 if (width === height) {
                     next[index] = 'square';
@@ -52,13 +70,13 @@ export default function ExperienceDetailCarousel({ images }: ExperienceDetailCar
         if (!isModalOpen) return;
 
         if (e.key === 'ArrowLeft') {
-            setCurrent((prev) => (prev - 1 + images.length) % images.length);
+            setCurrent((prev) => (prev - 1 + displayImages.length) % displayImages.length);
         } else if (e.key === 'ArrowRight') {
-            setCurrent((prev) => (prev + 1) % images.length);
+            setCurrent((prev) => (prev + 1) % displayImages.length);
         } else if (e.key === 'Escape') {
             setIsModalOpen(false);
         }
-    }, [isModalOpen, images.length]);
+    }, [isModalOpen, displayImages.length]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
@@ -72,23 +90,23 @@ export default function ExperienceDetailCarousel({ images }: ExperienceDetailCar
     }, [current, scrollToImage, isModalOpen]);
 
     useEffect(() => {
-        if (images.length <= 1 || isModalOpen || isPaused) return;
+        if (displayImages.length <= 1 || isModalOpen || isPaused) return;
 
         const interval = window.setInterval(() => {
-            setCurrent((prev) => (prev + 1) % images.length);
+            setCurrent((prev) => (prev + 1) % displayImages.length);
         }, 3500);
 
         return () => window.clearInterval(interval);
-    }, [images.length, isModalOpen, isPaused]);
+    }, [displayImages.length, isModalOpen, isPaused]);
 
     const next = (e?: React.MouseEvent) => {
         e?.stopPropagation();
-        setCurrent((prev) => (prev + 1) % images.length);
+        setCurrent((prev) => (prev + 1) % displayImages.length);
     };
 
     const prev = (e?: React.MouseEvent) => {
         e?.stopPropagation();
-        setCurrent((prev) => (prev - 1 + images.length) % images.length);
+        setCurrent((prev) => (prev - 1 + displayImages.length) % displayImages.length);
     };
 
     if (!images || images.length === 0) return null;
@@ -108,14 +126,14 @@ export default function ExperienceDetailCarousel({ images }: ExperienceDetailCar
                     ref={rowRef}
                     className="flex gap-4 px-4 sm:px-8 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                 >
-                    {images.map((img, index) => (
+                    {displayImages.map((img, index) => (
                         <motion.button
                             key={index}
                             type="button"
                             initial={{ opacity: 0, scale: 1.1 }}
-                            whileInView={{ 
-                                opacity: index === current ? 1 : 0.8, 
-                                scale: index === current ? 1.02 : 1 
+                            whileInView={{
+                                opacity: index === current ? 1 : 0.8,
+                                scale: index === current ? 1.02 : 1
                             }}
                             whileHover={{ opacity: 1 }}
                             viewport={{ once: true, margin: "-20%" }}
@@ -125,7 +143,7 @@ export default function ExperienceDetailCarousel({ images }: ExperienceDetailCar
                                 setIsModalOpen(true);
                             }}
                             className={cn(
-                                "relative flex-shrink-0 overflow-hidden",
+                                "relative shrink-0 overflow-hidden",
                                 orientations[index] === 'portrait' && "h-60 sm:h-64 md:h-72 w-40 sm:w-44 md:w-48",
                                 orientations[index] === 'landscape' && "h-60 sm:h-64 md:h-72 w-72 sm:w-80 md:w-96",
                                 orientations[index] === 'square' && "h-60 sm:h-64 md:h-72 w-56 sm:w-60 md:w-64",
@@ -134,7 +152,7 @@ export default function ExperienceDetailCarousel({ images }: ExperienceDetailCar
                         >
                             <Image
                                 src={img}
-                                alt={`Imagen ${index + 1}`}
+                                alt={`${experienceTitle} - Galería ${index + 1}`}
                                 fill
                                 unoptimized
                                 className="object-cover"
@@ -154,7 +172,7 @@ export default function ExperienceDetailCarousel({ images }: ExperienceDetailCar
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4"
+                        className="fixed inset-0 z-100 flex items-center justify-center bg-black/95 backdrop-blur-sm p-4"
                         onClick={() => setIsModalOpen(false)}
                     >
                         <button
@@ -169,24 +187,24 @@ export default function ExperienceDetailCarousel({ images }: ExperienceDetailCar
                             className="relative w-full max-w-7xl h-[80vh] flex items-center justify-center"
                             onClick={(e) => e.stopPropagation()}
                         >
-                                    <AnimatePresence mode="wait">
-                                        <motion.div
-                                            key={current}
-                                            initial={{ opacity: 0, scale: 0.96 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 0.96 }}
-                                            transition={{ duration: 0.45, ease: 'easeOut' }}
-                                            className="relative w-full h-full"
-                                        >
-                                            <Image
-                                                src={images[current]}
-                                                alt={`Imagen ampliada ${current + 1}`}
-                                                fill
-                                                unoptimized
-                                                className="object-contain"
-                                            />
-                                        </motion.div>
-                                    </AnimatePresence>
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={current}
+                                    initial={{ opacity: 0, scale: 0.96 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.96 }}
+                                    transition={{ duration: 0.45, ease: 'easeOut' }}
+                                    className="relative w-full h-full"
+                                >
+                                    <Image
+                                        src={displayImages[current]}
+                                        alt={`${experienceTitle} - Vista ampliada ${current + 1}`}
+                                        fill
+                                        unoptimized
+                                        className="object-contain"
+                                    />
+                                </motion.div>
+                            </AnimatePresence>
 
                             <button
                                 type="button"
@@ -208,19 +226,19 @@ export default function ExperienceDetailCarousel({ images }: ExperienceDetailCar
                             className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 max-w-[90vw] p-2 overflow-hidden"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            {images.map((img, i) => (
+                            {displayImages.map((img, i) => (
                                 <button
                                     key={i}
                                     type="button"
                                     onClick={() => setCurrent(i)}
                                     className={cn(
-                                        "relative w-16 h-16 rounded-lg overflow-hidden transition-all flex-shrink-0",
+                                        "relative w-16 h-16 rounded-lg overflow-hidden transition-all shrink-0",
                                         i === current ? "scale-110 opacity-100" : "opacity-40 hover:opacity-100"
                                     )}
                                 >
                                     <Image
                                         src={img}
-                                        alt={`Miniatura ${i + 1}`}
+                                        alt={`${experienceTitle} - Miniatura ${i + 1}`}
                                         fill
                                         className="object-cover"
                                         unoptimized

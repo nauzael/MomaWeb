@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Map, Calendar, Settings, Users, BarChart3, Loader2 } from "lucide-react";
+import { LayoutDashboard, Map, Calendar, Settings, Users, BarChart3, Loader2, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
     { key: 'bookings', label: "Reservas", href: "/admin/bookings", icon: Calendar },
     { key: 'experiences', label: "Experiencias", href: "/admin/experiences", icon: Map },
     { key: 'customers', label: "Clientes", href: "/admin/customers", icon: Users },
+    { key: 'gallery', label: "Galería", href: "/admin/gallery", icon: ImageIcon },
     { key: 'reports', label: "Reportes", href: "/admin/reports", icon: BarChart3 },
     { key: 'settings', label: "Configuración", href: "/admin/settings", icon: Settings },
 ];
@@ -53,9 +54,9 @@ export default function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }
                     if (Array.isArray(rolesData) && rolesData[0]?.permissions) {
                         setPermissions(rolesData[0].permissions);
                     } else if (rolesData?.permissions) {
-                         setPermissions(rolesData.permissions);
+                        setPermissions(rolesData.permissions);
                     } else {
-                         setPermissions(['dashboard']);
+                        setPermissions(['dashboard']);
                     }
                 } else {
                     // Fallback for users without role assigned yet or failed relation fetch
@@ -64,7 +65,7 @@ export default function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }
                     setPermissions(['dashboard']);
                 }
             } else {
-                 setPermissions(['dashboard']); // Fallback if profile fetch fails
+                setPermissions(['dashboard']); // Fallback if profile fetch fails
             }
             setLoading(false);
         };
@@ -85,7 +86,7 @@ export default function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }
         <nav className="flex-1 px-4 space-y-1 mt-4">
             {NAV_ITEMS.map((item) => {
                 if (!hasAccess(item.key)) return null;
-                
+
                 const isActive = pathname === item.href || (item.href !== "/admin/dashboard" && pathname.startsWith(item.href));
 
                 return (

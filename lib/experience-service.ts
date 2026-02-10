@@ -16,6 +16,7 @@ export interface Experience {
     excludes: string[];
     location_name?: string;
     location_coords: { lat: number; lng: number };
+    duration?: string;
     created_at?: string;
     updated_at?: string;
 }

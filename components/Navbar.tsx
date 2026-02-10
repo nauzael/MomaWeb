@@ -40,7 +40,7 @@ export default function Navbar() {
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between">
-                    <div className="flex-shrink-0 flex items-center">
+                    <div className="shrink-0 flex items-center">
                         <Link
                             href="/"
                             className={cn(
@@ -65,13 +65,13 @@ export default function Navbar() {
 
                     <div className="hidden md:block">
                         <div className="ml-10 flex items-baseline space-x-6">
-                            <Link href="/#experiencias" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold hover:bg-white/10", scrolled ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
+                            <Link href="/#experiencias" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", scrolled ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
                                 Experiencias
                             </Link>
-                            <Link href="/#nosotros" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold hover:bg-white/10", scrolled ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
+                            <Link href="/#nosotros" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", scrolled ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
                                 Nosotros
                             </Link>
-                            <Link href="/#contacto" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold hover:bg-white/10", scrolled ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
+                            <Link href="/#contacto" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", scrolled ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
                                 Contacto
                             </Link>
                         </div>

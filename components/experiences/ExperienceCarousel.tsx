@@ -23,7 +23,8 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
     const [currentIndex, setCurrentIndex] = useState(0);
 
     // Duplicate experiences to enable infinite loop
-    const displayExperiences = [...experiences, ...experiences];
+    // Ensure we have enough items to loop smoothly even with few items
+    const displayExperiences = [...experiences, ...experiences, ...experiences, ...experiences];
 
     useEffect(() => {
         const updateWidths = () => {
@@ -40,7 +41,7 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
                 else if (isTablet) show = 2;
                 else show = 3; // Fixed to 3 for desktop centering
 
-                const gap = 40; // gap-10 (generous spacing for 3 items)
+                const gap = 32; // gap-8 matches the className
 
                 // Calculate card width based on visible items
                 // This formula ensures cards are evenly distributed across the available width
@@ -48,7 +49,8 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
                 const calculatedSlideWidth = calculatedCardWidth + gap;
 
                 setSlideWidth(calculatedSlideWidth);
-                setContentWidth(experiences.length * 2 * calculatedSlideWidth);
+                // Adjust content width based on the actual number of displayed items
+                setContentWidth(displayExperiences.length * calculatedSlideWidth);
 
                 // Reset position to aligned state
                 x.set(0);
@@ -161,7 +163,10 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
                                 style={{ width: slideWidth > 0 ? slideWidth - 32 : 400 }}
                                 className="shrink-0"
                             >
-                                <ExperienceCard experience={exp} />
+                                <ExperienceCard
+                                    experience={exp}
+                                    priority={index < 4} // Prioritize loading for the first visible items
+                                />
                             </div>
                         ))}
                     </motion.div>

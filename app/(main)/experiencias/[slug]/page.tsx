@@ -4,6 +4,8 @@ import { getExperience, type Experience } from '@/lib/experience-service';
 import ExperienceDetails from './ExperienceDetails';
 import { createClient as createSupabaseServerClient } from '@/utils/supabase/server';
 
+import { mapSupabaseRowToExperience } from '@/lib/experience-mapper';
+
 interface PageProps {
     params: Promise<{ slug: string }>;
 }
@@ -17,35 +19,6 @@ function isSupabaseConfigured() {
     return true
 }
 
-function toStringArray(value: unknown): string[] {
-    if (!Array.isArray(value)) return []
-    return value.map(v => String(v)).filter(v => v.trim().length > 0)
-}
-
-function mapRowToExperience(row: any): Experience {
-    const locationLat = Number(row?.location_lat)
-    const locationLng = Number(row?.location_lng)
-    const hasCoords = Number.isFinite(locationLat) && Number.isFinite(locationLng)
-
-    return {
-        id: String(row?.id ?? ''),
-        title: String(row?.title ?? ''),
-        slug: String(row?.slug ?? ''),
-        description: String(row?.description ?? ''),
-        image: String(row?.image ?? ''),
-        gallery: toStringArray(row?.gallery),
-        price_cop: Number(row?.price_cop) || 0,
-        price_usd: Number(row?.price_usd) || 0,
-        max_capacity: Number(row?.max_capacity) || 0,
-        includes: toStringArray(row?.includes),
-        excludes: toStringArray(row?.excludes),
-        location_name: row?.location_name ? String(row.location_name) : undefined,
-        location_coords: hasCoords ? { lat: locationLat, lng: locationLng } : { lat: 4.5709, lng: -74.2973 },
-        created_at: row?.created_at ? String(row.created_at) : undefined,
-        updated_at: row?.updated_at ? String(row.updated_at) : undefined
-    }
-}
-
 export const dynamicParams = true;
 
 async function getExperienceForPage(slug: string): Promise<Experience | null> {
@@ -54,7 +27,7 @@ async function getExperienceForPage(slug: string): Promise<Experience | null> {
         try {
             const supabase = await createSupabaseServerClient()
             const { data, error } = await supabase.from('experiences').select('*').eq('slug', slug).maybeSingle()
-            if (!error && data) return mapRowToExperience(data)
+            if (!error && data) return mapSupabaseRowToExperience(data)
         } catch {
             // Continue to fallback
         }
@@ -64,7 +37,7 @@ async function getExperienceForPage(slug: string): Promise<Experience | null> {
     // IMPORTANT: getExperience() reads from localStorage which is NOT available on server
     // So we need to use a server-safe way to get mocks, or return null and let client handle it.
     // However, since we are in a server component, we can only access static mocks here.
-    
+
     // Check static mocks first
     const { MOCK_EXPERIENCES } = await import('@/lib/mock-data');
     const mock = MOCK_EXPERIENCES.find(e => e.slug === slug);
@@ -83,14 +56,37 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         };
     }
 
+    // Improve description truncation to avoid cutting words
+    let description = experience.description;
+    if (description.length > 155) {
+        // Cut at 155 chars
+        const truncated = description.slice(0, 155);
+        // Find the last space to avoid cutting a word
+        const lastSpaceIndex = truncated.lastIndexOf(' ');
+        if (lastSpaceIndex > 0) {
+            description = truncated.slice(0, lastSpaceIndex) + '...';
+        } else {
+            description = truncated + '...';
+        }
+    }
+
     return {
         title: experience.title,
-        description: experience.description.slice(0, 160),
+        description: description,
         openGraph: {
             title: experience.title,
-            description: experience.description.slice(0, 160),
-            images: [experience.image || '/images/hero-bg.jpg'],
+            description: description,
+            images: [experience.image || '/images/hero-bg.jpg', ...(experience.gallery || [])],
         },
+        keywords: [
+            experience.title,
+            'Turismo de Paz',
+            'Bosque Seco Tropical',
+            'Chalán',
+            'Montes de María',
+            experience.location_name || 'Sucre',
+            'Colombia'
+        ],
     };
 }
 
@@ -101,7 +97,7 @@ export default async function ExperiencePage({ params }: PageProps) {
     if (!experience) {
         notFound();
     }
-    
+
     // JSON-LD Structured Data
     const jsonLd = {
         '@context': 'https://schema.org',

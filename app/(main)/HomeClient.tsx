@@ -74,7 +74,7 @@ export default function HomeClient({ initialExperiences }: HomeClientProps) {
                 style={{ backgroundImage: `url(${currentExperience?.image || '/images/hero-bg.jpg'})` }}
               ></div>
               <div className="absolute inset-0 bg-black/40"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent"></div>
+              <div className="absolute inset-0 bg-linear-to-r from-black/80 via-black/20 to-transparent"></div>
             </motion.div>
           </AnimatePresence>
         </div>
@@ -174,7 +174,9 @@ export default function HomeClient({ initialExperiences }: HomeClientProps) {
       </section>
 
       <section className="py-24 bg-stone-900 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-20 filter grayscale"></div>
+        {/* Background with color but dark overlay for contrast */}
+        <div className="absolute inset-0 bg-[url('/images/montes-m-frame.webp')] bg-cover bg-center"></div>
+        <div className="absolute inset-0 bg-stone-900/80 backdrop-blur-[1px]"></div>
         <div className="max-w-7xl mx-auto px-4 relative z-10 grid md:grid-cols-2 gap-12 items-center">
           <div className="bg-moma-green/10 p-8 rounded-3xl border border-moma-green/20 backdrop-blur-sm">
             <div className="h-48 flex items-center justify-center border border-white/20 rounded-xl mb-4">
@@ -182,8 +184,8 @@ export default function HomeClient({ initialExperiences }: HomeClientProps) {
             </div>
           </div>
           <div className="text-white">
-            <span className="text-moma-green italic font-serif text-lg mb-2 block">Ideas que transforman</span>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+            <span className="text-moma-green uppercase tracking-widest text-xs font-bold mb-3 block font-sans">Ideas que transforman</span>
+            <h2 className="text-4xl md:text-5xl font-heading font-bold mb-6 leading-tight">
               Únete a nuestra aventura y deja huellas positivas en la naturaleza
             </h2>
             <div className="w-20 h-1 bg-moma-green rounded-full"></div>
@@ -206,7 +208,7 @@ export default function HomeClient({ initialExperiences }: HomeClientProps) {
                 </div>
                 <div>
                   <p className="text-xs text-stone-400 uppercase font-bold">Whatsapp</p>
-                  <p className="font-medium text-stone-900 dark:text-white">+57 321 456 7890</p>
+                  <p className="font-medium text-stone-900 dark:text-white">+57 301 6566932</p>
                 </div>
               </div>
               <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl shadow-sm flex items-center">
@@ -215,7 +217,7 @@ export default function HomeClient({ initialExperiences }: HomeClientProps) {
                 </div>
                 <div>
                   <p className="text-xs text-stone-400 uppercase font-bold">Email</p>
-                  <p className="font-medium text-stone-900 dark:text-white">hola@momanature.com</p>
+                  <p className="font-medium text-stone-900 dark:text-white">momaexcursiones@gmail.com</p>
                 </div>
               </div>
               <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl shadow-sm flex items-center">
@@ -224,7 +226,7 @@ export default function HomeClient({ initialExperiences }: HomeClientProps) {
                 </div>
                 <div>
                   <p className="text-xs text-stone-400 uppercase font-bold">Ubicación</p>
-                  <p className="font-medium text-stone-900 dark:text-white">Bogotá, Colombia</p>
+                  <p className="font-medium text-stone-900 dark:text-white">Sucre, Colombia</p>
                 </div>
               </div>
             </div>
