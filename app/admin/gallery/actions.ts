@@ -5,7 +5,7 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 
 export async function getGalleryImages() {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const adminSupabase = serviceRoleKey
