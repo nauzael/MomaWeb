@@ -160,7 +160,7 @@ const Column = ({ images, y, className, onImageClick }: { images: string[], y: a
             {images.map((src, i) => (
                 <div
                     key={i}
-                    className="relative aspect-3/4 w-full rounded-4xl overflow-hidden group shadow-lg cursor-zoom-in"
+                    className="relative aspect-3/4 w-full rounded-2xl overflow-hidden group shadow-lg cursor-zoom-in"
                     onClick={() => onImageClick(src)}
                 >
                     <Image

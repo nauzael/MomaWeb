@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import ExperienceCarousel from '@/components/experiences/ExperienceCarousel';
+import ExperienceCardStack from '@/components/experiences/ExperienceCardStack';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Phone, Mail, MapPin, ArrowRight, ChevronLeft, ChevronRight, Leaf, Sprout, Tent, Users } from 'lucide-react';
@@ -10,6 +10,7 @@ import { getAllExperiencesPersisted, type Experience } from '@/lib/experience-se
 import { MOCK_EXPERIENCES } from '@/lib/mock-data';
 import SectionDivider from '@/components/ui/SectionDivider';
 import ParallaxGallery from '@/components/ui/ParallaxGallery';
+import { ScrollReveal } from '@/components/ui/ScrollReveal';
 
 export default function Home() {
   const [experiences, setExperiences] = useState<Experience[]>(MOCK_EXPERIENCES as unknown as Experience[]);
@@ -86,16 +87,19 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section / Carousel */}
-      <section ref={heroRef} className="relative h-screen flex items-center overflow-hidden bg-stone-900">
+      <section ref={heroRef} className="relative h-screen flex items-center overflow-hidden bg-stone-900 pb-0 border-b-0" style={{ clipPath: 'inset(0 0 0 0)', WebkitMask: 'none', mask: 'none' }}>
         {/* Background Images with Framer Motion - Extended height to handle parallax without gaps */}
         <motion.div style={{ y: heroY, opacity: heroOpacity, scale: heroScale }} className="absolute inset-0 z-0 h-[130vh] -top-[30vh] w-full">
           <AnimatePresence>
             <motion.div
               key={currentSlide}
-              initial={{ x: direction > 0 ? '100%' : '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: direction > 0 ? '-100%' : '100%' }}
-              transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                opacity: { duration: 1.5, ease: "easeInOut" },
+                scale: { duration: 7, ease: "easeOut" }
+              }}
               className="absolute inset-0"
             >
               <Image
@@ -107,8 +111,8 @@ export default function Home() {
                 sizes="100vw"
                 quality={90}
               />
-              <div className="absolute inset-0 bg-black/40"></div>
-              <div className="absolute inset-0 bg-linear-to-r from-black/80 via-black/20 to-transparent"></div>
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(12,10,9,0.4)_50%,rgba(12,10,9,0.95)_100%)] mix-blend-multiply"></div>
+              <div className="absolute inset-0 bg-linear-to-t from-stone-950/90 via-transparent to-transparent"></div>
             </motion.div>
           </AnimatePresence>
         </motion.div>
@@ -169,27 +173,30 @@ export default function Home() {
       </section >
 
       {/* Destinations Section */}
-      < section id="experiencias" className="pt-12 pb-4 px-0 bg-stone-50 dark:bg-stone-950" >
+      <section id="experiencias" className="pt-12 pb-4 px-0 bg-stone-50 dark:bg-stone-950">
         <div className="w-full">
-          <div className="text-center mb-10 px-4">
-            <span className="text-moma-green uppercase tracking-widest text-xs font-bold mb-3 block">Lugares para ir</span>
-            <h2 className="text-4xl md:text-5xl font-heading font-bold text-stone-900 dark:text-white mb-6">Un destino perfecto</h2>
-            <p className="text-stone-500 dark:text-stone-400 text-lg max-w-2xl mx-auto leading-relaxed">¡Descubre el mundo a tu manera! Te invitamos a embarcarte en una emocionante aventura a través de nuestras rutas turísticas.</p>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-10 px-4">
+              <span className="text-moma-green uppercase tracking-widest text-xs font-bold mb-3 block">Lugares para ir</span>
+              <h2 className="text-4xl md:text-5xl font-heading font-bold text-stone-900 dark:text-white mb-6">Un destino perfecto</h2>
+              <p className="text-stone-500 dark:text-stone-400 text-lg max-w-2xl mx-auto leading-relaxed">¡Descubre el mundo a tu manera! Te invitamos a embarcarte en una emocionante aventura a través de nuestras rutas turísticas.</p>
+            </div>
+          </ScrollReveal>
 
-          <ExperienceCarousel experiences={experiences} />
+          <ScrollReveal delay={0.2}>
+            <ExperienceCardStack experiences={experiences} />
+          </ScrollReveal>
         </div>
-        <SectionDivider className="text-stone-50 dark:text-stone-950 top-auto -bottom-px z-20" variant="mountains" />
-      </section >
-
-
+      </section>
 
       {/* Why Choose Us */}
-      < section id="nosotros" className="py-24 bg-white dark:bg-stone-900" >
-        <div className="max-w-7xl mx-auto px-4 text-center mb-16">
-          <span className="text-moma-green uppercase tracking-widest text-xs font-bold mb-3 block">Una elección brillante</span>
-          <h2 className="text-4xl md:text-5xl font-heading font-bold text-stone-900 dark:text-white">¿Por qué elegirnos?</h2>
-        </div>
+      <section id="nosotros" className="relative py-24 bg-white dark:bg-stone-900">
+        <ScrollReveal>
+          <div className="max-w-7xl mx-auto px-4 text-center mb-16">
+            <span className="text-moma-green uppercase tracking-widest text-xs font-bold mb-3 block">Una elección brillante</span>
+            <h2 className="text-4xl md:text-5xl font-heading font-bold text-stone-900 dark:text-white">¿Por qué elegirnos?</h2>
+          </div>
+        </ScrollReveal>
 
         <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-4 gap-8">
           {[
@@ -198,27 +205,29 @@ export default function Home() {
             { title: 'Experiencias Únicas', icon: Tent },
             { title: 'Apoyo Local', icon: Users }
           ].map((item, i) => (
-            <div key={i} className="text-center group p-8 rounded-3xl bg-white/50 dark:bg-stone-900/50 backdrop-blur-sm border border-stone-100 dark:border-stone-800 hover:shadow-2xl hover:bg-white dark:hover:bg-stone-900 hover:-translate-y-2 transition-all duration-300">
-              <div className="w-20 h-20 bg-stone-50 dark:bg-stone-800 shadow-sm rounded-2xl flex items-center justify-center mx-auto mb-6 text-3xl group-hover:scale-110 group-hover:bg-moma-green group-hover:text-white transition-all duration-300 text-moma-green">
-                <item.icon className="w-8 h-8" />
+            <ScrollReveal key={i} delay={i * 0.1} variant="scale-up">
+              <div className="text-center group p-8 rounded-3xl bg-white/50 dark:bg-stone-900/50 backdrop-blur-sm border border-stone-100 dark:border-stone-800 hover:shadow-2xl hover:bg-white dark:hover:bg-stone-900 hover:-translate-y-2 transition-all duration-300 h-full">
+                <div className="w-20 h-20 bg-stone-50 dark:bg-stone-800 shadow-sm rounded-2xl flex items-center justify-center mx-auto mb-6 text-3xl group-hover:scale-110 group-hover:bg-moma-green group-hover:text-white transition-all duration-300 text-moma-green">
+                  <item.icon className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-heading font-bold mb-3 text-stone-900 dark:text-white group-hover:translate-x-1 transition-transform">{item.title}</h3>
+                <p className="text-stone-500 dark:text-stone-400 text-sm leading-relaxed">
+                  Compromiso con el turismo sostenible y el desarrollo de comunidades locales.
+                </p>
               </div>
-              <h3 className="text-xl font-heading font-bold mb-3 text-stone-900 dark:text-white group-hover:translate-x-1 transition-transform">{item.title}</h3>
-              <p className="text-stone-500 dark:text-stone-400 text-sm leading-relaxed">
-                Compromiso con el turismo sostenible y el desarrollo de comunidades locales.
-              </p>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
-        <SectionDivider className="text-stone-50 dark:text-stone-950 top-auto -bottom-px z-20" variant="mountains" />
-      </section >
+
+      </section>
 
       {/* Dynamic Parallax Gallery Section */}
       <ParallaxGallery />
 
       {/* CTA Section */}
-      < section ref={parallaxRef} className="py-24 bg-stone-900 relative overflow-hidden min-h-[700px] flex items-center" >
+      <section ref={parallaxRef} className="relative py-24 bg-stone-900 overflow-hidden min-h-[700px] flex items-center" >
         {/* Background with color but dark overlay for contrast + Improved Parallax */}
-        < motion.div
+        <motion.div
           style={{ y: yParallax, scale: scaleParallax }
           }
           className="absolute inset-0 h-[140%] -top-[20%] w-full bg-[url('/images/montes-m-frame.webp')] bg-cover bg-center"
@@ -227,24 +236,26 @@ export default function Home() {
         <div className="absolute inset-0 bg-green-900/40 mix-blend-overlay"></div>
 
         <div className="max-w-5xl mx-auto px-4 relative z-10 flex flex-col items-center justify-center text-center pb-32 pt-10">
-          <span className="text-moma-green text-xl md:text-2xl font-light mb-4 font-sans tracking-wide">Ideas que transforman</span>
-          <h2 className="text-5xl md:text-7xl font-heading font-bold text-white mb-8 leading-tight drop-shadow-lg">
-            Únete a nuestra aventura <br className="hidden md:block" /> y deja huellas positivas
-          </h2>
-          <div className="w-24 h-1.5 bg-moma-green rounded-full mb-12"></div>
+          <ScrollReveal>
+            <span className="text-moma-green text-xl md:text-2xl font-light mb-4 font-sans tracking-wide block">Ideas que transforman</span>
+            <h2 className="text-5xl md:text-7xl font-heading font-bold text-white mb-8 leading-tight drop-shadow-lg">
+              Únete a nuestra aventura <br className="hidden md:block" /> y deja huellas positivas
+            </h2>
+            <div className="w-24 h-1.5 bg-moma-green rounded-full mb-12 mx-auto"></div>
 
-          <Link
-            href="/experiencias"
-            className="bg-[#009688] text-white px-10 py-4 rounded-full text-lg font-bold hover:bg-[#00796b] transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
-          >
-            Empezar la Aventura
-          </Link>
+            <Link
+              href="/experiencias"
+              className="bg-[#009688] text-white px-10 py-4 rounded-full text-lg font-bold hover:bg-[#00796b] transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 inline-block"
+            >
+              Empezar la Aventura
+            </Link>
+          </ScrollReveal>
         </div>
-        <SectionDivider className="text-stone-50 dark:text-stone-950 top-auto -bottom-px z-20" variant="mountains" />
+
       </section >
 
       {/* Contact Section */}
-      < section id="contacto" className="py-24 bg-stone-50 dark:bg-stone-950" >
+      <section id="contacto" className="relative py-24 bg-stone-50 dark:bg-stone-950" >
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <span className="text-moma-green uppercase tracking-widest text-xs font-bold mb-3 block">Ponte en contacto</span>
@@ -254,56 +265,66 @@ export default function Home() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Contact Info Cards */}
             <div className="space-y-4">
-              <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl shadow-sm border border-stone-100 dark:border-stone-800 flex items-center hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-moma-green/10 rounded-xl flex items-center justify-center text-moma-green mr-4">
-                  <Phone className="w-5 h-5" />
+              <ScrollReveal delay={0.2} variant="slide-right">
+                <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl shadow-sm border border-stone-100 dark:border-stone-800 flex items-center hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 bg-moma-green/10 rounded-xl flex items-center justify-center text-moma-green mr-4">
+                    <Phone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Whatsapp</p>
+                    <p className="font-bold text-stone-900 dark:text-white font-heading text-lg">+57 301 6566932</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Whatsapp</p>
-                  <p className="font-bold text-stone-900 dark:text-white font-heading text-lg">+57 301 6566932</p>
+              </ScrollReveal>
+              <ScrollReveal delay={0.3} variant="slide-right">
+                <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl shadow-sm border border-stone-100 dark:border-stone-800 flex items-center hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 bg-moma-green/10 rounded-xl flex items-center justify-center text-moma-green mr-4">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Email</p>
+                    <p className="font-bold text-stone-900 dark:text-white font-heading text-lg">momaexcursiones@gmail.com</p>
+                  </div>
                 </div>
-              </div>
-              <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl shadow-sm border border-stone-100 dark:border-stone-800 flex items-center hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-moma-green/10 rounded-xl flex items-center justify-center text-moma-green mr-4">
-                  <Mail className="w-5 h-5" />
+              </ScrollReveal>
+              <ScrollReveal delay={0.4} variant="slide-right">
+                <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl shadow-sm border border-stone-100 dark:border-stone-800 flex items-center hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 bg-moma-green/10 rounded-xl flex items-center justify-center text-moma-green mr-4">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Ubicación</p>
+                    <p className="font-bold text-stone-900 dark:text-white font-heading text-lg">Sucre, Colombia</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Email</p>
-                  <p className="font-bold text-stone-900 dark:text-white font-heading text-lg">momaexcursiones@gmail.com</p>
-                </div>
-              </div>
-              <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl shadow-sm border border-stone-100 dark:border-stone-800 flex items-center hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-moma-green/10 rounded-xl flex items-center justify-center text-moma-green mr-4">
-                  <MapPin className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Ubicación</p>
-                  <p className="font-bold text-stone-900 dark:text-white font-heading text-lg">Sucre, Colombia</p>
-                </div>
-              </div>
+              </ScrollReveal>
             </div>
 
             {/* Form */}
-            <div className="lg:col-span-2 bg-white dark:bg-stone-900 p-8 rounded-3xl shadow-lg shadow-stone-200/50 dark:shadow-none border border-stone-100 dark:border-stone-800">
-              <form className="grid md:grid-cols-2 gap-6">
-                <div className="col-span-2 md:col-span-1">
-                  <label htmlFor="name" className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Nombre</label>
-                  <input id="name" type="text" className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-moma-green/50 focus:border-moma-green transition-all" placeholder="Tu nombre" />
+            <div className="lg:col-span-2">
+              <ScrollReveal delay={0.4} variant="fade-up">
+                <div className="bg-white dark:bg-stone-900 p-8 rounded-3xl shadow-lg shadow-stone-200/50 dark:shadow-none border border-stone-100 dark:border-stone-800">
+                  <form className="grid md:grid-cols-2 gap-6">
+                    <div className="col-span-2 md:col-span-1">
+                      <label htmlFor="name" className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Nombre</label>
+                      <input id="name" type="text" className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-moma-green/50 focus:border-moma-green transition-all" placeholder="Tu nombre" />
+                    </div>
+                    <div className="col-span-2 md:col-span-1">
+                      <label htmlFor="email" className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Email</label>
+                      <input id="email" type="email" className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-moma-green/50 focus:border-moma-green transition-all" placeholder="tucorreo@email.com" />
+                    </div>
+                    <div className="col-span-2">
+                      <label htmlFor="message" className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Mensaje</label>
+                      <textarea id="message" rows={4} className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-moma-green/50 focus:border-moma-green transition-all" placeholder="Cuéntanos tus planes..."></textarea>
+                    </div>
+                    <div className="col-span-2">
+                      <button type="submit" className="bg-stone-900 dark:bg-white text-white dark:text-stone-900 px-8 py-4 rounded-xl font-bold hover:bg-moma-green dark:hover:bg-stone-200 transition-all w-full md:w-auto shadow-lg hover:shadow-xl hover:-translate-y-1 duration-300">
+                        Enviar Mensaje
+                      </button>
+                    </div>
+                  </form>
                 </div>
-                <div className="col-span-2 md:col-span-1">
-                  <label htmlFor="email" className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Email</label>
-                  <input id="email" type="email" className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-moma-green/50 focus:border-moma-green transition-all" placeholder="tucorreo@email.com" />
-                </div>
-                <div className="col-span-2">
-                  <label htmlFor="message" className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Mensaje</label>
-                  <textarea id="message" rows={4} className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-moma-green/50 focus:border-moma-green transition-all" placeholder="Cuéntanos tus planes..."></textarea>
-                </div>
-                <div className="col-span-2">
-                  <button type="submit" className="bg-stone-900 dark:bg-white text-white dark:text-stone-900 px-8 py-4 rounded-xl font-bold hover:bg-moma-green dark:hover:bg-stone-200 transition-all w-full md:w-auto shadow-lg hover:shadow-xl hover:-translate-y-1 duration-300">
-                    Enviar Mensaje
-                  </button>
-                </div>
-              </form>
+              </ScrollReveal>
             </div>
           </div>
         </div>

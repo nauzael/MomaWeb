@@ -16,7 +16,7 @@ export default async function GalleryPage() {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-3xl shadow-xs border border-stone-200">
+            <div className="bg-white p-6 rounded-2xl shadow-xs border border-stone-200">
                 <GalleryManager
                     initialImages={images || []}
                     onUpload={uploadGalleryImages}

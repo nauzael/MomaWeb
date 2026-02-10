@@ -1,0 +1,226 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<audit version="0.0.35">
+<site url="http://localhost:3000" crawled="2" date="2026-02-10T21:08:58.936Z"/>
+<score overall="46" grade="F">
+ <cat name="Security" score="56"/>
+ <cat name="Links" score="71"/>
+ <cat name="Crawlability" score="85"/>
+ <cat name="Accessibility" score="94"/>
+ <cat name="Performance" score="68"/>
+ <cat name="E-E-A-T" score="57"/>
+ <cat name="Images" score="89"/>
+ <cat name="Content" score="94"/>
+ <cat name="Core SEO" score="95"/>
+ <cat name="Internationalization" score="100"/>
+ <cat name="Legal Compliance" score="100"/>
+ <cat name="Local SEO" score="100"/>
+ <cat name="Mobile" score="100"/>
+ <cat name="Structured Data" score="100"/>
+ <cat name="Social Media" score="100"/>
+ <cat name="URL Structure" score="100"/>
+</score>
+<summary passed="116" warnings="28" failed="4"/>
+<issues>
+ <category name="Crawlability" errors="1" warnings="2">
+  <rule id="crawl/sitemap-domain" severity="error" status="fail" docs="https://docs.squirrelscan.com/rules/crawl/sitemap-domain">
+   3 URL(s) point to different domain(s)
+   Items (3):
+    - https://momanature.com [host: momanature.com]
+    - https://momanature.com/experiencias [host: momanature.com]
+    - https://momanature.com/contacto [host: momanature.com]
+  </rule>
+  <rule id="crawl/sitemap-coverage" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/crawl/sitemap-coverage">
+   1 indexable page(s) not in sitemap (50%); 3 sitemap URL(s) were not crawled
+   Items (4):
+    - /
+    - https://momanature.com
+    - https://momanature.com/experiencias
+    - https://momanature.com/contacto
+  </rule>
+ </category>
+ <category name="Core SEO" errors="0" warnings="1">
+  <rule id="core/canonical" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/core/canonical">
+   Missing canonical URL
+   Pages (1): /
+  </rule>
+ </category>
+ <category name="Security" errors="1" warnings="3">
+  <rule id="security/https" severity="error" status="fail" docs="https://docs.squirrelscan.com/rules/security/https">
+   Page not served over HTTPS
+   Pages (1): /
+  </rule>
+  <rule id="security/csp" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/security/csp">
+   No Content-Security-Policy header
+  </rule>
+  <rule id="security/x-frame-options" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/security/x-frame-options">
+   No clickjacking protection
+  </rule>
+  <rule id="security/form-captcha" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/security/form-captcha">
+   1 public form(s) without CAPTCHA
+   Pages (1): /
+   Items (1):
+    - form[0]
+  </rule>
+ </category>
+ <category name="Links" errors="1" warnings="2">
+  <rule id="links/broken-links" severity="error" status="fail" docs="https://docs.squirrelscan.com/rules/links/broken-links">
+   1 broken internal link(s) (4xx/5xx)
+   Items (1):
+    - /experiencias (http://localhost:3000/experiencias (404)) [statusCode: 404, linkedFrom: 1] (from: /)
+  </rule>
+  <rule id="links/orphan-pages" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/links/orphan-pages">
+   1 orphan page(s) with &lt;2 incoming links
+   Items (1):
+    - /experiencias
+  </rule>
+  <rule id="links/weak-internal-links" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/links/weak-internal-links">
+   1 page(s) have only 1 internal link
+   Items (1):
+    - /experiencias
+  </rule>
+ </category>
+ <category name="Content" errors="0" warnings="1">
+  <rule id="content/word-count" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/content/word-count">
+   Thin content: 152 words (min 300)
+   Pages (1): /
+  </rule>
+ </category>
+ <category name="Images" errors="0" warnings="2">
+  <rule id="images/offscreen-lazy" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/images/offscreen-lazy">
+   1 below-fold image(s) without lazy loading
+   Pages (1): /
+   Items (1):
+    - image
+  </rule>
+  <rule id="images/dimensions" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/images/dimensions">
+   12 image(s) missing width/height (causes CLS)
+   Pages (1): /
+   Items (12):
+    - /_next/image?url=%2Fimages%2Flogo.png&amp;w=3840&amp;q=75 | &lt;img src=&quot;http://localhost:3000/_next/image?url=%2Fimages%2Flogo.png&amp;w=3840&amp;q=75&quot; alt=&quot;Moma Excursiones Logo&quot;&gt;
+    - /_next/image?url=%2Fimages%2Fhero-bg.jpg&amp;w=3840&amp;q=75 | &lt;img src=&quot;http://localhost:3000/_next/image?url=%2Fimages%2Fhero-bg.jpg&amp;w=3840&amp;q=75&quot; alt=&quot;Experiencia Moma Nature&quot;&gt;
+    - /_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1544602931-1554558e6589%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75 | &lt;img src=&quot;http://localhost:3000/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1544602931-1554558e6589%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75&quot; alt=&quot;Gallery image&quot;&gt;
+    - /_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1591122947157-55928d348a0c%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75 | &lt;img src=&quot;http://localhost:3000/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1591122947157-55928d348a0c%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75&quot; alt=&quot;Gallery image&quot;&gt;
+    - /_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1599582522432-6a66422d3b59%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75 | &lt;img src=&quot;http://localhost:3000/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1599582522432-6a66422d3b59%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75&quot; alt=&quot;Gallery image&quot;&gt;
+    - /_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1563293863-7e87b7a90961%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75 | &lt;img src=&quot;http://localhost:3000/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1563293863-7e87b7a90961%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75&quot; alt=&quot;Gallery image&quot;&gt;
+    - /_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1591783060007-88540c1157f1%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75 | &lt;img src=&quot;http://localhost:3000/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1591783060007-88540c1157f1%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75&quot; alt=&quot;Gallery image&quot;&gt;
+    - /_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1534065600609-b4700d148722%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75 | &lt;img src=&quot;http://localhost:3000/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1534065600609-b4700d148722%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75&quot; alt=&quot;Gallery image&quot;&gt;
+    - /_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1517438476312-10d79c077509%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75 | &lt;img src=&quot;http://localhost:3000/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1517438476312-10d79c077509%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75&quot; alt=&quot;Gallery image&quot;&gt;
+    - /_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1622646241038-f947963dfd59%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75 | &lt;img src=&quot;http://localhost:3000/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1622646241038-f947963dfd59%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75&quot; alt=&quot;Gallery image&quot;&gt;
+    - /_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1596395817839-847e1371e626%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75 | &lt;img src=&quot;http://localhost:3000/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1596395817839-847e1371e626%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75&quot; alt=&quot;Gallery image&quot;&gt;
+    - /_next/image?url=%2Fimages%2Flogo.png&amp;w=3840&amp;q=75 | &lt;img src=&quot;http://localhost:3000/_next/image?url=%2Fimages%2Flogo.png&amp;w=3840&amp;q=75&quot; alt=&quot;Moma Excursiones Logo&quot;&gt;
+  </rule>
+ </category>
+ <category name="Performance" errors="0" warnings="11">
+  <rule id="perf/js-file-size" severity="error" status="warn" docs="https://docs.squirrelscan.com/rules/perf/js-file-size">
+   3 JS file(s) exceed 250.0 KB
+   Items (3):
+    - /_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js [sizeBytes: 1047866, size: 1023.3 KB, status: 200, contentType: application/javascript; charset=UTF-8] (from: /)
+    - /_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_1dd7fb59.js [sizeBytes: 816031, size: 796.9 KB, status: 200, contentType: application/javascript; charset=UTF-8] (from: /)
+    - /_next/static/chunks/node_modules_next_dist_client_17643121._.js [sizeBytes: 620975, size: 606.4 KB, status: 200, contentType: application/javascript; charset=UTF-8] (from: /)
+  </rule>
+  <rule id="perf/lcp-hints" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/perf/lcp-hints">
+   3 potential LCP image(s) without preload
+   Pages (1): /
+   Items (3):
+    - /_next/image?url=%2Fimages%2Flogo.png&amp;w=3840&amp;q=75
+    - /_next/image?url=%2Fimages%2Fhero-bg.jpg&amp;w=3840&amp;q=75
+    - /_next/image?url=%2Fimages%2Flogo.png&amp;w=3840&amp;q=75
+  </rule>
+  <rule id="perf/css-file-size" severity="error" status="warn" docs="https://docs.squirrelscan.com/rules/perf/css-file-size">
+   1 CSS file(s) exceed 150.0 KB
+   Items (1):
+    - /_next/static/chunks/%5Broot-of-the-server%5D__6365b07c._.css [sizeBytes: 154511, size: 150.9 KB, status: 200, contentType: text/css; charset=UTF-8] (from: /)
+  </rule>
+  <rule id="perf/total-byte-weight" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/perf/total-byte-weight">
+   Total tracked resources: 3573KB (heavy page)
+  </rule>
+  <rule id="perf/critical-request-chains" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/perf/critical-request-chains">
+   2 critical request chain(s) found
+   Pages (1): /
+   Items (2):
+    - CSS: /_next/static/chunks/%5Broot-of-the-server%5D__6365b07c._.css
+    - JS: /_next/static/chunks/node_modules_next_dist_build_polyfills_polyfill-nomodule.js
+  </rule>
+  <rule id="perf/duplicate-js" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/perf/duplicate-js">
+   2 library(s) loaded multiple times
+   Pages (1): /
+   Items (2):
+    - node (12x)
+    - app (4x)
+  </rule>
+  <rule id="perf/lazy-above-fold" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/perf/lazy-above-fold">
+   1 above-fold image(s) with lazy loading
+   Pages (1): /
+   Items (1):
+    - /_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1544602931-1554558e6589%3Fq%3D80%26w%3D1000%26auto%3Dformat%26fit%3Dcrop&amp;w=3840&amp;q=75
+  </rule>
+  <rule id="perf/unminified-js" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/perf/unminified-js">
+   8 JavaScript file(s) appear unminified
+   Pages (1): /
+   Items (5):
+    - node_modules_next_dist_compiled_react-dom_1e674e59._.js (1023.3KB, ~260.0KB savings) [reason: high newlines (1.58%), 80 comments, long function names, formatted code, excessive whitespace]
+    - node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js (165.9KB, ~53.0KB savings) [reason: high newlines (1.66%), 17 comments, long function names, formatted code, excessive whitespace]
+    - node_modules_next_dist_compiled_next-devtools_index_1dd7fb59.js (796.9KB, ~722.7KB savings) [reason: 80 comments]
+    - node_modules_next_dist_compiled_a0e4c7b4._.js (141.0KB, ~60.3KB savings) [reason: high newlines (2.02%), 171 comments, long function names, formatted code, excessive whitespace]
+    - node_modules_next_dist_client_17643121._.js (606.4KB, ~292.5KB savings) [reason: high newlines (2.05%), 2715 comments, long variable names, long function names, formatted code, excessive whitespace]
+  </rule>
+  <rule id="perf/http2" severity="info" status="warn" docs="https://docs.squirrelscan.com/rules/perf/http2">
+   HTTP/2 requires HTTPS
+   Pages (1): /
+  </rule>
+  <rule id="perf/source-maps" severity="info" status="warn" docs="https://docs.squirrelscan.com/rules/perf/source-maps">
+   188 potential source map(s) detected; 1 inline source map(s) found
+   Pages (1): /
+   Items (11):
+    - /_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js.map (from /_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js)
+    - /_next/static/chunks/%22 (from /_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js)
+    - /_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js.map (from /_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js)
+    - /_next/static/chunks/index.js.map (from /_next/static/chunks/node_modules_next_dist_f3530cac._.js)
+    - /_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_1dd7fb59.js.map (from /_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_1dd7fb59.js)
+    - /_next/static/chunks/helpers.js.map (from /_next/static/chunks/node_modules_next_dist_compiled_a0e4c7b4._.js)
+    - /_next/static/chunks/runtime.js.map (from /_next/static/chunks/node_modules_next_dist_compiled_a0e4c7b4._.js)
+    - /_next/static/chunks/node_modules_next_dist_compiled_a0e4c7b4._.js.map (from /_next/static/chunks/node_modules_next_dist_compiled_a0e4c7b4._.js)
+    - /_next/static/chunks/asset-prefix.js.map (from /_next/static/chunks/node_modules_next_dist_client_17643121._.js)
+    - /_next/static/chunks/set-attributes-from-props.js.map (from /_next/static/chunks/node_modules_next_dist_client_17643121._.js)
+    - /_next/static/chunks/turbopack-_23a915ee._.js
+  </rule>
+ </category>
+ <category name="Accessibility" errors="1" warnings="1">
+  <rule id="a11y/duplicate-id-aria" severity="error" status="fail" docs="https://docs.squirrelscan.com/rules/a11y/duplicate-id-aria">
+   Rule error: CSS is not defined
+   Pages (1): /
+  </rule>
+  <rule id="a11y/color-contrast" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/a11y/color-contrast">
+   7 potential color contrast issue(s)
+   Pages (1): /
+   Items (7):
+    - p with class &quot;text-stone-500 dark:text-stone...&quot; may have low contrast
+    - p with class &quot;text-[10px] text-stone-400 upp...&quot; may have low contrast
+    - footer with class &quot;bg-stone-950 border-t border-s...&quot; may have low contrast
+    - p with class &quot;text-sm leading-relaxed text-s...&quot; may have low contrast
+    - span with class &quot;font-medium text-stone-300...&quot; may have low contrast
+    - White text (verify background): 2 instance(s)
+    - Very light text color: 2 instance(s)
+  </rule>
+ </category>
+ <category name="E-E-A-T" errors="0" warnings="5">
+  <rule id="eeat/about-page" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/eeat/about-page">
+   No About page found
+  </rule>
+  <rule id="eeat/author-byline" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/eeat/author-byline">
+   No content pages have author attribution
+  </rule>
+  <rule id="eeat/contact-page" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/eeat/contact-page">
+   No Contact page found
+  </rule>
+  <rule id="eeat/privacy-policy" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/eeat/privacy-policy">
+   No Privacy Policy page found
+  </rule>
+  <rule id="eeat/content-dates" severity="warning" status="warn" docs="https://docs.squirrelscan.com/rules/eeat/content-dates">
+   No content pages have datePublished
+  </rule>
+ </category>
+</issues>
+</audit>
+
+
