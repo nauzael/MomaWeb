@@ -16,14 +16,19 @@ if (!$sessionId && function_exists('getallheaders')) {
 }
 
 if ($sessionId && preg_match('/^[a-zA-Z0-9,-]{1,128}$/', $sessionId)) {
-    session_id($sessionId);
+
+// Ensure CORS headers are sent for OPTIONS requests before any auth check logic
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    // cors.php should have handled this, but if it didn't (e.g. auth_check included before cors), we exit here.
+    exit(0);
 }
 
-session_start();
-header('X-Session-Found: ' . ($sessionId ? 'Yes' : 'No'));
-
-
 function checkAuth($role = null) {
+    // Allow OPTIONS requests to bypass auth check entirely
+    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+        return true;
+    }
+
     if (!isset($_SESSION['user_id'])) {
         error_log("Auth Check Failed: No session user_id. Session info: " . print_r($_SESSION, true));
         header('Content-Type: application/json; charset=utf-8');
