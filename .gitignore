@@ -15,7 +15,7 @@
 
 # next.js
 /.next/
-/out/
+# /out/ (removed to allow cPanel deployment)
 
 # production
 /build
