@@ -62,6 +62,7 @@ ServerSignature Off
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteBase /
     # Redirigir miniaturas inexistentes de la galería al generador
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^uploads/gallery/thumbs/(.*)$ api/utils/thumb.php?src=uploads/gallery/$1 [L,QSA]

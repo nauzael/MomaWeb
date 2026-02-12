@@ -232,6 +232,12 @@ export default function GalleryManager({ initialImages, onUpload, onDelete }: Ga
                             fill
                             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 15vw"
                             className="object-cover transition-transform group-hover:scale-105"
+                            onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                if (target.src.includes('/thumbs/')) {
+                                    target.src = getImageUrl(image.url);
+                                }
+                            }}
                         />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <Button
