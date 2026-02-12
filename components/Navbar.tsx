@@ -54,7 +54,7 @@ export default function Navbar() {
                             aria-label="Moma Excursiones - Inicio"
                         >
                             <Image
-                                src="/images/logo.png"
+                                src={scrolled ? "/images/logo.png" : isExperienceDetail ? "/images/logo-white.png" : "/images/logo-white.png"}
                                 alt="Moma Excursiones Logo"
                                 fill
                                 className="object-contain object-left"

@@ -3,9 +3,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Plus, Edit, Trash2, Search, Map, LayoutGrid, List, Wifi, WifiOff, UploadCloud, Users, Tag } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Map, LayoutGrid, List, Users, Tag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getAllExperiencesPersisted, deleteExperiencePersisted, migrateLocalExperiencesToSupabase, getConnectionStatus, type Experience } from '@/lib/experience-service';
+import { getAllExperiencesPersisted, deleteExperiencePersisted, type Experience } from '@/lib/experience-service';
 import { usePollingExperiences } from '@/hooks/usePollingExperiences';
 import { cn } from '@/lib/utils';
 
@@ -13,64 +13,14 @@ export default function ExperiencesPage() {
     const [initialExperiences, setInitialExperiences] = useState<Experience[]>([]);
     const { experiences, refresh } = usePollingExperiences(initialExperiences, 4000);
     const [searchTerm, setSearchTerm] = useState('');
-    const [connectionStatus, setConnectionStatus] = useState<{ connected: boolean, message: string } | null>(null);
-    const [localCount, setLocalCount] = useState(0);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-
-    const checkConnection = async () => {
-        const status = await getConnectionStatus();
-        setConnectionStatus({
-            connected: status.connected,
-            message: status.message
-        });
-
-        if (typeof window !== 'undefined') {
-            try {
-                const rawData = localStorage.getItem('moma_experiences');
-                if (rawData) {
-                    const parsed = JSON.parse(rawData);
-                    setLocalCount(Array.isArray(parsed) ? parsed.length : 0);
-                } else {
-                    setLocalCount(0);
-                }
-            } catch {
-                setLocalCount(0);
-            }
-        }
-    };
-
-    const handleMigration = async (forceAll: boolean = false) => {
-        const count = forceAll ? 'todos los' : localCount;
-        const source = forceAll ? 'datos locales y predeterminados (Mocks)' : 'experiencias guardadas localmente';
-
-        if (!confirm(`¿Estás seguro de subir ${count} ${source} a Supabase? Esto actualizará la base de datos en la nube.`)) return;
-
-        try {
-            const result = await migrateLocalExperiencesToSupabase();
-            if (result.partial) {
-                alert(`⚠️ Migración parcial: Se subieron ${result.count} experiencias, pero hubo errores. Revisa la consola.`);
-            } else {
-                alert(`¡Éxito! Se migraron ${result.count} experiencias a la nube.`);
-            }
-
-            if (!forceAll && localCount > 0) {
-                localStorage.removeItem('moma_experiences');
-                setLocalCount(0);
-            }
-            await refresh();
-        } catch (e) {
-            console.error(e);
-            alert('Error al migrar. Verifica tu conexión.');
-        }
-    };
 
     useEffect(() => {
         getAllExperiencesPersisted()
             .then(setInitialExperiences)
             .catch((e) => {
-                if (e?.message !== 'ABORTED') console.error(e);
+                console.error(e);
             });
-        checkConnection();
     }, []);
 
     const filteredExperiences = useMemo(() => experiences.filter(exp =>
@@ -92,9 +42,6 @@ export default function ExperiencesPage() {
         }
     };
 
-    const isConnected = connectionStatus?.connected;
-    const isUnstable = connectionStatus?.message?.includes('inestable');
-
     return (
         <div className="max-w-[1600px] mx-auto pb-20 space-y-8">
             {/* Header Section */}
@@ -105,29 +52,8 @@ export default function ExperiencesPage() {
                         Gestiona el catálogo de tours y aventuras de Moma.
                     </p>
                 </div>
-                
-                {/* Status Badges */}
-                <div className="flex flex-wrap items-center gap-3">
-                     {connectionStatus && (
-                        <div className={cn(
-                            "px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition-colors border",
-                            isConnected ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
-                            isUnstable ? "bg-amber-50 text-amber-700 border-amber-100" : "bg-rose-50 text-rose-700 border-rose-100"
-                        )}>
-                            {isConnected ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
-                            {connectionStatus.message}
-                        </div>
-                    )}
-                    {localCount > 0 && (
-                        <button
-                            onClick={() => handleMigration(false)}
-                            className="px-4 py-2 bg-amber-100 text-amber-800 border border-amber-200 rounded-full text-xs font-bold hover:bg-amber-200 transition-colors flex items-center gap-2"
-                        >
-                            <UploadCloud className="w-3.5 h-3.5" />
-                            Sincronizar {localCount} locales
-                        </button>
-                    )}
-                </div>
+
+                {/* Status Badges - REMOVED */}
             </header>
 
             {/* Toolbar Section */}
@@ -169,8 +95,8 @@ export default function ExperiencesPage() {
                         </button>
                     </div>
 
-                    <Link 
-                        href="/admin/experiences/new" 
+                    <Link
+                        href="/admin/experiences/new"
                         className="flex-1 md:flex-none bg-moma-green hover:bg-[#229ca3] text-white px-6 py-3 rounded-2xl flex items-center justify-center gap-2 font-bold shadow-lg shadow-moma-green/20 hover:shadow-xl hover:shadow-moma-green/30 transition-all active:scale-95"
                     >
                         <Plus className="w-5 h-5" />
@@ -182,7 +108,7 @@ export default function ExperiencesPage() {
             {/* Content Area */}
             <AnimatePresence mode="wait">
                 {filteredExperiences.length === 0 ? (
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
@@ -207,10 +133,10 @@ export default function ExperiencesPage() {
                         {viewMode === 'grid' ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                 {filteredExperiences.map((exp, index) => (
-                                    <ExperienceCard 
-                                        key={exp.id || exp.slug} 
-                                        experience={exp} 
-                                        onDelete={() => handleDelete(exp.slug)} 
+                                    <ExperienceCard
+                                        key={exp.id || exp.slug}
+                                        experience={exp}
+                                        onDelete={() => handleDelete(exp.slug)}
                                         index={index}
                                     />
                                 ))}
@@ -229,10 +155,10 @@ export default function ExperiencesPage() {
                                         </thead>
                                         <tbody className="divide-y divide-stone-100">
                                             {filteredExperiences.map((exp) => (
-                                                <ExperienceRow 
-                                                    key={exp.id || exp.slug} 
-                                                    experience={exp} 
-                                                    onDelete={() => handleDelete(exp.slug)} 
+                                                <ExperienceRow
+                                                    key={exp.id || exp.slug}
+                                                    experience={exp}
+                                                    onDelete={() => handleDelete(exp.slug)}
                                                 />
                                             ))}
                                         </tbody>
@@ -253,9 +179,9 @@ function ExperienceCard({ experience, onDelete, index }: { experience: Experienc
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="group bg-white rounded-[2rem] border border-stone-100 overflow-hidden hover:shadow-xl hover:shadow-stone-200/50 hover:border-stone-200 transition-all duration-300 flex flex-col h-full"
+            className="group bg-white rounded-4xl border border-stone-100 overflow-hidden hover:shadow-xl hover:shadow-stone-200/50 hover:border-stone-200 transition-all duration-300 flex flex-col h-full"
         >
-            <div className="relative aspect-[4/3] bg-stone-100 overflow-hidden">
+            <div className="relative aspect-4/3 bg-stone-100 overflow-hidden">
                 {experience.image ? (
                     <Image
                         src={experience.image}
@@ -271,7 +197,7 @@ function ExperienceCard({ experience, onDelete, index }: { experience: Experienc
                 )}
                 <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">
                     <Link
-                        href={`/admin/experiences/${experience.slug}`}
+                        href={`/admin/experiences/edit?id=${experience.slug}`}
                         className="p-2 bg-white/90 backdrop-blur text-moma-dark hover:text-moma-green rounded-xl shadow-lg hover:scale-110 transition-all"
                         aria-label="Editar"
                     >
@@ -289,14 +215,14 @@ function ExperienceCard({ experience, onDelete, index }: { experience: Experienc
                     </button>
                 </div>
             </div>
-            
+
             <div className="p-6 flex flex-col flex-1">
                 <div className="flex-1 space-y-2">
                     <h3 className="font-bold text-lg text-moma-dark line-clamp-2 leading-tight group-hover:text-moma-green transition-colors">
                         {experience.title}
                     </h3>
                     <div className="flex items-center gap-4 text-xs font-medium text-stone-500">
-                         <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5">
                             <Tag className="w-3.5 h-3.5" />
                             <span>${experience.price_cop?.toLocaleString('es-CO')}</span>
                         </div>
@@ -316,8 +242,8 @@ function ExperienceRow({ experience, onDelete }: { experience: Experience, onDel
         <tr className="group hover:bg-stone-50/50 transition-colors">
             <td className="px-6 py-4">
                 <div className="flex items-center gap-4">
-                    <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-stone-100 flex-shrink-0 border border-stone-200">
-                         {experience.image ? (
+                    <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-stone-100 shrink-0 border border-stone-200">
+                        {experience.image ? (
                             <Image
                                 src={experience.image}
                                 alt={experience.title}
@@ -345,7 +271,7 @@ function ExperienceRow({ experience, onDelete }: { experience: Experience, onDel
             <td className="px-6 py-4 text-right">
                 <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Link
-                        href={`/admin/experiences/${experience.slug}`}
+                        href={`/admin/experiences/edit?id=${experience.slug}`}
                         className="p-2 text-stone-400 hover:text-moma-green hover:bg-moma-green/10 rounded-lg transition-all"
                         aria-label="Editar"
                     >

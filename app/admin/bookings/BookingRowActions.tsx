@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { fetchApi } from '@/lib/api-client';
 import { MoreVertical, CheckCircle, XCircle, Edit, Trash2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import EditBookingModal from './EditBookingModal';
 import DeleteBookingModal from './DeleteBookingModal';
+import { useRouter } from 'next/navigation';
 
 interface BookingRowActionsProps {
     booking: any;
@@ -18,22 +19,11 @@ export default function BookingRowActions({ booking }: BookingRowActionsProps) {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
-    const router = useRouter();
+
     const menuRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
+    const router = useRouter();
 
-    // Calculate menu position
-    useEffect(() => {
-        if (isOpen && buttonRef.current) {
-            const rect = buttonRef.current.getBoundingClientRect();
-            setMenuPosition({
-                top: rect.top - 10, // Position above the button
-                right: window.innerWidth - rect.right
-            });
-        }
-    }, [isOpen]);
-
-    // Close on click outside
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (menuRef.current && !menuRef.current.contains(event.target as Node) &&
@@ -42,22 +32,32 @@ export default function BookingRowActions({ booking }: BookingRowActionsProps) {
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
     }, []);
+
+    useEffect(() => {
+        if (isOpen && buttonRef.current) {
+            const rect = buttonRef.current.getBoundingClientRect();
+            // Simple positioning logic
+            setMenuPosition({
+                top: rect.bottom + window.scrollY,
+                right: window.innerWidth - rect.right
+            });
+        }
+    }, [isOpen]);
 
     const updateStatus = async (newStatus: string) => {
         setLoading(true);
         try {
-            const res = await fetch('/api/admin/bookings/update', {
+            await fetchApi('admin/bookings/update.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: booking.id, status: newStatus })
+                body: JSON.stringify({ bookingId: booking.id, status: newStatus })
             });
 
-            if (!res.ok) throw new Error('Failed to update');
-
             setIsOpen(false);
-            router.refresh();
+            window.location.reload();
         } catch (error) {
             alert('Error al actualizar la reserva');
             console.error(error);
@@ -66,39 +66,27 @@ export default function BookingRowActions({ booking }: BookingRowActionsProps) {
         }
     };
 
-    const handleDeleteClick = () => {
-        setIsOpen(false);
-        setIsDeleteOpen(true);
-    };
-
     const deleteBooking = async () => {
         setLoading(true);
         try {
-            console.log('Deleting booking with ID:', booking.id);
-
-            const res = await fetch('/api/admin/bookings/delete', {
+            await fetchApi('admin/bookings/delete.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: booking.id })
             });
 
-            const data = await res.json();
-            console.log('Delete response:', { status: res.status, data });
-
-            if (!res.ok) {
-                throw new Error(data.error || 'Failed to delete');
-            }
-
             setIsDeleteOpen(false);
-
-            // Force a hard refresh to ensure the booking is removed from the list
-            router.refresh();
+            window.location.reload();
         } catch (error: any) {
             alert(error.message || 'Error al eliminar la reserva');
             console.error('Delete error:', error);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleDeleteClick = () => {
+        setIsOpen(false);
+        setIsDeleteOpen(true);
     };
 
     return (
@@ -116,11 +104,10 @@ export default function BookingRowActions({ booking }: BookingRowActionsProps) {
             {isOpen && (
                 <div
                     ref={menuRef}
-                    className="fixed w-48 bg-white dark:bg-stone-900 rounded-xl shadow-2xl border border-stone-100 dark:border-stone-800 z-99999 overflow-hidden transition-opacity duration-150"
+                    className="fixed w-48 bg-white dark:bg-stone-900 rounded-xl shadow-2xl border border-stone-100 dark:border-stone-800 z-50 overflow-hidden"
                     style={{
-                        top: `${menuPosition.top}px`,
-                        right: `${menuPosition.right}px`,
-                        transform: 'translateY(-100%)'
+                        top: buttonRef.current ? buttonRef.current.getBoundingClientRect().bottom + 5 : 0,
+                        left: buttonRef.current ? buttonRef.current.getBoundingClientRect().left - 150 : 0,
                     }}
                 >
                     <div className="p-1">
@@ -175,7 +162,7 @@ export default function BookingRowActions({ booking }: BookingRowActionsProps) {
                 booking={booking}
                 isOpen={isEditOpen}
                 onClose={() => setIsEditOpen(false)}
-                onUpdate={() => router.refresh()}
+                onUpdate={() => window.location.reload()}
             />
 
             <DeleteBookingModal
@@ -183,9 +170,9 @@ export default function BookingRowActions({ booking }: BookingRowActionsProps) {
                 onClose={() => setIsDeleteOpen(false)}
                 onConfirm={deleteBooking}
                 bookingInfo={{
-                    customerName: booking.customer_name.split('|')[0].trim(),
-                    experienceTitle: booking.experiences?.title || 'Experiencia Eliminada',
-                    travelDate: format(new Date(booking.travel_date), 'PPP', { locale: es })
+                    customerName: booking.customer_name ? booking.customer_name.split('|')[0].trim() : 'Cliente',
+                    experienceTitle: booking.experiences?.title || 'Experiencia',
+                    travelDate: booking.travel_date ? format(new Date(booking.travel_date), 'PPP', { locale: es }) : '-'
                 }}
                 loading={loading}
             />

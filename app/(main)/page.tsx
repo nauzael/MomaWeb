@@ -11,6 +11,7 @@ import { MOCK_EXPERIENCES } from '@/lib/mock-data';
 import SectionDivider from '@/components/ui/SectionDivider';
 import ParallaxGallery from '@/components/ui/ParallaxGallery';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { getImageUrl } from '@/lib/api-client';
 
 export default function Home() {
   const [experiences, setExperiences] = useState<Experience[]>(MOCK_EXPERIENCES as unknown as Experience[]);
@@ -103,7 +104,7 @@ export default function Home() {
               className="absolute inset-0"
             >
               <Image
-                src={currentExperience?.image || '/images/hero-bg.jpg'}
+                src={getImageUrl(currentExperience?.image) || '/images/hero-bg.jpg'}
                 alt={currentExperience?.title || 'Experiencia Moma Nature'}
                 fill
                 priority
@@ -139,7 +140,7 @@ export default function Home() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 items-center">
                 <Link
-                  href={currentExperience ? `/experiencias/${currentExperience.slug}` : "#experiencias"}
+                  href={currentExperience ? `/experiencia?slug=${currentExperience.slug}` : "#experiencias"}
                   className="bg-moma-green text-white px-8 py-4 rounded-full text-base font-bold hover:bg-white hover:text-moma-green transition-all shadow-lg shadow-moma-green/20 flex items-center justify-center min-w-[200px]"
                 >
                   Ver Experiencia <ArrowRight className="ml-2 w-5 h-5" />

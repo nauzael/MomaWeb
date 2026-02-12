@@ -1,31 +1,63 @@
-import { createClient } from '@/utils/supabase/server';
-import { CheckCircle, Clock, Search, MoreVertical, AlertCircle, Download, Calendar } from "lucide-react";
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth-client';
+import { fetchApi } from '@/lib/api-client';
+import { CheckCircle, Clock, Search, MoreVertical, AlertCircle, Calendar } from "lucide-react";
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import BookingActions from './BookingActions';
 import BookingRowActions from './BookingRowActions';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export default function BookingsPage() {
+    const { user, loading: authLoading } = useAuth();
+    const router = useRouter();
+    const [bookings, setBookings] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
-export default async function BookingsPage() {
-    const supabase = await createClient();
+    useEffect(() => {
+        if (!authLoading && !user) {
+            router.push('/login');
+        }
+    }, [authLoading, user, router]);
 
-    const { data: bookings, error } = await supabase
-        .from('bookings')
-        .select(`
-            *,
-            experiences (
-                title
-            )
-        `)
-        .order('created_at', { ascending: false });
+    const loadBookings = () => {
+        setLoading(true);
+        fetchApi<any[]>('admin/bookings/list.php')
+            .then(data => {
+                setBookings(data);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error('Failed to load bookings', err);
+                setLoading(false);
+            });
+    };
 
-    if (error) {
-        console.error("Error fetching bookings:", error);
+    useEffect(() => {
+        if (user) {
+            loadBookings();
+        }
+    }, [user]);
+
+    // Optional: expose loadBookings via context or prop if needed, 
+    // but here we just rely on parent re-render or explicit refresh.
+
+    const filteredBookings = bookings.filter(b =>
+        (b.customer_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (b.customer_email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (b.experience_title || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    if (authLoading || loading) {
+        return <div className="p-12 text-center text-stone-500">Cargando reservas...</div>;
     }
 
-    const hasBookings = bookings && bookings.length > 0;
+    if (!user) return null;
+
+    const hasBookings = filteredBookings.length > 0;
 
     return (
         <div className="space-y-6 md:space-y-8 max-w-[1600px] mx-auto pb-12">
@@ -34,7 +66,7 @@ export default async function BookingsPage() {
                     <h1 className="text-2xl md:text-3xl font-black text-[#1a1a1a]">Reservas y Calendario</h1>
                     <p className="text-stone-400 font-medium text-sm md:text-base">Gestiona las reservas y salidas de tus clientes.</p>
                 </div>
-                <BookingActions bookings={bookings || []} />
+                <BookingActions bookings={bookings} />
             </div>
 
             <div className="bg-white rounded-4xl md:rounded-[2.5rem] shadow-sm border border-[#eef1f4]">
@@ -45,6 +77,8 @@ export default async function BookingsPage() {
                         <input
                             type="text"
                             placeholder="Buscar reserva..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="bg-[#f5fbf9] border-none rounded-xl pl-10 pr-4 py-3 md:py-2 text-sm focus:ring-2 focus:ring-moma-green outline-none w-full md:w-64"
                         />
                     </div>
@@ -66,22 +100,22 @@ export default async function BookingsPage() {
                             {!hasBookings ? (
                                 <tr>
                                     <td colSpan={7} className="px-6 py-12 text-center text-stone-400 font-medium">
-                                        No hay reservas registradas aún.
+                                        No se encontraron reservas.
                                     </td>
                                 </tr>
                             ) : (
-                                bookings.map((booking: any) => (
+                                filteredBookings.map((booking: any) => (
                                     <tr key={booking.id} className="group hover:bg-[#fcfdfd] transition-colors">
                                         <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 rounded-xl bg-moma-green/10 flex items-center justify-center text-[10px] font-black text-moma-green uppercase shrink-0">
-                                                    {booking.customer_name.substring(0, 2)}
+                                                    {(booking.customer_name || 'UC').substring(0, 2)}
                                                 </div>
                                                 <div className="flex flex-col min-w-0">
                                                     <span className="text-sm font-black text-[#1a1a1a] truncate max-w-[180px]">
-                                                        {booking.customer_name.split('|')[0].trim()}
+                                                        {booking.customer_name ? booking.customer_name.split('|')[0].trim() : 'Cliente'}
                                                     </span>
-                                                    {booking.customer_name.includes('|') && (
+                                                    {booking.customer_name && booking.customer_name.includes('|') && (
                                                         <span className="text-[10px] text-stone-500 font-bold bg-stone-100 px-1.5 py-0.5 rounded-md w-fit mt-0.5">
                                                             {booking.customer_name.split('|')[1].trim()}
                                                         </span>
@@ -91,7 +125,7 @@ export default async function BookingsPage() {
                                             </div>
                                         </td>
                                         <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-bold text-stone-500 truncate max-w-[180px]">
-                                            {booking.experiences?.title || 'Experiencia Eliminada'}
+                                            {booking.experience_title || 'Experiencia Eliminada'}
                                         </td>
                                         <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-bold text-stone-500">
                                             {format(new Date(booking.travel_date), 'MMM d, yyyy', { locale: es })}

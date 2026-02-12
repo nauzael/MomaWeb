@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Upload, Loader2, Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
+import { getImageUrl } from '@/lib/api-client';
 
 interface GalleryImage {
     id: string;
@@ -43,26 +44,117 @@ export default function GalleryManager({ initialImages, onUpload, onDelete }: Ga
         // Upload sequentially to avoid hitting body size limits or timeouts
         for (let i = 0; i < files.length; i++) {
             setUploadProgress(`${i + 1}/${files.length}`);
-            const file = files[i];
-            const formData = new FormData();
-            formData.append('files', file);
+            const originalFile = files[i];
 
             try {
-                // Show progress in button text or somewhere? For now just sequential wait
+                // Optimize on client side before sending
+                // Special handling for HEIC files (iPhone photos)
+                const isHEIC = originalFile.type === 'image/heic' ||
+                    originalFile.type === 'image/heif' ||
+                    originalFile.name.toLowerCase().endsWith('.heic') ||
+                    originalFile.name.toLowerCase().endsWith('.heif');
+
+                const optimizedBlob = await new Promise<Blob>((resolve, reject) => {
+                    // For HEIC files, use object URL (browser handles decoding natively in Safari/Chrome)
+                    // For other formats, use FileReader
+                    if (isHEIC) {
+                        const objectUrl = URL.createObjectURL(originalFile);
+                        const img = new window.Image();
+
+                        img.onload = () => {
+                            URL.revokeObjectURL(objectUrl); // Clean up
+
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+
+                            // Max dimensions (4K is plenty)
+                            const MAX_DIM = 3840;
+                            if (width > MAX_DIM || height > MAX_DIM) {
+                                if (width > height) {
+                                    height = Math.round((height * MAX_DIM) / width);
+                                    width = MAX_DIM;
+                                } else {
+                                    width = Math.round((width * MAX_DIM) / height);
+                                    height = MAX_DIM;
+                                }
+                            }
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx?.drawImage(img, 0, 0, width, height);
+
+                            canvas.toBlob((blob) => {
+                                if (blob) resolve(blob);
+                                else reject(new Error('Canvas toBlob failed for HEIC'));
+                            }, 'image/webp', 0.8);
+                        };
+
+                        img.onerror = () => {
+                            URL.revokeObjectURL(objectUrl);
+                            reject(new Error('HEIC image load failed. Your browser may not support HEIC files.'));
+                        };
+
+                        img.src = objectUrl;
+                    } else {
+                        // Standard image processing for JPEG, PNG, etc.
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const img = new window.Image();
+                            img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                let width = img.width;
+                                let height = img.height;
+
+                                // Max dimensions (4K is plenty)
+                                const MAX_DIM = 3840;
+                                if (width > MAX_DIM || height > MAX_DIM) {
+                                    if (width > height) {
+                                        height = Math.round((height * MAX_DIM) / width);
+                                        width = MAX_DIM;
+                                    } else {
+                                        width = Math.round((width * MAX_DIM) / height);
+                                        height = MAX_DIM;
+                                    }
+                                }
+
+                                canvas.width = width;
+                                canvas.height = height;
+                                const ctx = canvas.getContext('2d');
+                                ctx?.drawImage(img, 0, 0, width, height);
+
+                                canvas.toBlob((blob) => {
+                                    if (blob) resolve(blob);
+                                    else reject(new Error('Canvas toBlob failed'));
+                                }, 'image/webp', 0.8);
+                            };
+                            img.onerror = () => reject(new Error('Image load failed'));
+                            img.src = e.target?.result as string;
+                        };
+                        reader.onerror = () => reject(new Error('FileReader failed'));
+                        reader.readAsDataURL(originalFile);
+                    }
+                });
+
+                const formData = new FormData();
+                formData.append('files', optimizedBlob, `${originalFile.name.split('.')[0]}.webp`);
+
                 const result = await onUpload(formData);
                 if (result.success) {
                     successCount++;
-                    if (result.warning) errors.push(`${file.name}: ${result.warning}`);
+                    if (result.warning) errors.push(`${originalFile.name}: ${result.warning}`);
                 } else {
                     failCount++;
-                    errors.push(`${file.name}: ${result.error}`);
+                    errors.push(`${originalFile.name}: ${result.error}`);
                 }
             } catch (error: any) {
-                console.error(`Upload error for ${file.name}:`, error);
+                console.error(`Upload error for ${originalFile.name}:`, error);
                 failCount++;
-                errors.push(`${file.name}: ${error.message || 'Unknown error'}`);
+                errors.push(`${originalFile.name}: ${error.message || 'Unknown error'}`);
             }
         }
+
 
         setUploading(false);
         setUploadProgress('');
@@ -71,11 +163,11 @@ export default function GalleryManager({ initialImages, onUpload, onDelete }: Ga
         }
 
         if (failCount === 0) {
-            // All good
-            router.refresh(); // Force refresh to get new images
+            // All good - Parent triggers loadImages which updates props
+            // router.refresh(); 
         } else if (successCount > 0) {
             alert(`Uploaded ${successCount} images. Failed: ${failCount}.\nErrors:\n${errors.join('\n')}`);
-            router.refresh();
+            // router.refresh();
         } else {
             alert(`Failed to upload images.\nErrors:\n${errors.join('\n')}`);
         }
@@ -104,7 +196,7 @@ export default function GalleryManager({ initialImages, onUpload, onDelete }: Ga
                 <div className="flex items-center gap-2">
                     <input
                         type="file"
-                        accept="image/*"
+                        accept="image/*,.heic,.heif"
                         multiple // Allow multiple files
                         className="hidden"
                         ref={fileInputRef}
@@ -135,7 +227,7 @@ export default function GalleryManager({ initialImages, onUpload, onDelete }: Ga
                 {images.map((image) => (
                     <div key={image.id} className="group relative aspect-square bg-stone-100 rounded-lg overflow-hidden border border-stone-200">
                         <Image
-                            src={image.url}
+                            src={getImageUrl(image.url)}
                             alt={image.alt_text || 'Gallery image'}
                             fill
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

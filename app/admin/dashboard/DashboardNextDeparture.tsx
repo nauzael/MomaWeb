@@ -39,13 +39,13 @@ export default function DashboardNextDeparture({ bookings }: DashboardNextDepart
                         {/* Background Image with Gradient */}
                         <div className="absolute inset-0 z-0">
                             {nextBooking.experiences?.image && (
-                                <img 
-                                    src={nextBooking.experiences.image} 
+                                <img
+                                    src={nextBooking.experiences.image}
                                     alt={nextBooking.experiences.title}
                                     className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
                                 />
                             )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#061a15] via-[#061a15]/80 to-transparent" />
+                            <div className="absolute inset-0 bg-linear-to-t from-[#061a15] via-[#061a15]/80 to-transparent" />
                         </div>
 
                         <div className="relative z-10 p-6 md:p-8 flex flex-col h-full justify-between">
@@ -108,11 +108,10 @@ export default function DashboardNextDeparture({ bookings }: DashboardNextDepart
             </div>
 
             {/* Pending Actions Mini-Card */}
-            <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-[#eef1f4] flex items-center justify-between group cursor-pointer hover:border-moma-green/30 transition-all">
+            <div className="bg-white rounded-4xl p-6 shadow-sm border border-[#eef1f4] flex items-center justify-between group cursor-pointer hover:border-moma-green/30 transition-all">
                 <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                        pendingCount > 0 ? 'bg-orange-50 text-orange-500' : 'bg-stone-50 text-stone-400'
-                    }`}>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${pendingCount > 0 ? 'bg-orange-50 text-orange-500' : 'bg-stone-50 text-stone-400'
+                        }`}>
                         <AlertCircle className="w-6 h-6" />
                     </div>
                     <div>

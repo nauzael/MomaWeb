@@ -1,6 +1,5 @@
+import { fetchApi } from './api-client';
 import { MOCK_EXPERIENCES } from './mock-data';
-import { createClient as createSupabaseBrowserClient } from '@/utils/supabase/client';
-import { mapSupabaseRowToExperience } from './experience-mapper';
 
 export interface Experience {
     id: string;
@@ -14,420 +13,71 @@ export interface Experience {
     max_capacity: number;
     includes: string[];
     excludes: string[];
+    itinerary?: { title: string; description: string }[];
     location_name?: string;
     location_coords: { lat: number; lng: number };
     duration?: string;
+    recommendations?: string;
     created_at?: string;
     updated_at?: string;
 }
 
-const STORAGE_KEY = 'moma_experiences';
-const DELETED_KEY = 'moma_deleted_ids';
-
 /**
- * Robustly parses localStorage JSON
+ * Gets all active experiences from the PHP API
  */
-function getStorageItem<T>(key: string, defaultValue: T): T {
-    if (typeof window === 'undefined') return defaultValue;
-    try {
-        const item = localStorage.getItem(key);
-        if (!item) return defaultValue;
-        return JSON.parse(item);
-    } catch (e) {
-        console.error(`Error parsing localStorage key "${key}":`, e);
-        return defaultValue;
-    }
-}
-
-function setStorageItem(key: string, value: unknown) {
-    if (typeof window === 'undefined') return;
-    try {
-        localStorage.setItem(key, JSON.stringify(value));
-    } catch (e) {
-        console.error(`Error saving to localStorage key "${key}":`, e);
-        if (e instanceof Error && (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
-            throw new Error('Almacenamiento lleno. Por favor elimina algunas experiencias o imágenes.');
-        }
-        throw e;
-    }
-}
-
-/**
- * Gets all active experiences by merging mocks and local storage,
- * and filtering out those in the deleted list.
- */
-export function getAllExperiences(): Experience[] {
-    const deletedArray = getStorageItem<string[]>(DELETED_KEY, []);
-    const deletedIds = new Set(deletedArray.map(id => String(id).trim()));
-
-    const savedArray = getStorageItem<Experience[]>(STORAGE_KEY, []);
-    const savedById: Record<string, Experience> = {};
-
-    savedArray.forEach(item => {
-        if (item && item.id) {
-            const cleanId = String(item.id).trim();
-            savedById[cleanId] = item;
-        }
-    });
-
-    const result: Experience[] = [];
-
-    // 1. Process Mocks
-    MOCK_EXPERIENCES.forEach(mock => {
-        const mockId = String(mock.id).trim();
-
-        // Skip if explicitly deleted
-        if (deletedIds.has(mockId)) return;
-
-        // Use saved override if available, else mock
-        if (savedById[mockId]) {
-            result.push(savedById[mockId]);
-            delete savedById[mockId];
-        } else {
-            result.push(mock as unknown as Experience);
-        }
-    });
-
-    // 2. Add remaining saved (customs)
-    Object.values(savedById).forEach(exp => {
-        const expId = String(exp.id).trim();
-        if (exp && expId && !deletedIds.has(expId)) {
-            result.push(exp);
-        }
-    });
-
-    return result;
-}
-
-/**
- * Finds a single experience by ID or Slug
- */
-export function getExperience(identifier: string): Experience | null {
-    const all = getAllExperiences();
-    const cleanId = identifier.trim();
-
-    return all.find(e =>
-        String(e.id).trim() === cleanId ||
-        e.slug === cleanId
-    ) || null;
-}
-
-/**
- * Deletes an experience permanently (via exclusion list)
- */
-export function deleteExperience(id: string | number) {
-    const idStr = String(id).trim();
-
-    // 1. Add to deleted list
-    const deletedArray = getStorageItem<string[]>(DELETED_KEY, []);
-    const deletedSet = new Set(deletedArray.map(i => String(i).trim()));
-    deletedSet.add(idStr);
-    setStorageItem(DELETED_KEY, Array.from(deletedSet));
-
-    // 2. Cleanup from custom list if it was there
-    const saved = getStorageItem<Experience[]>(STORAGE_KEY, []);
-    const filtered = saved.filter(s => s && String(s.id).trim() !== idStr);
-    setStorageItem(STORAGE_KEY, filtered);
-}
-
-/**
- * Saves or updates an experience
- */
-export function saveExperience(data: Partial<Experience> & { id?: string | number }) {
-    const saved = getStorageItem<Experience[]>(STORAGE_KEY, []);
-    const idToSave = data.id ? String(data.id).trim() : Math.random().toString(36).substr(2, 9);
-
-    const experienceToSave = {
-        ...data,
-        id: idToSave,
-        updated_at: new Date().toISOString()
-    };
-
-    const index = saved.findIndex(s => s && String(s.id).trim() === idToSave);
-
-    if (index !== -1) {
-        saved[index] = { ...saved[index], ...experienceToSave } as Experience;
-    } else {
-        experienceToSave.created_at = experienceToSave.created_at || new Date().toISOString();
-        saved.push(experienceToSave as Experience);
-    }
-
-    setStorageItem(STORAGE_KEY, saved);
-
-    // CRITICAL: If we are saving an experience that was in the deleted list, remove it from there
-    const deleted = getStorageItem<string[]>(DELETED_KEY, []);
-    const filteredDeleted = deleted.filter(id => String(id).trim() !== idToSave);
-    if (filteredDeleted.length !== deleted.length) {
-        setStorageItem(DELETED_KEY, filteredDeleted);
-    }
-
-    return experienceToSave;
-}
-
-/**
- * Resets the entire local database
- */
-export function resetExperiences() {
-    if (typeof window === 'undefined') return;
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(DELETED_KEY);
-}
-
-export function isSupabaseConfigured() {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    if (!url || !anonKey) return false
-    if (url === 'https://example.com') return false
-    if (anonKey === 'mock-key') return false
-    return true
-}
-
-export async function getConnectionStatus(retries = 2): Promise<{ connected: boolean, mode: 'supabase' | 'local', message: string }> {
-    const configured = isSupabaseConfigured();
-    if (!configured) {
-        return {
-            connected: false,
-            mode: 'local',
-            message: 'Modo Local (Sin conexión a base de datos)'
-        };
-    }
-
-    try {
-        const supabase = createSupabaseBrowserClient();
-        // Use a lightweight query
-        const { error } = await supabase.from('experiences').select('count', { count: 'exact', head: true });
-
-        if (error) {
-            // Handle empty error objects or abort errors
-            const errMsg = error.message || '';
-            const isAbort = errMsg.includes('AbortError') || errMsg.includes('aborted') || (Object.keys(error).length === 0);
-
-            if (isAbort) {
-                if (retries > 0) {
-                    // Wait a bit and retry
-                    await new Promise(r => setTimeout(r, 1000));
-                    return getConnectionStatus(retries - 1);
-                }
-                return {
-                    connected: false,
-                    mode: 'local',
-                    message: 'Conexión inestable (reintentando...)'
-                };
-            }
-
-            return {
-                connected: false,
-                mode: 'local',
-                message: `Error de conexión: ${error.message}`
-            };
-        }
-
-        return {
-            connected: true,
-            mode: 'supabase',
-            message: 'Sincronizado con Supabase'
-        };
-    } catch (e: any) {
-        const msg = e?.message || '';
-        const isAbort = msg.includes('AbortError') || msg.includes('aborted');
-
-        if (isAbort) {
-            if (retries > 0) {
-                await new Promise(r => setTimeout(r, 1000));
-                return getConnectionStatus(retries - 1);
-            }
-            return {
-                connected: false,
-                mode: 'local',
-                message: 'Conexión inestable (reintentando...)'
-            };
-        }
-        return {
-            connected: false,
-            mode: 'local',
-            message: 'Error inesperado de conexión'
-        };
-    }
-}
-
-// Separate client-side fetch logic
-async function fetchAllExperiencesFromSupabaseClient(): Promise<Experience[]> {
-    const supabase = createSupabaseBrowserClient()
-    const { data, error } = await supabase
-        .from('experiences')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-    if (error) {
-        // Handle empty error objects or abort errors
-        const errMsg = error.message || '';
-        const isAbort = errMsg.includes('AbortError') || errMsg.includes('aborted') || (Object.keys(error).length === 0);
-
-        if (isAbort) {
-            console.warn('Supabase fetch aborted or interrupted (ignoring)');
-            // Instead of throwing, we return an empty array to prevent UI crashes
-            // The polling hook will retry anyway
-            return [];
-        }
-
-        // Log as warning instead of error because we have a fallback mechanism
-        // and a full console.error triggers an intrusive error overlay in Dev
-        console.warn(`Supabase fetch notice: ${errMsg}. falling back to local data.`);
-        if (Object.keys(error).length > 0) {
-            console.debug('Detailed Supabase error:', error);
-        }
-
-        throw new Error(errMsg || 'Unknown Supabase Error')
-    }
-    if (!Array.isArray(data)) return []
-    return data.map(mapSupabaseRowToExperience)
-}
-
-async function fetchExperienceFromSupabaseClient(identifier: string): Promise<Experience | null> {
-    const supabase = createSupabaseBrowserClient()
-    const clean = identifier.trim()
-
-    try {
-        const bySlug = await supabase.from('experiences').select('*').eq('slug', clean).maybeSingle()
-        if (bySlug.error) {
-            const msg = bySlug.error.message || '';
-            if (!msg.includes('AbortError') && Object.keys(bySlug.error).length > 0) {
-                console.error('Supabase slug error:', bySlug.error)
-            }
-        }
-        if (bySlug.data) return mapSupabaseRowToExperience(bySlug.data)
-
-        const byId = await supabase.from('experiences').select('*').eq('id', clean).maybeSingle()
-        if (byId.error) {
-            const msg = byId.error.message || '';
-            if (!msg.includes('AbortError') && Object.keys(byId.error).length > 0) {
-                console.error('Supabase id error:', byId.error)
-            }
-        }
-        if (byId.data) return mapSupabaseRowToExperience(byId.data)
-    } catch (e) {
-        // Silently fail on aborts for single items too
-        return getExperience(identifier);
-    }
-
-    return null
-}
-
 export async function getAllExperiencesPersisted(): Promise<Experience[]> {
-    const isServer = typeof window === 'undefined'
-
-    if (isSupabaseConfigured()) {
-        try {
-            // Use different functions based on environment
-            if (isServer) {
-                // If this is called on the server, we can't use dynamic imports of server modules here
-                // because this file is imported by client components.
-                // Instead, we return empty or fallback. Server components should use lib/experience-service-server.ts
-                console.warn('SERVER WARNING: getAllExperiencesPersisted called on server from client-safe module. Returning empty.')
-                return []
-            } else {
-                return await fetchAllExperiencesFromSupabaseClient()
-            }
-        } catch (error: any) {
-            console.warn('Failed to fetch from Supabase, falling back to local data:', error);
-            // Fallback to local/mocks so the user sees *something* instead of nothing
-            return getAllExperiences();
-        }
-    }
-
-    // Fallback only if Supabase is NOT configured
     try {
-        return getAllExperiences();
-    } catch (e) {
-        console.error('Error reading local experiences:', e);
+        const data = await fetchApi<Experience[]>('experiences/index.php');
+        return data;
+    } catch (error) {
+        console.error('Failed to load experiences from API:', error);
+        // Do NOT fallback to mock data if API fails. We want to see if DB is empty or broken.
+        // Returning empty array so UI shows "No experiences found" instead of phantom data.
         return [];
     }
 }
 
+/**
+ * Finds a single experience by ID or Slug from the PHP API
+ */
 export async function getExperiencePersisted(identifier: string): Promise<Experience | null> {
-    const isServer = typeof window === 'undefined'
-
-    if (isSupabaseConfigured()) {
-        try {
-            if (isServer) {
-                console.warn('SERVER WARNING: getExperiencePersisted called on server from client-safe module.')
-                return null
-            } else {
-                const result = await fetchExperienceFromSupabaseClient(identifier)
-                // If Supabase returns null but we have local data (e.g. migration lag or fallback), try local
-                return result || getExperience(identifier)
-            }
-        } catch {
-            // Fallback on error
-            return getExperience(identifier)
-        }
+    try {
+        const data = await fetchApi<Experience>(`experiences/single.php?slug=${encodeURIComponent(identifier)}`);
+        return data;
+    } catch (error) {
+        console.error(`Failed to load experience ${identifier} from API:`, error);
+        // Do NOT fallback to mock
+        return null;
     }
-
-    return getExperience(identifier)
 }
 
+/**
+ * Saves or updates an experience via PHP API (Admin only)
+ */
 export async function saveExperiencePersisted(data: Partial<Experience> & { id?: string | number }) {
-    if (isSupabaseConfigured()) {
-        const res = await fetch('/api/admin/experiences/upsert', {
+    try {
+        const response = await fetchApi<{ experience: Experience }>('admin/experiences/upsert.php', {
             method: 'POST',
-            headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ experience: data })
-        })
-
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}))
-            throw new Error(err?.error || 'Error al guardar en Supabase')
-        }
-
-        const json = await res.json()
-        if (json?.experience) return mapSupabaseRowToExperience(json.experience)
+        });
+        return response.experience;
+    } catch (error) {
+        console.error('Failed to save experience:', error);
+        throw error;
     }
-
-    return saveExperience(data)
 }
 
+/**
+ * Deletes an experience via PHP API (Admin only)
+ */
 export async function deleteExperiencePersisted(slugOrId: string) {
-    if (isSupabaseConfigured()) {
-        const res = await fetch('/api/admin/experiences/delete', {
+    try {
+        await fetchApi('admin/experiences/delete.php', {
             method: 'POST',
-            headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ slug: slugOrId })
-        })
-
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}))
-            throw new Error(err?.error || 'Error al eliminar en Supabase')
-        }
-
-        return
-    }
-
-    deleteExperience(slugOrId)
-}
-
-export async function migrateLocalExperiencesToSupabase() {
-    const experiences = getAllExperiences()
-
-    // Check if we have anything to migrate
-    if (!experiences || experiences.length === 0) {
-        console.warn('No experiences found to migrate');
-        return { count: 0, partial: false };
-    }
-
-    const res = await fetch('/api/admin/experiences/migrate', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ experiences })
-    })
-
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error || 'Error al migrar a Supabase')
-    }
-
-    const json = await res.json()
-    return {
-        count: Number(json?.count) || 0,
-        partial: !!json?.partial
+        });
+    } catch (error) {
+        console.error('Failed to delete experience:', error);
+        throw error;
     }
 }

@@ -106,7 +106,7 @@ export default function HomeClient({ initialExperiences }: HomeClientProps) {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 items-center">
                 <Link
-                  href={currentExperience ? `/experiencias/${currentExperience.slug}` : "#experiencias"}
+                  href={currentExperience ? `/experiencia?slug=${currentExperience.slug}` : "#experiencias"}
                   className="bg-moma-green text-white px-8 py-4 rounded-full text-base font-bold hover:bg-white hover:text-moma-green transition-all shadow-lg shadow-moma-green/20 flex items-center justify-center min-w-[200px]"
                 >
                   Ver Experiencia <ArrowRight className="ml-2 w-5 h-5" />

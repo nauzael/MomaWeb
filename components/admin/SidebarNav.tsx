@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Map, Calendar, Settings, Users, BarChart3, Loader2, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth-client";
 
 const NAV_ITEMS = [
     { key: 'dashboard', label: "Panel Principal", href: "/admin/dashboard", icon: LayoutDashboard },
@@ -19,61 +19,38 @@ const NAV_ITEMS = [
 
 export default function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
     const pathname = usePathname();
+    const { user, loading: authLoading } = useAuth();
     const [permissions, setPermissions] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
-    const supabase = createClient();
 
     useEffect(() => {
-        const fetchPermissions = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
+        console.log("SidebarNav Auth State:", { authLoading, userEmail: user?.email, userRole: user?.role });
+        if (!authLoading) {
+            if (user) {
+                // FAILSAFE: Si es el admin principal o tiene rol de admin en la sesión
+                const isAdmin =
+                    user.email === 'admin@momaturismo.com' ||
+                    user.email === 'admin@moma.com' ||
+                    user.role?.toLowerCase() === 'admin' ||
+                    user.role?.toLowerCase() === 'superadmin';
 
-            // FAILSAFE: If email is the main admin, force full access immediately
-            // This works even if the profile doesn't exist yet
-            if (user.email === 'admin@momaturismo.com' || user.email === 'admin@moma.com') {
-                setPermissions(['all']);
-                setLoading(false);
-                return;
-            }
+                console.log("Is Admin Check:", isAdmin);
 
-            // Fetch profile and role
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('role_id, role, roles (permissions)') // fetch relation
-                .eq('id', user.id)
-                .single();
-
-            if (profile) {
-                // Support both legacy role string and new relation
-                // If user is 'admin' (legacy string) OR has role 'Admin' (via relation), give full access
-                if (profile.role === 'admin') {
+                if (isAdmin) {
                     setPermissions(['all']);
-                } else if (profile.roles) {
-                    const rolesData = profile.roles as any;
-                    // Handle case where relation is returned as array or single object
-                    if (Array.isArray(rolesData) && rolesData[0]?.permissions) {
-                        setPermissions(rolesData[0].permissions);
-                    } else if (rolesData?.permissions) {
-                        setPermissions(rolesData.permissions);
-                    } else {
-                        setPermissions(['dashboard']);
-                    }
                 } else {
-                    // Fallback for users without role assigned yet or failed relation fetch
-                    // Default to viewing nothing or dashboard only to avoid empty sidebar confusion
-                    console.log('No specific permissions found, defaulting to dashboard');
                     setPermissions(['dashboard']);
                 }
             } else {
-                setPermissions(['dashboard']); // Fallback if profile fetch fails
+                console.log("No user found in SidebarNav");
             }
-            setLoading(false);
-        };
+            // Pequeño delay para asegurar que el renderizado no parpadee
+            const timer = setTimeout(() => setLoading(false), 100);
+            return () => clearTimeout(timer);
+        }
+    }, [user, authLoading]);
 
-        fetchPermissions();
-    }, []);
-
-    if (loading) {
+    if (loading || authLoading) {
         return <div className="p-8 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-stone-500" /></div>;
     }
 
@@ -82,12 +59,17 @@ export default function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }
         return permissions.includes(key);
     };
 
+    // Normalizar pathname para comparación (quitar barra final si existe)
+    const normalizedPathname = pathname.replace(/\/$/, "");
+
     return (
         <nav className="flex-1 px-4 space-y-1 mt-4">
             {NAV_ITEMS.map((item) => {
                 if (!hasAccess(item.key)) return null;
 
-                const isActive = pathname === item.href || (item.href !== "/admin/dashboard" && pathname.startsWith(item.href));
+                const normalizedItemHref = item.href.replace(/\/$/, "");
+                const isActive = normalizedPathname === normalizedItemHref ||
+                    (item.href !== "/admin/dashboard" && normalizedPathname.startsWith(normalizedItemHref));
 
                 return (
                     <Link

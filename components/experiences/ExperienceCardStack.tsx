@@ -2,6 +2,7 @@
 
 import { CardStack, CardStackItem } from "@/components/ui/card-stack";
 import { type Experience } from '@/lib/experience-service';
+import { getImageUrl } from '@/lib/api-client';
 
 interface ExperienceCardStackProps {
     experiences: Experience[];
@@ -14,8 +15,8 @@ export default function ExperienceCardStack({ experiences }: ExperienceCardStack
         id: exp.id,
         title: exp.title,
         description: exp.description,
-        imageSrc: exp.image || '/images/hero-bg.jpg',
-        href: `/experiencias/${exp.slug}`,
+        imageSrc: getImageUrl(exp.image) || '/images/hero-bg.jpg',
+        href: `/experiencia?slug=${exp.slug}`,
         ctaLabel: `$${Number(exp.price_cop).toLocaleString()}`,
         tag: exp.location_name || 'Colombia'
     }));

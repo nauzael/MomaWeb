@@ -1,0 +1,7 @@
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": MySQL database "momaexcu_web" at "148.113.168.24:3306"
+
+Error: P1000: Authentication failed against database server at `148.113.168.24`, the provided database credentials for `momaexcu_admin` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `148.113.168.24`.

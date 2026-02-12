@@ -1,59 +1,78 @@
-import { createClient } from '@/utils/supabase/server';
+'use client';
+
+import { useEffect, useState, useMemo } from 'react';
 import { CheckCircle2, TrendingUp, AlertCircle, Clock } from "lucide-react";
 import DashboardCalendarWidget from './DashboardCalendarWidget';
 import DashboardNextDeparture from './DashboardNextDeparture';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useAuth } from '@/lib/auth-client';
+import { useRouter } from 'next/navigation';
+import { fetchApi } from '@/lib/api-client';
 
-export const dynamic = 'force-dynamic';
+export default function AdminDashboard() {
+    const { user, loading: authLoading } = useAuth();
+    const router = useRouter();
+    const [bookings, setBookings] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-export default async function AdminDashboard() {
-    const supabase = await createClient();
+    useEffect(() => {
+        if (!authLoading && !user) {
+            router.push('/login');
+        }
+    }, [authLoading, user, router]);
 
-    // Fetch all bookings
-    const { data: bookings, error } = await supabase
-        .from('bookings')
-        .select(`
-            *,
-            experiences (
-                title,
-                image
-            )
-        `)
-        .order('created_at', { ascending: false });
+    useEffect(() => {
+        if (user) {
+            fetchApi<any[]>('admin/bookings/list.php')
+                .then(data => {
+                    setBookings(data);
+                    setLoading(false);
+                })
+                .catch(err => {
+                    console.error('Failed to load dashboard data', err);
+                    setLoading(false);
+                });
+        }
+    }, [user]);
 
-    if (error) {
-        console.error("Error fetching dashboard data:", error);
-    }
-
-    const allBookings = bookings || [];
-    
     // Calculate Stats
-    const totalBookings = allBookings.length;
-    const totalRevenue = allBookings
-        .filter((b: any) => b.status !== 'cancelled')
-        .reduce((sum: number, b: any) => sum + Number(b.total_amount), 0);
-    
-    // Active tours could be distinct experiences booked
-    const activeTours = new Set(allBookings.map((b: any) => b.experience_id)).size;
-    
-    // New customers could be distinct emails
-    const uniqueCustomers = new Set(allBookings.map((b: any) => b.customer_email)).size;
+    const stats = useMemo(() => {
+        const totalBookings = bookings.length;
+        const totalRevenue = bookings
+            .filter((b: any) => b.status !== 'cancelled')
+            .reduce((sum: number, b: any) => sum + Number(b.total_amount), 0);
+
+        // Active tours could be distinct experiences booked
+        const activeTours = new Set(bookings.map((b: any) => b.experience_id)).size;
+
+        // New customers could be distinct emails
+        const uniqueCustomers = new Set(bookings.map((b: any) => b.customer_email)).size;
+
+        return { totalBookings, totalRevenue, activeTours, uniqueCustomers };
+    }, [bookings]);
 
     // Recent bookings (top 5)
-    const recentBookings = allBookings.slice(0, 5);
+    // Assuming list.php returns order by created_at desc
+    const recentBookings = bookings.slice(0, 5);
+
+    if (authLoading || loading) {
+        return <div className="p-8 text-center text-stone-500">Cargando tablero...</div>;
+    }
+
+    if (!user) return null;
 
     return (
         <div className="space-y-6 md:space-y-8 max-w-[1600px] mx-auto pb-12">
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 {[
-                    { title: "Total Reservas", value: totalBookings.toString(), change: "Global", color: "#00f5c4" },
-                    { title: "Ingresos Totales", value: `$${totalRevenue.toLocaleString('es-CO')}`, change: "COP", color: "#00f5c4" },
-                    { title: "Experiencias Activas", value: activeTours.toString(), change: "Reservadas", color: "#00f5c4" },
-                    { title: "Clientes Únicos", value: uniqueCustomers.toString(), change: "Total", color: "#00f5c4" },
+                    { title: "Total Reservas", value: stats.totalBookings.toString(), change: "Global", color: "#00f5c4" },
+                    { title: "Ingresos Totales", value: `$${stats.totalRevenue.toLocaleString('es-CO')}`, change: "COP", color: "#00f5c4" },
+                    { title: "Experiencias Activas", value: stats.activeTours.toString(), change: "Reservadas", color: "#00f5c4" },
+                    { title: "Clientes Únicos", value: stats.uniqueCustomers.toString(), change: "Total", color: "#00f5c4" },
                 ].map((stat, i) => (
-                    <div key={i} className="bg-white p-5 md:p-6 rounded-[2rem] shadow-sm border border-[#eef1f4] relative overflow-hidden group">
+                    <div key={i} className="bg-white p-5 md:p-6 rounded-4xl shadow-sm border border-[#eef1f4] relative overflow-hidden group">
                         <div className="flex justify-between items-start mb-4">
                             <span className="text-sm font-bold text-stone-400 uppercase tracking-tight">{stat.title}</span>
                             <span className="bg-[#ccfcf3] text-[#00b894] text-[10px] font-extrabold px-2 py-1 rounded-lg">
@@ -77,10 +96,10 @@ export default async function AdminDashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
                 {/* Next Departure & Pending Actions */}
-                <DashboardNextDeparture bookings={allBookings} />
+                <DashboardNextDeparture bookings={bookings} />
 
                 {/* Booking Trends Chart - REPLACED WITH CALENDAR */}
-                <DashboardCalendarWidget bookings={allBookings} />
+                <DashboardCalendarWidget bookings={bookings} />
             </div>
 
             {/* Recent Bookings Table */}
@@ -116,27 +135,26 @@ export default async function AdminDashboard() {
                                         <td className="px-4 md:px-8 py-5">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 rounded-xl bg-moma-green/20 flex items-center justify-center text-[10px] font-black text-moma-green uppercase">
-                                                    {booking.customer_name.substring(0, 2)}
+                                                    {(booking.customer_name || 'UC').substring(0, 2)}
                                                 </div>
                                                 <span className="text-sm font-black text-[#1a1a1a] truncate max-w-[150px]">
-                                                    {booking.customer_name.split('|')[0]}
+                                                    {booking.customer_name ? booking.customer_name.split('|')[0] : 'Cliente'}
                                                 </span>
                                             </div>
                                         </td>
                                         <td className="px-4 md:px-8 py-5 text-sm font-bold text-stone-600 truncate max-w-[200px]">
-                                            {booking.experiences?.title || 'Experiencia Eliminada'}
+                                            {booking.experience_title || 'Experiencia Eliminada'}
                                         </td>
                                         <td className="px-4 md:px-8 py-5">
-                                            <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black flex items-center w-fit gap-1.5 ${
-                                                booking.status === 'confirmed' ? 'bg-[#ccfcf3] text-[#00b894]' :
-                                                booking.status === 'pending' ? 'bg-orange-50 text-orange-500' : 
-                                                'bg-red-50 text-red-500'
-                                            }`}>
-                                                {booking.status === 'confirmed' ? <CheckCircle2 className="w-3 h-3" /> : 
-                                                 booking.status === 'cancelled' ? <AlertCircle className="w-3 h-3" /> :
-                                                 <Clock className="w-3 h-3" />}
-                                                {booking.status === 'pending' ? 'PENDIENTE' : 
-                                                 booking.status === 'confirmed' ? 'CONFIRMADO' : 'CANCELADO'}
+                                            <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black flex items-center w-fit gap-1.5 ${booking.status === 'confirmed' ? 'bg-[#ccfcf3] text-[#00b894]' :
+                                                booking.status === 'pending' ? 'bg-orange-50 text-orange-500' :
+                                                    'bg-red-50 text-red-500'
+                                                }`}>
+                                                {booking.status === 'confirmed' ? <CheckCircle2 className="w-3 h-3" /> :
+                                                    booking.status === 'cancelled' ? <AlertCircle className="w-3 h-3" /> :
+                                                        <Clock className="w-3 h-3" />}
+                                                {booking.status === 'pending' ? 'PENDIENTE' :
+                                                    booking.status === 'confirmed' ? 'CONFIRMADO' : 'CANCELADO'}
                                             </span>
                                         </td>
                                         <td className="px-4 md:px-8 py-5 text-sm font-black text-[#1a1a1a]">
@@ -152,4 +170,3 @@ export default async function AdminDashboard() {
         </div>
     );
 }
-

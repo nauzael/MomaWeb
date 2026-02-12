@@ -1,33 +1,26 @@
 'use client';
-import { createClient } from '@/utils/supabase/client';
+import { useAuth } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
 
 export default function LoginPage() {
+    const { login } = useAuth();
+    const router = useRouter();
+    const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const router = useRouter();
-    const supabase = createClient();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
-        // For demo purposes, if fields are empty, we might just redirect if mock
-        // But better to try to sign in
-        const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password
-        });
-
-        if (error) {
+        try {
+            await login({ email, password });
+            router.push('/admin/dashboard');
+        } catch (error: any) {
             alert('Error: ' + error.message);
             setLoading(false);
-        } else {
-            router.push('/admin/dashboard');
-            router.refresh();
         }
     };
 

@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Save, Upload, X, Image as ImageIcon, Loader2, Plus } from 'lucide-react';
+import { Save, Upload, X, Image as ImageIcon, Loader2, Plus, Trash2, Clock } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { fetchApi, getImageUrl } from '@/lib/api-client';
 import { saveExperiencePersisted, type Experience } from '@/lib/experience-service';
+
 import DynamicMap from '@/components/map/DynamicMap';
 
 interface ExperienceFormProps {
@@ -31,12 +33,14 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
         location_name: initialData?.location_name || '',
         location_coords: initialData?.location_coords || { lat: 4.5709, lng: -74.2973 },
         location_lat: (initialData?.location_coords?.lat ?? 4.5709).toString(),
-        location_lng: (initialData?.location_coords?.lng ?? -74.2973).toString()
+        location_lng: (initialData?.location_coords?.lng ?? -74.2973).toString(),
+        itinerary: initialData?.itinerary || []
     });
 
     const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.image || null);
     const [galleryPreviews, setGalleryPreviews] = useState<string[]>(initialData?.gallery || []);
     const [optimizationProgress, setOptimizationProgress] = useState({ current: 0, total: 0 });
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
     // Auto-resize description textarea
@@ -70,6 +74,28 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
         }));
     };
 
+    const addItineraryItem = () => {
+        setFormData(prev => ({
+            ...prev,
+            itinerary: [...prev.itinerary, { title: '', description: '' }]
+        }));
+    };
+
+    const removeItineraryItem = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            itinerary: prev.itinerary.filter((_, i) => i !== index)
+        }));
+    };
+
+    const updateItineraryItem = (index: number, field: 'title' | 'description', value: string) => {
+        setFormData(prev => {
+            const newItinerary = [...prev.itinerary];
+            newItinerary[index] = { ...newItinerary[index], [field]: value };
+            return { ...prev, itinerary: newItinerary };
+        });
+    };
+
     const handleFileClick = () => {
         fileInputRef.current?.click();
     };
@@ -77,31 +103,59 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            // Detect HEIC files
+            const isHEIC = file.type === 'image/heic' ||
+                file.type === 'image/heif' ||
+                file.name.toLowerCase().endsWith('.heic') ||
+                file.name.toLowerCase().endsWith('.heif');
+
             // 1. Show immediate preview using URL.createObjectURL (faster for UI feedback)
             const tempUrl = URL.createObjectURL(file);
             setPreviewUrl(tempUrl);
 
             // 2. Optimization in background: Compress and convert to WebP
-            const reader = new FileReader();
-            reader.onload = async (event) => {
+            if (isHEIC) {
+                // For HEIC, use object URL directly (browser decodes natively)
                 const img = new window.Image();
-                img.src = event.target?.result as string;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    // Maintain original resolution as requested
                     canvas.width = img.width;
                     canvas.height = img.height;
                     const ctx = canvas.getContext('2d');
                     ctx?.drawImage(img, 0, 0);
 
-                    // Convert to WebP with 0.7 quality for significant size reduction
                     const webpDataUrl = canvas.toDataURL('image/webp', 0.7);
                     setPreviewUrl(webpDataUrl);
-                    // Cleanup the temporary object URL
                     URL.revokeObjectURL(tempUrl);
                 };
-            };
-            reader.readAsDataURL(file);
+                img.onerror = () => {
+                    console.error('Failed to load HEIC image');
+                    URL.revokeObjectURL(tempUrl);
+                };
+                img.src = tempUrl;
+            } else {
+                // Standard processing for JPEG, PNG, etc.
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    const img = new window.Image();
+                    img.src = event.target?.result as string;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        // Maintain original resolution as requested
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx?.drawImage(img, 0, 0);
+
+                        // Convert to WebP with 0.7 quality for significant size reduction
+                        const webpDataUrl = canvas.toDataURL('image/webp', 0.7);
+                        setPreviewUrl(webpDataUrl);
+                        // Cleanup the temporary object URL
+                        URL.revokeObjectURL(tempUrl);
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
         }
     };
 
@@ -123,10 +177,15 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
             // Add tempUrl immediately
             setGalleryPreviews(prev => [...prev, tempUrl]);
 
-            const reader = new FileReader();
-            reader.onload = async (event) => {
+            // Detect HEIC files
+            const isHEIC = file.type === 'image/heic' ||
+                file.type === 'image/heif' ||
+                file.name.toLowerCase().endsWith('.heic') ||
+                file.name.toLowerCase().endsWith('.heif');
+
+            if (isHEIC) {
+                // For HEIC, use object URL directly
                 const img = new window.Image();
-                img.src = event.target?.result as string;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
                     canvas.width = img.width;
@@ -135,8 +194,6 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                     ctx?.drawImage(img, 0, 0);
 
                     const webpDataUrl = canvas.toDataURL('image/webp', 0.7);
-
-                    // Replace the tempUrl with the webpDataUrl
                     setGalleryPreviews(prev => prev.map(p => p === tempUrl ? webpDataUrl : p));
                     URL.revokeObjectURL(tempUrl);
 
@@ -145,8 +202,42 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                         current: prev.current + 1
                     }));
                 };
-            };
-            reader.readAsDataURL(file);
+                img.onerror = () => {
+                    console.error('Failed to load HEIC gallery image');
+                    URL.revokeObjectURL(tempUrl);
+                    setOptimizationProgress(prev => ({
+                        ...prev,
+                        current: prev.current + 1
+                    }));
+                };
+                img.src = tempUrl;
+            } else {
+                // Standard processing
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    const img = new window.Image();
+                    img.src = event.target?.result as string;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx?.drawImage(img, 0, 0);
+
+                        const webpDataUrl = canvas.toDataURL('image/webp', 0.7);
+
+                        // Replace the tempUrl with the webpDataUrl
+                        setGalleryPreviews(prev => prev.map(p => p === tempUrl ? webpDataUrl : p));
+                        URL.revokeObjectURL(tempUrl);
+
+                        setOptimizationProgress(prev => ({
+                            ...prev,
+                            current: prev.current + 1
+                        }));
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
         }
     };
 
@@ -177,15 +268,12 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                 const formDataUpload = new FormData();
                 formDataUpload.append('file', blob, 'experience.webp');
 
-                const uploadRes = await fetch('/api/upload', {
+                const uploadData = await fetchApi<any>('upload.php', {
                     method: 'POST',
                     body: formDataUpload,
                 });
+                finalImageUrl = uploadData.url;
 
-                if (uploadRes.ok) {
-                    const uploadData = await uploadRes.json();
-                    finalImageUrl = uploadData.url;
-                }
             }
 
             // Handle Gallery Uploads - Parallel processing for better performance
@@ -201,24 +289,19 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                         const fileName = `gallery_${Math.random().toString(36).substr(2, 9)}.webp`;
                         formDataGallery.append('file', blob, fileName);
 
-                        const uploadRes = await fetch('/api/upload', {
+                        const uploadData = await fetchApi<any>('upload.php', {
                             method: 'POST',
                             body: formDataGallery,
                         });
-
-                        if (uploadRes.ok) {
-                            const uploadData = await uploadRes.json();
-                            return uploadData.url;
-                        } else {
-                            // Fallback to data: URL if possible
-                            return url.startsWith('data:') ? url : null;
-                        }
+                        return uploadData.url;
                     } catch (err) {
                         console.error("Error uploading gallery image", err);
+                        // Fallback to data: URL if possible to avoid losing user selection
                         return url.startsWith('data:') ? url : null;
                     }
                 }
-                return url; // Already an uploaded URL or external link
+                return url;
+
             };
 
             const galleryUploadResults = await Promise.all(
@@ -279,10 +362,14 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
             };
 
             await saveExperiencePersisted(experienceData);
-            alert(initialData?.id ? '¡Experiencia actualizada correctamente!' : '¡Experiencia creada correctamente!');
 
-            router.refresh(); // Force data revalidation
-            router.push('/admin/experiences');
+            // Show success modal instead of alert
+            setShowSuccessModal(true);
+
+            // Auto-redirect after 2 seconds, or wait for user to close modal
+            setTimeout(() => {
+                router.push('/admin/experiences');
+            }, 2000);
         } catch (error) {
             console.error('Error during submission', error);
             const message = error instanceof Error ? error.message : 'Unknown error';
@@ -293,335 +380,496 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
     };
 
     return (
-        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-[#eef1f4]">
-            <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="space-y-2">
-                    <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Ubicación (nombre)</label>
-                    <input
-                        type="text"
-                        name="location_name"
-                        value={formData.location_name}
-                        onChange={handleChange}
-                        className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] font-medium focus:ring-2 focus:ring-moma-green transition-all"
-                        placeholder="Leticia, Amazonas"
-                    />
-                </div>
+        <div className="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-sm border border-[#eef1f4]">
+            <form onSubmit={handleSubmit} className="space-y-12">
+                {/* Basic Info Section */}
+                <div className="space-y-8">
+                    <h2 className="text-xl font-black text-stone-900 flex items-center gap-3">
+                        <span className="w-8 h-8 bg-moma-green/10 text-moma-green rounded-lg flex items-center justify-center text-sm italic">01</span>
+                        Información Básica
+                    </h2>
 
-                <div className="grid md:grid-cols-2 gap-8">
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Título de la Experiencia</label>
+                        <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Ubicación (nombre)</label>
                         <input
                             type="text"
-                            name="title"
-                            value={formData.title}
+                            name="location_name"
+                            value={formData.location_name}
                             onChange={handleChange}
-                            className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] font-bold focus:ring-2 focus:ring-moma-green transition-all"
-                            placeholder="Ej: Amazonas Mágico"
-                            required
+                            className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] font-medium focus:ring-2 focus:ring-moma-green transition-all"
+                            placeholder="Leticia, Amazonas"
                         />
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Slug (URL)</label>
-                        <input
-                            type="text"
-                            name="slug"
-                            value={formData.slug}
-                            onChange={handleChange}
-                            className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] font-bold focus:ring-2 focus:ring-moma-green transition-all"
-                            placeholder="amazonas-magico"
-                            required
-                        />
+
+                    <div className="grid md:grid-cols-2 gap-8">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Título de la Experiencia</label>
+                            <input
+                                type="text"
+                                name="title"
+                                value={formData.title}
+                                onChange={handleChange}
+                                className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] font-bold focus:ring-2 focus:ring-moma-green transition-all"
+                                placeholder="Ej: Amazonas Mágico"
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Slug (URL)</label>
+                            <input
+                                type="text"
+                                name="slug"
+                                value={formData.slug}
+                                onChange={handleChange}
+                                className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] font-bold focus:ring-2 focus:ring-moma-green transition-all"
+                                placeholder="amazonas-magico"
+                                required
+                            />
+                        </div>
                     </div>
-                </div>
 
-                <div className="space-y-2">
-                    <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Descripción</label>
-                    <textarea
-                        ref={descriptionRef}
-                        rows={4}
-                        name="description"
-                        value={formData.description}
-                        onChange={handleChange}
-                        className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] font-medium focus:ring-2 focus:ring-moma-green transition-all resize-none overflow-hidden"
-                        placeholder="Describe los detalles de esta aventura..."
-                        required
-                    ></textarea>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-8">
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Incluye</label>
+                        <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Descripción</label>
                         <textarea
+                            ref={descriptionRef}
                             rows={4}
-                            name="includesText"
-                            value={formData.includesText}
+                            name="description"
+                            value={formData.description}
                             onChange={handleChange}
-                            className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] text-sm font-medium focus:ring-2 focus:ring-moma-green transition-all"
-                            placeholder={"Guía profesional\nTransporte ida y vuelta\nSeguro de viaje"}
+                            className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] font-medium focus:ring-2 focus:ring-moma-green transition-all resize-none overflow-hidden"
+                            placeholder="Describe los detalles de esta aventura..."
+                            required
                         ></textarea>
-                        <p className="text-xs text-stone-400">Escribe un elemento por línea.</p>
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">No Incluye</label>
-                        <textarea
-                            rows={4}
-                            name="excludesText"
-                            value={formData.excludesText}
-                            onChange={handleChange}
-                            className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] text-sm font-medium focus:ring-2 focus:ring-moma-green transition-all"
-                            placeholder={"Gastos personales\nPropinas"}
-                        ></textarea>
-                        <p className="text-xs text-stone-400">Escribe un elemento por línea.</p>
                     </div>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-8">
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Precio COP</label>
-                        <input
-                            type="number"
-                            name="price_cop"
-                            value={formData.price_cop}
-                            onChange={handleChange}
-                            className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] font-bold focus:ring-2 focus:ring-moma-green transition-all"
-                            placeholder="2500000"
-                        />
+                {/* Logistics & Details Section */}
+                <div className="space-y-8 pt-6 border-t border-stone-50">
+                    <h2 className="text-xl font-black text-stone-900 flex items-center gap-3">
+                        <span className="w-8 h-8 bg-moma-green/10 text-moma-green rounded-lg flex items-center justify-center text-sm italic">02</span>
+                        Logística y Detalles
+                    </h2>
+
+                    <div className="grid md:grid-cols-2 gap-10">
+                        <div className="space-y-3">
+                            <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Incluye</label>
+                            <textarea
+                                rows={6}
+                                name="includesText"
+                                value={formData.includesText}
+                                onChange={handleChange}
+                                className="w-full bg-[#f5fbf9] border-none rounded-2xl px-5 py-4 text-[#1a1a1a] text-sm font-medium focus:ring-2 focus:ring-moma-green transition-all"
+                                placeholder={"Guía profesional\nTransporte ida y vuelta\nSeguro de viaje"}
+                            ></textarea>
+                            <p className="text-[11px] text-stone-400 flex items-center gap-1.5 ml-1">
+                                <Plus className="w-3 h-3" /> Escribe un elemento por línea.
+                            </p>
+                        </div>
+                        <div className="space-y-3">
+                            <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">No Incluye</label>
+                            <textarea
+                                rows={6}
+                                name="excludesText"
+                                value={formData.excludesText}
+                                onChange={handleChange}
+                                className="w-full bg-[#f5fbf9] border-none rounded-2xl px-5 py-4 text-[#1a1a1a] text-sm font-medium focus:ring-2 focus:ring-moma-green transition-all"
+                                placeholder={"Gastos personales\nPropinas"}
+                            ></textarea>
+                            <p className="text-[11px] text-stone-400 flex items-center gap-1.5 ml-1">
+                                <X className="w-3 h-3" /> Escribe un elemento por línea.
+                            </p>
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Precio USD</label>
-                        <input
-                            type="number"
-                            name="price_usd"
-                            value={formData.price_usd}
-                            onChange={handleChange}
-                            className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] font-bold focus:ring-2 focus:ring-moma-green transition-all"
-                            placeholder="650"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Capacidad Máx</label>
-                        <input
-                            type="number"
-                            name="max_capacity"
-                            value={formData.max_capacity}
-                            onChange={handleChange}
-                            className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] font-bold focus:ring-2 focus:ring-moma-green transition-all"
-                            placeholder="8"
-                        />
+
+                    <div className="grid md:grid-cols-3 gap-10">
+                        <div className="space-y-3">
+                            <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Precio COP</label>
+                            <input
+                                type="number"
+                                name="price_cop"
+                                value={formData.price_cop}
+                                onChange={handleChange}
+                                className="w-full bg-[#f5fbf9] border-none rounded-2xl px-5 py-4 text-[#1a1a1a] font-black text-lg focus:ring-2 focus:ring-moma-green transition-all"
+                                placeholder="2500000"
+                            />
+                        </div>
+                        <div className="space-y-3">
+                            <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Precio USD</label>
+                            <input
+                                type="number"
+                                name="price_usd"
+                                value={formData.price_usd}
+                                onChange={handleChange}
+                                className="w-full bg-[#f5fbf9] border-none rounded-2xl px-5 py-4 text-[#1a1a1a] font-black text-lg focus:ring-2 focus:ring-moma-green transition-all"
+                                placeholder="650"
+                            />
+                        </div>
+                        <div className="space-y-3">
+                            <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Capacidad Máx</label>
+                            <input
+                                type="number"
+                                name="max_capacity"
+                                value={formData.max_capacity}
+                                onChange={handleChange}
+                                className="w-full bg-[#f5fbf9] border-none rounded-2xl px-5 py-4 text-[#1a1a1a] font-black text-lg focus:ring-2 focus:ring-moma-green transition-all"
+                                placeholder="8"
+                            />
+                        </div>
                     </div>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-8">
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Latitud</label>
-                        <input
-                            type="number"
-                            step="0.000001"
-                            name="location_lat"
-                            value={formData.location_lat}
-                            onChange={handleLocationChange}
-                            className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] font-medium focus:ring-2 focus:ring-moma-green transition-all"
-                            placeholder="4.5709"
-                        />
+                {/* Itinerary Section */}
+                <div className="space-y-8 pt-6 border-t border-stone-50">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-xl font-black text-stone-900 flex items-center gap-3">
+                            <span className="w-8 h-8 bg-moma-green/10 text-moma-green rounded-lg flex items-center justify-center text-sm italic">03</span>
+                            Itinerario
+                        </h2>
+                        <button
+                            type="button"
+                            onClick={addItineraryItem}
+                            className="bg-moma-green/10 text-moma-green px-4 py-2 rounded-xl font-bold text-sm hover:bg-moma-green/20 transition-all flex items-center gap-2"
+                        >
+                            <Plus className="w-4 h-4" /> Agregar Día/Etapa
+                        </button>
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Longitud</label>
-                        <input
-                            type="number"
-                            step="0.000001"
-                            name="location_lng"
-                            value={formData.location_lng}
-                            onChange={handleLocationChange}
-                            className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] font-medium focus:ring-2 focus:ring-moma-green transition-all"
-                            placeholder="-74.2973"
-                        />
-                    </div>
-                </div>
 
-                <div className="space-y-2">
-                    <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Buscar ubicación</label>
-                    <div className="flex gap-3">
-                        <input
-                            type="text"
-                            placeholder="Ej: Parque Tayrona, Colombia"
-                            onKeyDown={async (e) => {
-                                if (e.key !== 'Enter') return;
-                                e.preventDefault();
-                                const query = (e.currentTarget as HTMLInputElement).value.trim();
-                                if (!query) return;
-                                try {
-                                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
-                                    const data = await res.json();
-                                    if (Array.isArray(data) && data.length > 0) {
-                                        const match = data[0];
-                                        const lat = parseFloat(match.lat);
-                                        const lon = parseFloat(match.lon);
-                                        if (!Number.isNaN(lat) && !Number.isNaN(lon)) {
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                location_lat: lat.toString(),
-                                                location_lng: lon.toString(),
-                                                location_coords: { lat, lng: lon }
-                                            }));
-                                        }
-                                    } else {
-                                        alert('No se encontró la ubicación. Intenta con otro nombre.');
-                                    }
-                                } catch (error) {
-                                    console.error(error);
-                                    alert('Error al buscar la ubicación. Intenta nuevamente.');
-                                }
-                            }}
-                            className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] font-medium focus:ring-2 focus:ring-moma-green transition-all"
-                        />
-                    </div>
-                    <p className="text-xs text-stone-400">Presiona Enter para buscar por nombre de lugar.</p>
-                </div>
-
-                <div className="space-y-2">
-                    <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Selecciona en el mapa</label>
-                    <div className="h-[300px] w-full rounded-2xl border border-[#eef1f4] overflow-hidden">
-                        <DynamicMap
-                            coords={[
-                                Number(formData.location_lat) || 4.5709,
-                                Number(formData.location_lng) || -74.2973
-                            ]}
-                            popupText={formData.title || 'Nueva experiencia'}
-                            onCoordsChange={([lat, lng]: [number, number]) => {
-                                setFormData(prev => ({
-                                    ...prev,
-                                    location_lat: lat.toString(),
-                                    location_lng: lng.toString(),
-                                    location_coords: { lat, lng }
-                                }));
-                            }}
-                        />
-                    </div>
-                    <p className="text-xs text-stone-400">Haz clic en el mapa para ajustar la ubicación exacta.</p>
-                </div>
-
-                <div className="space-y-2">
-                    <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Imagen de Portada</label>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        className="hidden"
-                        accept="image/*"
-                    />
-                    <div
-                        onClick={handleFileClick}
-                        className="border-2 border-dashed border-[#eef1f4] hover:border-moma-green bg-[#fcfdfd] rounded-2xl p-12 text-center cursor-pointer transition-all relative overflow-hidden group min-h-[300px] flex items-center justify-center"
-                    >
-                        {previewUrl ? (
-                            <div className="absolute inset-0 w-full h-full">
-                                <Image
-                                    src={previewUrl}
-                                    alt="Preview"
-                                    fill
-                                    unoptimized
-                                    className="object-cover transition-transform group-hover:scale-105"
-                                />
-                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <div className="bg-white p-4 rounded-full shadow-xl">
-                                        <Upload className="w-6 h-6 text-[#1a1a1a]" />
-                                    </div>
-                                </div>
+                    <div className="space-y-6">
+                        {formData.itinerary.length === 0 ? (
+                            <div className="bg-stone-50 border-2 border-dashed border-stone-100 rounded-[2rem] p-12 text-center text-stone-400">
+                                <Clock className="w-10 h-10 mx-auto mb-4 opacity-20" />
+                                <p className="font-medium italic">Aún no hay etapas en el itinerario</p>
+                                <button
+                                    type="button"
+                                    onClick={addItineraryItem}
+                                    className="text-moma-green text-sm font-bold mt-2 hover:underline"
+                                >
+                                    + Crear primer día
+                                </button>
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center">
-                                <div className="w-16 h-16 bg-[#eef1f4] rounded-full flex items-center justify-center mb-4 group-hover:bg-moma-green/10 group-hover:text-moma-green transition-colors text-stone-400">
-                                    <ImageIcon className="w-8 h-8" />
+                            formData.itinerary.map((item, index) => (
+                                <div key={index} className="bg-[#fcfdfd] border border-stone-100 rounded-[2rem] p-6 md:p-8 space-y-4 relative group">
+                                    <button
+                                        type="button"
+                                        onClick={() => removeItineraryItem(index)}
+                                        className="absolute top-6 right-6 p-2 text-stone-300 hover:text-red-500 transition-colors"
+                                    >
+                                        <Trash2 className="w-5 h-5" />
+                                    </button>
+
+                                    <div className="grid gap-4">
+                                        <div className="space-y-2 max-w-sm">
+                                            <label className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">Día / Horario</label>
+                                            <input
+                                                type="text"
+                                                value={item.title}
+                                                onChange={(e) => updateItineraryItem(index, 'title', e.target.value)}
+                                                className="w-full bg-white border border-stone-100 rounded-xl px-4 py-2 text-[#1a1a1a] font-bold focus:ring-2 focus:ring-moma-green transition-all"
+                                                placeholder="Ej: Día 1 - Llegada"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">Actividad / Etapa</label>
+                                            <textarea
+                                                rows={3}
+                                                value={item.description}
+                                                onChange={(e) => updateItineraryItem(index, 'description', e.target.value)}
+                                                className="w-full bg-white border border-stone-100 rounded-xl px-4 py-3 text-[#1a1a1a] font-medium focus:ring-2 focus:ring-moma-green transition-all"
+                                                placeholder="Describe lo que pasará en este momento..."
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
-                                <p className="font-bold text-[#1a1a1a]">Sube un archivo de portada</p>
-                                <p className="text-sm text-stone-400 mt-1">Este será el fondo principal del tour</p>
-                            </div>
+                            ))
                         )}
                     </div>
                 </div>
 
-                <div className="space-y-4">
-                    <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Galería de Imágenes (Carrusel)</label>
-                    <input
-                        type="file"
-                        multiple
-                        ref={galleryFileInputRef}
-                        onChange={handleGalleryFileChange}
-                        className="hidden"
-                        accept="image/*"
-                    />
+                {/* Location Section */}
+                <div className="space-y-8 pt-6 border-t border-stone-50">
+                    <h2 className="text-xl font-black text-stone-900 flex items-center gap-3">
+                        <span className="w-8 h-8 bg-moma-green/10 text-moma-green rounded-lg flex items-center justify-center text-sm italic">04</span>
+                        Geolocalización
+                    </h2>
 
-                    {optimizationProgress.total > 0 && optimizationProgress.current < optimizationProgress.total && (
-                        <div className="w-full mb-4">
-                            <div className="flex justify-between text-xs text-stone-500 mb-1">
-                                <span>Optimizando imágenes...</span>
-                                <span>{Math.round((optimizationProgress.current / optimizationProgress.total) * 100)}%</span>
-                            </div>
-                            <div className="w-full bg-[#eef1f4] rounded-full h-1.5 overflow-hidden">
-                                <div 
-                                    className="bg-moma-green h-full transition-all duration-300 ease-out"
-                                    style={{ width: `${(optimizationProgress.current / optimizationProgress.total) * 100}%` }}
+                    <div className="grid md:grid-cols-2 gap-10">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Latitud</label>
+                            <input
+                                type="number"
+                                step="0.000001"
+                                name="location_lat"
+                                value={formData.location_lat}
+                                onChange={handleLocationChange}
+                                className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] font-medium focus:ring-2 focus:ring-moma-green transition-all"
+                                placeholder="4.5709"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Longitud</label>
+                            <input
+                                type="number"
+                                step="0.000001"
+                                name="location_lng"
+                                value={formData.location_lng}
+                                onChange={handleLocationChange}
+                                className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] font-medium focus:ring-2 focus:ring-moma-green transition-all"
+                                placeholder="-74.2973"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Buscar ubicación</label>
+                            <input
+                                type="text"
+                                placeholder="Ej: Parque Tayrona, Colombia"
+                                onKeyDown={async (e) => {
+                                    if (e.key !== 'Enter') return;
+                                    e.preventDefault();
+                                    const query = (e.currentTarget as HTMLInputElement).value.trim();
+                                    if (!query) return;
+                                    try {
+                                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+                                        const data = await res.json();
+                                        if (Array.isArray(data) && data.length > 0) {
+                                            const match = data[0];
+                                            const lat = parseFloat(match.lat);
+                                            const lon = parseFloat(match.lon);
+                                            if (!Number.isNaN(lat) && !Number.isNaN(lon)) {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    location_lat: lat.toString(),
+                                                    location_lng: lon.toString(),
+                                                    location_coords: { lat, lng: lon }
+                                                }));
+                                            }
+                                        } else {
+                                            alert('No se encontró la ubicación. Intenta con otro nombre.');
+                                        }
+                                    } catch (error) {
+                                        console.error(error);
+                                        alert('Error al buscar la ubicación. Intenta nuevamente.');
+                                    }
+                                }}
+                                className="w-full bg-[#f5fbf9] border-none rounded-xl px-4 py-3 text-[#1a1a1a] font-medium focus:ring-2 focus:ring-moma-green transition-all"
+                            />
+                            <p className="text-xs text-stone-400">Presiona Enter para buscar por nombre de lugar.</p>
+                        </div>
+
+                        <div className="space-y-4">
+                            <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Ajuste Manual en Mapa</label>
+                            <div className="h-[350px] w-full rounded-[2.5rem] border border-[#eef1f4] overflow-hidden shadow-inner">
+                                <DynamicMap
+                                    coords={[
+                                        Number(formData.location_lat) || 4.5709,
+                                        Number(formData.location_lng) || -74.2973
+                                    ]}
+                                    popupText={formData.title || 'Nueva experiencia'}
+                                    onCoordsChange={([lat, lng]: [number, number]) => {
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            location_lat: lat.toString(),
+                                            location_lng: lng.toString(),
+                                            location_coords: { lat, lng }
+                                        }));
+                                    }}
                                 />
                             </div>
                         </div>
-                    )}
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                        {galleryPreviews.map((url, index) => (
-                            <div key={index} className="relative aspect-square rounded-xl overflow-hidden group border border-[#eef1f4]">
-                                <Image
-                                    src={url}
-                                    alt={`Gallery ${index}`}
-                                    fill
-                                    unoptimized
-                                    className="object-cover"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => removeGalleryImage(index)}
-                                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </div>
-                        ))}
-
-                        <button
-                            type="button"
-                            onClick={() => galleryFileInputRef.current?.click()}
-                            className="aspect-square rounded-xl border-2 border-dashed border-[#eef1f4] hover:border-moma-green hover:bg-[#f5fbf9] transition-all flex flex-col items-center justify-center text-stone-400 gap-2"
-                        >
-                            <Plus className="w-6 h-6" />
-                            <span className="text-[10px] font-bold uppercase tracking-wider">Añadir</span>
-                        </button>
                     </div>
                 </div>
 
-                <div className="pt-4 flex justify-end gap-4">
+                {/* Media Section */}
+                <div className="space-y-8 pt-6 border-t border-stone-50">
+                    <h2 className="text-xl font-black text-stone-900 flex items-center gap-3">
+                        <span className="w-8 h-8 bg-moma-green/10 text-moma-green rounded-lg flex items-center justify-center text-sm italic">05</span>
+                        Contenido Multimedia
+                    </h2>
+
+                    <div className="grid md:grid-cols-2 gap-10">
+                        <div className="space-y-4">
+                            <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Imagen de Portada</label>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                className="hidden"
+                                accept="image/*,.heic,.heif"
+                            />
+                            <div
+                                onClick={handleFileClick}
+                                className="border-2 border-dashed border-[#eef1f4] hover:border-moma-green bg-[#fcfdfd] rounded-[2rem] p-12 text-center cursor-pointer transition-all relative overflow-hidden group min-h-[400px] flex items-center justify-center"
+                            >
+                                {previewUrl ? (
+                                    <div className="absolute inset-0 w-full h-full">
+                                        <Image
+                                            src={getImageUrl(previewUrl)}
+                                            alt="Preview"
+                                            fill
+                                            unoptimized
+                                            className="object-cover transition-transform group-hover:scale-105"
+                                        />
+                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="bg-white p-4 rounded-full shadow-xl">
+                                                <Upload className="w-6 h-6 text-[#1a1a1a]" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center">
+                                        <div className="w-16 h-16 bg-[#eef1f4] rounded-full flex items-center justify-center mb-4 group-hover:bg-moma-green/10 group-hover:text-moma-green transition-colors text-stone-400">
+                                            <ImageIcon className="w-8 h-8" />
+                                        </div>
+                                        <p className="font-bold text-[#1a1a1a]">Portada Principal</p>
+                                        <p className="text-sm text-stone-400 mt-1">Es el fondo principal del tour</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <label className="text-xs font-bold text-stone-400 uppercase tracking-widest">Galería Carrusel</label>
+                            <input
+                                type="file"
+                                multiple
+                                ref={galleryFileInputRef}
+                                onChange={handleGalleryFileChange}
+                                className="hidden"
+                                accept="image/*,.heic,.heif"
+                            />
+
+                            <div className="bg-[#fcfdfd] border border-stone-100 rounded-[2rem] p-6 min-h-[400px]">
+                                {optimizationProgress.total > 0 && optimizationProgress.current < optimizationProgress.total && (
+                                    <div className="w-full mb-6 animate-pulse">
+                                        <div className="flex justify-between text-[10px] font-black uppercase text-moma-green mb-2">
+                                            <span>Optimizando galería...</span>
+                                            <span>{Math.round((optimizationProgress.current / optimizationProgress.total) * 100)}%</span>
+                                        </div>
+                                        <div className="w-full bg-stone-100 rounded-full h-1.5 overflow-hidden">
+                                            <div
+                                                className="bg-moma-green h-full transition-all duration-300 ease-out"
+                                                style={{ width: `${(optimizationProgress.current / optimizationProgress.total) * 100}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                    {galleryPreviews.map((url, index) => (
+                                        <div key={index} className="relative aspect-square rounded-2xl overflow-hidden group border border-[#eef1f4] shadow-sm">
+                                            <Image
+                                                src={getImageUrl(url)}
+                                                alt={`Gallery ${index}`}
+                                                fill
+                                                unoptimized
+                                                className="object-cover"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeGalleryImage(index)}
+                                                className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                            >
+                                                <X className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                    ))}
+
+                                    <button
+                                        type="button"
+                                        onClick={() => galleryFileInputRef.current?.click()}
+                                        className="aspect-square rounded-2xl border-2 border-dashed border-[#eef1f4] hover:border-moma-green hover:bg-[#f5fbf9] transition-all flex flex-col items-center justify-center text-stone-400 gap-2 group"
+                                    >
+                                        <Plus className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider">Añadir Foto</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="pt-10 border-t border-stone-100 flex justify-end gap-6">
                     <button
                         type="button"
                         onClick={() => router.back()}
-                        className="px-8 py-4 rounded-2xl font-bold text-stone-500 hover:bg-stone-50 transition-all"
+                        className="px-10 py-4 rounded-2xl font-bold text-stone-500 hover:bg-stone-50 transition-all text-lg"
                     >
                         Cancelar
                     </button>
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="bg-[#061a15] text-white px-8 py-4 rounded-2xl font-bold hover:opacity-90 flex items-center shadow-lg disabled:opacity-70 disabled:cursor-not-allowed transition-all"
+                        className="bg-[#061a15] text-white px-10 py-4 rounded-2xl font-black text-lg hover:opacity-90 flex items-center shadow-2xl disabled:opacity-70 disabled:cursor-not-allowed transition-all transform hover:-translate-y-1 active:scale-95"
                     >
                         {isSubmitting ? (
                             <>
-                                <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Guardando...
+                                <Loader2 className="w-6 h-6 mr-3 animate-spin" /> Guardando...
                             </>
                         ) : (
                             <>
-                                <Save className="w-5 h-5 mr-3" /> Guardar Experiencia
+                                <Save className="w-6 h-6 mr-4" /> Guardar Cambios
                             </>
                         )}
                     </button>
                 </div>
             </form>
+
+            {/* Success Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-300">
+                        <div className="flex flex-col items-center text-center space-y-4">
+                            {/* Success Icon */}
+                            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center animate-in zoom-in duration-500">
+                                <svg
+                                    className="w-10 h-10 text-green-600"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M5 13l4 4L19 7"
+                                    />
+                                </svg>
+                            </div>
+
+                            {/* Success Message */}
+                            <div>
+                                <h3 className="text-2xl font-black text-stone-900 mb-2">
+                                    {initialData?.id ? '¡Actualizado!' : '¡Creado!'}
+                                </h3>
+                                <p className="text-stone-600">
+                                    {initialData?.id
+                                        ? 'La experiencia se actualizó correctamente'
+                                        : 'La experiencia se creó exitosamente'}
+                                </p>
+                            </div>
+
+                            {/* Auto-redirect message */}
+                            <p className="text-sm text-stone-400">
+                                Redirigiendo en 2 segundos...
+                            </p>
+
+                            {/* Close button */}
+                            <button
+                                onClick={() => {
+                                    setShowSuccessModal(false);
+                                    router.push('/admin/experiences');
+                                }}
+                                className="mt-4 bg-moma-green text-stone-900 px-6 py-3 rounded-xl font-bold hover:bg-moma-green/90 transition-all"
+                            >
+                                Ir a Experiencias
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

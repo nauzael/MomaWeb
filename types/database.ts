@@ -6,13 +6,14 @@ export interface Experience {
   price_cop: number;
   price_usd: number;
   location_name: string;
-  location_coords: { lat: number; lng: number }; // PostGIS point handling can be complex, keeping as any for now or { lat: number, lng: number } if we parse it
+  location_coords: { lat: number; lng: number };
   includes: string[];
   excludes: string[];
   recommendations: string;
   max_capacity: number;
   image: string | null;
   gallery?: string[];
+  duration?: string;
   created_at: string;
 }
 

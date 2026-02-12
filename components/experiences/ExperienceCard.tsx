@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { type Experience } from '@/lib/experience-service';
 import { cn } from '@/lib/utils';
+import { getImageUrl } from '@/lib/api-client';
 import { ArrowRight } from 'lucide-react';
 
 interface ExperienceCardProps {
@@ -10,7 +11,7 @@ interface ExperienceCardProps {
 }
 
 export default function ExperienceCard({ experience, priority = false }: ExperienceCardProps) {
-    const coverImage = experience.image || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=2574&auto=format&fit=crop';
+    const coverImage = getImageUrl(experience.image) || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=2574&auto=format&fit=crop';
 
     // Moma Green HSL: approx 168 100% 36% (for #00b894)
     // Using a slightly darker/richer variant for better contrast in gradients
@@ -25,7 +26,7 @@ export default function ExperienceCard({ experience, priority = false }: Experie
             className="group w-full h-full"
         >
             <Link
-                href={`/experiencias/${experience.slug}`}
+                href={`/experiencia?slug=${experience.slug}`}
                 className="relative block w-full h-full rounded-2xl overflow-hidden shadow-lg 
                      transition-all duration-500 ease-in-out 
                      group-hover:scale-105 group-hover:shadow-[0_0_60px_-15px_hsl(var(--theme-color)/0.6)]"

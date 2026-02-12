@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { fetchApi } from '@/lib/api-client';
+
 import { X, Calendar as CalendarIcon, Users, DollarSign, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -38,16 +40,13 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate }:
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await fetch('/api/admin/bookings/update', {
+            await fetchApi('admin/bookings/update', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     id: booking.id,
                     ...formData
                 })
             });
-
-            if (!res.ok) throw new Error('Failed to update');
 
             onUpdate();
             onClose();
@@ -67,7 +66,7 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate }:
                         <X className="w-5 h-5" />
                     </button>
                 </div>
-                
+
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div className="space-y-1">
                         <label className="text-xs font-bold uppercase text-stone-400">Fecha de Viaje</label>
@@ -76,7 +75,7 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate }:
                             <input
                                 type="date"
                                 value={formData.travel_date}
-                                onChange={(e) => setFormData({...formData, travel_date: e.target.value})}
+                                onChange={(e) => setFormData({ ...formData, travel_date: e.target.value })}
                                 className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg pl-10 pr-3 py-2 text-sm font-medium focus:ring-2 focus:ring-moma-green outline-none"
                             />
                         </div>
@@ -103,7 +102,7 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate }:
                             <input
                                 type="number"
                                 value={formData.total_amount}
-                                onChange={(e) => setFormData({...formData, total_amount: parseFloat(e.target.value)})}
+                                onChange={(e) => setFormData({ ...formData, total_amount: parseFloat(e.target.value) })}
                                 className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg pl-10 pr-3 py-2 text-sm font-medium focus:ring-2 focus:ring-moma-green outline-none"
                             />
                         </div>
@@ -114,34 +113,31 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate }:
                         <div className="flex gap-2 p-1 bg-stone-100 dark:bg-stone-800 rounded-xl">
                             <button
                                 type="button"
-                                onClick={() => setFormData({...formData, status: 'pending'})}
-                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
-                                    formData.status === 'pending' 
-                                        ? 'bg-white dark:bg-stone-700 text-orange-500 shadow-sm' 
-                                        : 'text-stone-400 hover:text-stone-600'
-                                }`}
+                                onClick={() => setFormData({ ...formData, status: 'pending' })}
+                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${formData.status === 'pending'
+                                    ? 'bg-white dark:bg-stone-700 text-orange-500 shadow-sm'
+                                    : 'text-stone-400 hover:text-stone-600'
+                                    }`}
                             >
                                 Pendiente
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setFormData({...formData, status: 'confirmed'})}
-                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
-                                    formData.status === 'confirmed' 
-                                        ? 'bg-white dark:bg-stone-700 text-moma-green shadow-sm' 
-                                        : 'text-stone-400 hover:text-stone-600'
-                                }`}
+                                onClick={() => setFormData({ ...formData, status: 'confirmed' })}
+                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${formData.status === 'confirmed'
+                                    ? 'bg-white dark:bg-stone-700 text-moma-green shadow-sm'
+                                    : 'text-stone-400 hover:text-stone-600'
+                                    }`}
                             >
                                 Confirmado
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setFormData({...formData, status: 'cancelled'})}
-                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
-                                    formData.status === 'cancelled' 
-                                        ? 'bg-white dark:bg-stone-700 text-red-500 shadow-sm' 
-                                        : 'text-stone-400 hover:text-stone-600'
-                                }`}
+                                onClick={() => setFormData({ ...formData, status: 'cancelled' })}
+                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${formData.status === 'cancelled'
+                                    ? 'bg-white dark:bg-stone-700 text-red-500 shadow-sm'
+                                    : 'text-stone-400 hover:text-stone-600'
+                                    }`}
                             >
                                 Cancelado
                             </button>

@@ -22,15 +22,15 @@ export default function AdminBookingCalendar({ bookings, isOpen, onClose }: Admi
     const bookedDates = bookings
         .filter(b => b.status !== 'cancelled')
         .map(b => parseISO(b.travel_date));
-    
+
     // Filter bookings for selected date
-    const selectedBookings = selectedDate 
+    const selectedBookings = selectedDate
         ? bookings.filter(b => isSameDay(parseISO(b.travel_date), selectedDate))
         : [];
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-stone-900 rounded-[2rem] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col md:flex-row min-h-[600px] animate-in zoom-in-95 duration-200 ring-1 ring-stone-900/5">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-stone-900 rounded-4xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col md:flex-row min-h-[600px] animate-in zoom-in-95 duration-200 ring-1 ring-stone-900/5">
                 {/* Calendar Side */}
                 <div className="p-8 bg-stone-50 dark:bg-stone-950 flex-1 flex flex-col border-r border-stone-100 dark:border-stone-800 overflow-y-auto">
                     <div className="flex justify-between items-center mb-8">
@@ -45,7 +45,7 @@ export default function AdminBookingCalendar({ bookings, isOpen, onClose }: Admi
                             <X className="w-6 h-6" />
                         </button>
                     </div>
-                    
+
                     <div className="flex-1 flex justify-center items-start w-full">
                         <style>{`
                           .rdp { --rdp-cell-size: 50px; --rdp-accent-color: #29afb7; --rdp-background-color: #e0f2f1; margin: 0; width: 100%; max-width: 100%; }
@@ -79,7 +79,7 @@ export default function AdminBookingCalendar({ bookings, isOpen, onClose }: Admi
                             className="bg-white dark:bg-stone-900 p-6 rounded-2xl shadow-sm border border-stone-100 dark:border-stone-800 w-full"
                         />
                     </div>
-                    
+
                     <div className="mt-8 flex items-center justify-center gap-6 text-xs font-bold uppercase tracking-wide text-stone-400">
                         <div className="flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-moma-green" />
@@ -120,7 +120,7 @@ export default function AdminBookingCalendar({ bookings, isOpen, onClose }: Admi
                                 <div key={booking.id} className="bg-white dark:bg-stone-800 rounded-2xl p-5 border border-stone-100 dark:border-stone-700 shadow-sm hover:shadow-md transition-all group">
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-moma-green to-teal-600 flex items-center justify-center text-xs font-black text-white uppercase shadow-lg shadow-moma-green/20">
+                                            <div className="w-10 h-10 rounded-full bg-linear-to-br from-moma-green to-teal-600 flex items-center justify-center text-xs font-black text-white uppercase shadow-lg shadow-moma-green/20">
                                                 {booking.customer_name.substring(0, 2)}
                                             </div>
                                             <div>
@@ -128,15 +128,14 @@ export default function AdminBookingCalendar({ bookings, isOpen, onClose }: Admi
                                                 <p className="text-xs text-stone-400 font-medium truncate max-w-[150px]">{booking.customer_email}</p>
                                             </div>
                                         </div>
-                                        <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider ${
-                                            booking.status === 'confirmed' ? 'bg-[#ccfcf3] text-[#00b894]' :
+                                        <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider ${booking.status === 'confirmed' ? 'bg-[#ccfcf3] text-[#00b894]' :
                                             booking.status === 'cancelled' ? 'bg-red-50 text-red-500' :
-                                            'bg-orange-50 text-orange-500'
-                                        }`}>
+                                                'bg-orange-50 text-orange-500'
+                                            }`}>
                                             {booking.status === 'confirmed' ? 'Confirmado' : booking.status === 'pending' ? 'Pendiente' : 'Cancelado'}
                                         </span>
                                     </div>
-                                    
+
                                     <div className="space-y-3 pt-3 border-t border-stone-50 dark:border-stone-700">
                                         <div className="flex items-start gap-3">
                                             <MapPin className="w-4 h-4 text-stone-400 mt-0.5" />
@@ -147,7 +146,7 @@ export default function AdminBookingCalendar({ bookings, isOpen, onClose }: Admi
                                                 </span>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="flex items-center gap-2 bg-stone-50 dark:bg-stone-900/50 p-2 rounded-lg">
                                                 <User className="w-4 h-4 text-stone-400" />
@@ -165,7 +164,7 @@ export default function AdminBookingCalendar({ bookings, isOpen, onClose }: Admi
                             ))
                         )}
                     </div>
-                    
+
                     {selectedBookings.length > 0 && (
                         <div className="p-4 bg-stone-50 dark:bg-stone-950 border-t border-stone-100 dark:border-stone-800 text-center">
                             <span className="text-xs font-bold text-stone-400 uppercase">

@@ -2,20 +2,11 @@ import { useScroll, useTransform, motion, AnimatePresence } from 'framer-motion'
 import { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { createClient } from '@/utils/supabase/client';
 import { X } from 'lucide-react';
+import { fetchApi, getImageUrl } from '@/lib/api-client';
 
-const defaultImages = [
-    "https://images.unsplash.com/photo-1544602931-1554558e6589?q=80&w=1000&auto=format&fit=crop", // Waterfall
-    "https://images.unsplash.com/photo-1599582522432-6a66422d3b59?q=80&w=1000&auto=format&fit=crop", // Mountains
-    "https://images.unsplash.com/photo-1591783060007-88540c1157f1?q=80&w=1000&auto=format&fit=crop", // Jungle
-    "https://images.unsplash.com/photo-1517438476312-10d79c077509?q=80&w=1000&auto=format&fit=crop", // Abstract nature
-    "https://images.unsplash.com/photo-1596395817839-847e1371e626?q=80&w=1000&auto=format&fit=crop", // River
-    "https://images.unsplash.com/photo-1591122947157-55928d348a0c?q=80&w=1000&auto=format&fit=crop", // Palm trees
-    "https://images.unsplash.com/photo-1563293863-7e87b7a90961?q=80&w=1000&auto=format&fit=crop", // Birds
-    "https://images.unsplash.com/photo-1534065600609-b4700d148722?q=80&w=1000&auto=format&fit=crop", // Colombia street
-    "https://images.unsplash.com/photo-1622646241038-f947963dfd59?q=80&w=1000&auto=format&fit=crop", // Coffee
-];
+const defaultImages: string[] = [];
+
 
 export default function ParallaxGallery() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -29,33 +20,31 @@ export default function ParallaxGallery() {
 
     useEffect(() => {
         const fetchImages = async () => {
-            // ... existing fetch logic
-            const supabase = createClient();
-            const { data, error } = await supabase
-                .from('gallery_images')
-                .select('url')
-                .order('created_at', { ascending: false });
-
-            if (data && data.length > 0) {
-                console.log("Fetched gallery images:", data.length);
-                // Shuffle images for random display
-                const urls = data.map(img => img.url);
-                for (let i = urls.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [urls[i], urls[j]] = [urls[j], urls[i]];
-                }
-                setGalleryImages(urls);
-            } else {
-                // If no data, shuffle defaults too
-                setGalleryImages(prev => {
-                    const shuffled = [...prev];
-                    for (let i = shuffled.length - 1; i > 0; i--) {
+            try {
+                const data = await fetchApi<{ images: any[] }>('gallery/index.php');
+                if (data && data.images && data.images.length > 0) {
+                    console.log("Fetched gallery images:", data.images.length);
+                    // Shuffle images for random display
+                    const urls = data.images.map(img => img.url);
+                    for (let i = urls.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
-                        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                        [urls[i], urls[j]] = [urls[j], urls[i]];
                     }
-                    return shuffled;
-                });
-                if (error) console.error("Error fetching gallery images:", error);
+                    setGalleryImages(urls);
+                } else {
+                    // If no data, shuffle defaults
+                    setGalleryImages(prev => {
+                        const shuffled = [...prev];
+                        for (let i = shuffled.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                        }
+                        return shuffled;
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching gallery images from PHP:", error);
+                // Fallback to random defaults on error
             }
         };
         fetchImages();
@@ -86,8 +75,12 @@ export default function ParallaxGallery() {
     return (
         <section
             ref={containerRef}
-            className="py-20 md:py-40 bg-stone-50 dark:bg-stone-950 overflow-hidden relative"
+            className={cn(
+                "py-20 md:py-40 bg-stone-50 dark:bg-stone-950 overflow-hidden relative",
+                galleryImages.length === 0 && "hidden"
+            )}
         >
+
             {/* Decorative background elements */}
             <div className="absolute top-0 right-0 w-1/3 h-full bg-linear-to-l from-moma-green/5 to-transparent pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-linear-to-t from-stone-200/20 dark:from-stone-800/20 to-transparent rounded-full blur-3xl pointer-events-none" />
@@ -139,7 +132,7 @@ export default function ParallaxGallery() {
                             onClick={(e) => e.stopPropagation()} // Prevent close when clicking image area (optional, but usually good)
                         >
                             <Image
-                                src={selectedImage}
+                                src={getImageUrl(selectedImage)}
                                 alt="Gallery View"
                                 fill
                                 className="object-contain"
@@ -164,7 +157,7 @@ const Column = ({ images, y, className, onImageClick }: { images: string[], y: a
                     onClick={() => onImageClick(src)}
                 >
                     <Image
-                        src={src}
+                        src={getImageUrl(src)}
                         alt="Gallery image"
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-110"

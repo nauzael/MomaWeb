@@ -8,17 +8,23 @@ import { es } from 'date-fns/locale';
 import 'react-day-picker/dist/style.css';
 import { cn } from '@/lib/utils';
 
+import { type Experience } from '@/lib/experience-service';
+import { fetchApi } from '@/lib/api-client';
+
 interface BookingWidgetProps {
-    priceCop: number;
-    priceUsd: number;
-    maxCapacity: number;
-    experienceTitle: string;
-    experienceId: string;
+    experience: Experience;
 }
 
 import ButtonFlex from '@/components/ui/ButtonFlex';
 
-export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experienceTitle, experienceId }: BookingWidgetProps) {
+export default function BookingWidget({ experience }: BookingWidgetProps) {
+    // Extract props from experience object for backward compatibility with internal logic
+    const priceCop = experience.price_cop;
+    const priceUsd = experience.price_usd;
+    const maxCapacity = experience.max_capacity;
+    const experienceTitle = experience.title;
+    const experienceId = experience.id;
+
     const [guests, setGuests] = useState(1);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -36,11 +42,8 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
     useEffect(() => {
         const fetchAvailability = async () => {
             try {
-                const res = await fetch(`/api/bookings/availability?experienceId=${experienceId}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setAvailability(data.availability || {});
-                }
+                const data = await fetchApi<{ availability: Record<string, number> }>(`bookings/availability.php?experienceId=${experienceId}`);
+                setAvailability(data.availability || {});
             } catch (error) {
                 console.error("Error fetching availability:", error);
             }
@@ -80,9 +83,8 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
         setLoading(true);
 
         try {
-            const response = await fetch('/api/bookings/create', {
+            const data: any = await fetchApi('bookings/create.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     experience_id: experienceId,
                     customer_name: contactName,
@@ -95,13 +97,7 @@ export default function BookingWidget({ priceCop, priceUsd, maxCapacity, experie
                 })
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Error al guardar la reserva');
-            }
-
-            setLastBookingId(data.booking.id);
+            setLastBookingId(data.bookingId || data.booking?.id);
             setShowConfirmation(false);
             setShowSuccess(true);
 
