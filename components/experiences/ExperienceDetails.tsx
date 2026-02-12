@@ -67,7 +67,7 @@ export default function ExperienceDetails({ experience }: ExperienceDetailsProps
                         {/* Badges area removed as requested (redundant) */}
 
 
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-sans font-black text-white mb-10 leading-[1.1] tracking-tight drop-shadow-2xl max-w-2xl">
+                        <h1 className="text-3xl md:text-4xl lg:text-5xl font-sans font-black text-white mb-8 leading-[1.1] tracking-tight drop-shadow-2xl max-w-2xl">
                             {experience.title}
                         </h1>
 
