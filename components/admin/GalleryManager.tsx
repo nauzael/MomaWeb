@@ -227,10 +227,10 @@ export default function GalleryManager({ initialImages, onUpload, onDelete }: Ga
                 {images.map((image) => (
                     <div key={image.id} className="group relative aspect-square bg-stone-100 rounded-lg overflow-hidden border border-stone-200">
                         <Image
-                            src={getImageUrl(image.url)}
+                            src={getImageUrl(image.url.replace('/gallery/', '/gallery/thumbs/'))}
                             alt={image.alt_text || 'Gallery image'}
                             fill
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 15vw"
                             className="object-cover transition-transform group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
