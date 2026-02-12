@@ -8,7 +8,7 @@ const config = {
     port: 21,
     localRoot: __dirname + "/../out",
     remoteRoot: "/public_html/", // Ajusta esta ruta según donde esté tu app en cPanel
-    include: ["*", "**/*"],
+    include: ["*", "**/*", ".*", "**/.*"],
     exclude: [],
     deleteRemote: false,
     forcePasv: true,

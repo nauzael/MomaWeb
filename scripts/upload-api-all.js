@@ -8,7 +8,7 @@ const config = {
     port: 21,
     localRoot: __dirname + "/../public/api",
     remoteRoot: "/public_html/api/",
-    include: ["*", "**/*"], // Include everything in public/api/ including subdirs
+    include: ["*", "**/*", ".*", "**/.*"], // Include everything including dot files
     deleteRemote: false,
     forcePasv: true,
     sftp: false,

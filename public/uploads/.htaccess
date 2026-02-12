@@ -28,3 +28,13 @@ Options -ExecCGI
         Deny from all
     </IfModule>
 </FilesMatch>
+
+# Permitir el acceso a las imágenes
+<FilesMatch "\.(webp|jpg|jpeg|png|gif|ico|svg)$">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Allow from all
+    </IfModule>
+</FilesMatch>
