@@ -71,7 +71,7 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate }:
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <form onSubmit={handleSubmit} className="p-6 space-y-4" autoComplete="off">
                     <div className="space-y-1">
                         <label className="text-xs font-bold uppercase text-stone-400">Fecha de Viaje</label>
                         <div className="relative">
@@ -81,6 +81,7 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate }:
                                 value={formData.travel_date}
                                 onChange={(e) => setFormData({ ...formData, travel_date: e.target.value })}
                                 className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg pl-10 pr-3 py-2 text-sm font-medium focus:ring-2 focus:ring-moma-green outline-none"
+                                autoComplete="off"
                             />
                         </div>
                     </div>
@@ -95,6 +96,7 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate }:
                                 value={formData.guests_count}
                                 onChange={handleGuestsChange}
                                 className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg pl-10 pr-3 py-2 text-sm font-medium focus:ring-2 focus:ring-moma-green outline-none"
+                                autoComplete="off"
                             />
                         </div>
                     </div>
@@ -108,6 +110,7 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate }:
                                 value={formData.total_amount}
                                 onChange={(e) => setFormData({ ...formData, total_amount: parseFloat(e.target.value) })}
                                 className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg pl-10 pr-3 py-2 text-sm font-medium focus:ring-2 focus:ring-moma-green outline-none"
+                                autoComplete="off"
                             />
                         </div>
                     </div>
