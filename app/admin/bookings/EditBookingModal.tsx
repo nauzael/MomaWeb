@@ -40,7 +40,7 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate }:
         e.preventDefault();
         setLoading(true);
         try {
-            await fetchApi('admin/bookings/update', {
+            await fetchApi('admin/bookings/update.php', {
                 method: 'POST',
                 body: JSON.stringify({
                     id: booking.id,

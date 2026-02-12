@@ -15,34 +15,51 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $input = json_decode(file_get_contents("php://input"), true);
 
-if (!isset($input['bookingId'])) {
+$id = isset($input['bookingId']) ? $input['bookingId'] : (isset($input['id']) ? $input['id'] : null);
+
+if (!$id) {
     jsonError('Falta ID de reserva', 400);
-}
-
-$id = $input['bookingId'];
-// Allow updating status or other fields
-$status = isset($input['status']) ? $input['status'] : null;
-
-if (!$status) {
-    jsonError('Nada para actualizar', 400);
 }
 
 $database = new Database();
 $db = $database->getConnection();
 
 try {
-    $query = "UPDATE bookings SET status = :status WHERE id = :id";
+    // Build dynamic update query
+    $fields = [];
+    $params = [':id' => $id];
+
+    if (isset($input['status'])) {
+        $fields[] = "status = :status";
+        $params[':status'] = $input['status'];
+    }
+    if (isset($input['travel_date'])) {
+        $fields[] = "travel_date = :travel_date";
+        $params[':travel_date'] = $input['travel_date'];
+    }
+    if (isset($input['guests_count'])) {
+        $fields[] = "guests_count = :guests_count";
+        $params[':guests_count'] = (int)$input['guests_count'];
+    }
+    if (isset($input['total_amount'])) {
+        $fields[] = "total_amount = :total_amount";
+        $params[':total_amount'] = (float)$input['total_amount'];
+    }
+
+    if (empty($fields)) {
+        jsonError('Nada para actualizar', 400);
+    }
+
+    $query = "UPDATE bookings SET " . implode(', ', $fields) . " WHERE id = :id";
     $stmt = $db->prepare($query);
-    $stmt->bindParam(':status', $status);
-    $stmt->bindParam(':id', $id);
     
-    if ($stmt->execute()) {
+    if ($stmt->execute($params)) {
         jsonData(['success' => true, 'message' => 'Reserva actualizada']);
     } else {
         jsonError('Error al actualizar', 500);
     }
 } catch (PDOException $e) {
     error_log("Booking Update Error: " . $e->getMessage());
-    jsonError('Error de base de datos', 500);
+    jsonError('Error de base de datos: ' . $e->getMessage(), 500);
 }
 ?>
