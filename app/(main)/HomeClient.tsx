@@ -7,6 +7,8 @@ import { Phone, Mail, MapPin, ArrowRight, ChevronLeft, ChevronRight } from 'luci
 import { motion, AnimatePresence } from 'framer-motion';
 import { getAllExperiencesPersisted, type Experience } from '@/lib/experience-service';
 
+const CTA_IMAGE_URL = "/images/montes-m-frame.webp";
+
 interface HomeClientProps {
   initialExperiences: Experience[];
 }
@@ -175,7 +177,7 @@ export default function HomeClient({ initialExperiences }: HomeClientProps) {
 
       <section className="py-24 bg-stone-900 relative overflow-hidden">
         {/* Background with color but dark overlay for contrast */}
-        <div className="absolute inset-0 bg-[url('/images/montes-m-frame.webp')] bg-cover bg-center"></div>
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${CTA_IMAGE_URL})` }}></div>
         <div className="absolute inset-0 bg-stone-900/80 backdrop-blur-[1px]"></div>
         <div className="max-w-7xl mx-auto px-4 relative z-10 grid md:grid-cols-2 gap-12 items-center">
           <div className="bg-moma-green/10 p-8 rounded-3xl border border-moma-green/20 backdrop-blur-sm">

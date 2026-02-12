@@ -39,19 +39,23 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate }:
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        const payload = {
+            id: booking.id,
+            ...formData
+        };
+        console.log('Updating booking with payload:', payload);
         try {
-            await fetchApi('admin/bookings/update.php', {
+            const response = await fetchApi<any>('admin/bookings/update.php', {
                 method: 'POST',
-                body: JSON.stringify({
-                    id: booking.id,
-                    ...formData
-                })
+                body: JSON.stringify(payload)
             });
 
+            console.log('Update response:', response);
             onUpdate();
             onClose();
-        } catch (error) {
-            alert('Error al actualizar la reserva');
+        } catch (error: any) {
+            console.error('Update error:', error);
+            alert('Error al actualizar la reserva: ' + (error.message || 'Error desconocido'));
         } finally {
             setLoading(false);
         }

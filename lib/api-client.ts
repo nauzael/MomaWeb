@@ -108,19 +108,23 @@ export function getImageUrl(url: string | null | undefined): string {
     if (!url) return '';
     if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url;
 
-    // Si es una ruta relativa que empieza con /uploads, construir la URL completa usando el API_BASE_URL
-    if (url.startsWith('/uploads')) {
+    // Si es una ruta que contiene 'uploads', construir la URL completa
+    if (url.includes('uploads')) {
+        let cleanUrl = url.startsWith('/') ? url : '/' + url;
+
         // Extraer el dominio base eliminando el sufijo /api del final si existe
         const baseUrl = API_BASE_URL.endsWith('/api')
             ? API_BASE_URL.substring(0, API_BASE_URL.length - 4)
             : API_BASE_URL;
 
         // Si baseUrl es solo '/api' o similar, y no tiene http, devolver url original si estamos en el mismo host
-        if (!baseUrl.startsWith('http') && typeof window !== 'undefined') {
-            return url;
+        if (!baseUrl.startsWith('http') && typeof window !== 'undefined' && !API_BASE_URL.startsWith('http')) {
+            return cleanUrl;
         }
 
-        return `${baseUrl}${url}`;
+        // Asegurarse de no tener doble slash entre baseUrl y cleanUrl
+        const finalBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        return `${finalBase}${cleanUrl}`;
     }
 
     return url;

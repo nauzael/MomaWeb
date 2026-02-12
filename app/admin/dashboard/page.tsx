@@ -85,7 +85,7 @@ export default function AdminDashboard() {
                             {[40, 60, 45, 70, 50, 80, 65, 90].map((h, j) => (
                                 <div
                                     key={j}
-                                    className="flex-1 bg-moma-green/20 rounded-full group-hover:bg-moma-green/40 transition-colors"
+                                    className="flex-1 bg-moma-green/20 rounded-full group-hover:bg-moma-green transition-colors"
                                     style={{ height: `${h}%` }}
                                 ></div>
                             ))}

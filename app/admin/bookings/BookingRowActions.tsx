@@ -58,8 +58,8 @@ export default function BookingRowActions({ booking }: BookingRowActionsProps) {
 
             setIsOpen(false);
             window.location.reload();
-        } catch (error) {
-            alert('Error al actualizar la reserva');
+        } catch (error: any) {
+            alert('Error al actualizar la reserva: ' + (error.message || 'Error desconocido'));
             console.error(error);
         } finally {
             setLoading(false);
@@ -77,7 +77,7 @@ export default function BookingRowActions({ booking }: BookingRowActionsProps) {
             setIsDeleteOpen(false);
             window.location.reload();
         } catch (error: any) {
-            alert(error.message || 'Error al eliminar la reserva');
+            alert('Error al eliminar la reserva: ' + (error.message || 'Error desconocido'));
             console.error('Delete error:', error);
         } finally {
             setLoading(false);

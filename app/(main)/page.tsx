@@ -13,6 +13,8 @@ import ParallaxGallery from '@/components/ui/ParallaxGallery';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { getImageUrl } from '@/lib/api-client';
 
+const CTA_IMAGE_URL = "/images/montes-m-frame.webp";
+
 export default function Home() {
   const [experiences, setExperiences] = useState<Experience[]>(MOCK_EXPERIENCES as unknown as Experience[]);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -229,9 +231,8 @@ export default function Home() {
       <section ref={parallaxRef} className="relative py-24 bg-stone-900 overflow-hidden min-h-[700px] flex items-center" >
         {/* Background with color but dark overlay for contrast + Improved Parallax */}
         <motion.div
-          style={{ y: yParallax, scale: scaleParallax }
-          }
-          className="absolute inset-0 h-[140%] -top-[20%] w-full bg-[url('/images/montes-m-frame.webp')] bg-cover bg-center"
+          style={{ y: yParallax, scale: scaleParallax, backgroundImage: `url(${CTA_IMAGE_URL})` }}
+          className="absolute inset-0 h-[140%] -top-[20%] w-full bg-cover bg-center"
         />
         <div className="absolute inset-0 bg-stone-900/60 mix-blend-multiply"></div>
         <div className="absolute inset-0 bg-green-900/40 mix-blend-overlay"></div>

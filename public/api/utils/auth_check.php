@@ -25,6 +25,7 @@ header('X-Session-Found: ' . ($sessionId ? 'Yes' : 'No'));
 
 function checkAuth($role = null) {
     if (!isset($_SESSION['user_id'])) {
+        error_log("Auth Check Failed: No session user_id. Session info: " . print_r($_SESSION, true));
         header('Content-Type: application/json; charset=utf-8');
         http_response_code(401);
         echo json_encode(['error' => 'No autorizado']);
@@ -32,6 +33,7 @@ function checkAuth($role = null) {
     }
 
     if ($role && $_SESSION['role'] !== $role && $_SESSION['role'] !== 'admin') {
+        error_log("Auth Check Failed: Insufficient permissions. User role: " . $_SESSION['role'] . ", Required role: $role");
         header('Content-Type: application/json; charset=utf-8');
         http_response_code(403);
         echo json_encode(['error' => 'Permisos insuficientes']);
