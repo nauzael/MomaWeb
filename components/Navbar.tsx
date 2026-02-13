@@ -13,6 +13,8 @@ export default function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const pathname = usePathname();
     const isExperienceDetail = pathname?.startsWith('/experiencias/');
+    const isBlog = pathname?.startsWith('/blog');
+    const isSpecialPage = isExperienceDetail || isBlog;
 
     useEffect(() => {
         const handleScroll = () => {
@@ -31,7 +33,7 @@ export default function Navbar() {
         <nav
             className={cn(
                 "fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out",
-                scrolled
+                (scrolled || isBlog)
                     ? "bg-background/60 backdrop-blur-xl shadow-sm py-3"
                     : isExperienceDetail
                         ? "bg-black/30 backdrop-blur-xl border-b border-white/10 py-3"
@@ -45,7 +47,7 @@ export default function Navbar() {
                             href="/"
                             className={cn(
                                 "relative transition-all duration-500 ease-in-out block",
-                                scrolled
+                                scrolled || isBlog
                                     ? "h-10 w-32"
                                     : isExperienceDetail
                                         ? "h-12 w-40"
@@ -54,7 +56,7 @@ export default function Navbar() {
                             aria-label="Moma Excursiones - Inicio"
                         >
                             <Image
-                                src={scrolled ? "/images/logo.png" : isExperienceDetail ? "/images/logo-white.png" : "/images/logo-white.png"}
+                                src={(scrolled || isBlog) ? "/images/logo.png" : "/images/logo-white.png"}
                                 alt="Moma Excursiones Logo"
                                 fill
                                 className="object-contain object-left"
@@ -65,13 +67,13 @@ export default function Navbar() {
 
                     <div className="hidden md:block">
                         <div className="ml-10 flex items-baseline space-x-6">
-                            <Link href="/#experiencias" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", scrolled ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
+                            <Link href="/#experiencias" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isBlog) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
                                 Experiencias
                             </Link>
-                            <Link href="/#nosotros" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", scrolled ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
+                            <Link href="/#nosotros" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isBlog) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
                                 Nosotros
                             </Link>
-                            <Link href="/#contacto" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", scrolled ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
+                            <Link href="/#contacto" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isBlog) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
                                 Contacto
                             </Link>
                         </div>
@@ -86,7 +88,7 @@ export default function Navbar() {
                     <div className="-mr-2 flex md:hidden">
                         <button
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className={cn("inline-flex items-center justify-center p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-moma-green", scrolled ? "text-stone-400 hover:text-stone-500 hover:bg-stone-100" : "text-white hover:bg-white/10")}
+                            className={cn("inline-flex items-center justify-center p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-moma-green", (scrolled || isBlog) ? "text-stone-400 hover:text-stone-500 hover:bg-stone-100" : "text-white hover:bg-white/10")}
                             aria-expanded={mobileMenuOpen}
                             aria-controls="mobile-menu"
                             aria-label={mobileMenuOpen ? "Cerrar menú principal" : "Abrir menú principal"}

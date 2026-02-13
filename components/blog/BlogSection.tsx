@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { ArrowRight, Calendar, User, ChevronRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { fetchApi, getImageUrl } from '@/lib/api-client';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { DestinationCard } from '@/components/ui/card-21';
 
 export default function BlogSection() {
     const [posts, setPosts] = useState<any[]>([]);
@@ -27,8 +26,6 @@ export default function BlogSection() {
         };
         loadPosts();
     }, []);
-
-    if (!loading && posts.length === 0) return null;
 
     return (
         <section className="py-24 bg-stone-50 dark:bg-stone-950 overflow-hidden">
@@ -57,45 +54,27 @@ export default function BlogSection() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
                     {loading ? (
                         [1, 2, 3].map((i) => (
-                            <div key={i} className="aspect-[4/5] bg-stone-200 dark:bg-stone-900 rounded-[3rem] animate-pulse" />
+                            <div key={i} className="h-[500px] bg-stone-200 dark:bg-stone-900 rounded-[2rem] animate-pulse" />
                         ))
-                    ) : (
+                    ) : posts.length > 0 ? (
                         posts.map((post, idx) => (
                             <ScrollReveal key={post.id} delay={idx * 0.1} variant="fade-up">
-                                <Link href={`/blog/post?slug=${post.slug}`} className="group block">
-                                    <div className="relative aspect-[4/5] rounded-[3rem] overflow-hidden mb-8 shadow-sm group-hover:shadow-2xl transition-all duration-700">
-                                        <Image
-                                            src={getImageUrl(post.cover_image)}
-                                            alt={post.title}
-                                            fill
-                                            className="object-cover transition-transform duration-1000 group-hover:scale-110 origin-bottom"
-                                        />
-                                        <div className="absolute top-6 left-6 px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black text-white uppercase tracking-widest border border-white/20">
-                                            {post.category_name || 'Expedición'}
-                                        </div>
-                                    </div>
-                                    <div className="px-2">
-                                        <div className="flex items-center gap-4 text-stone-400 text-[10px] font-black uppercase tracking-widest mb-4">
-                                            <span className="flex items-center gap-1.5 font-bold">
-                                                <Calendar className="w-3 h-3" />
-                                                {format(new Date(post.created_at), 'dd MMM', { locale: es })}
-                                            </span>
-                                            <div className="w-1 h-1 rounded-full bg-stone-200" />
-                                            <span className="flex items-center gap-1.5 font-bold">
-                                                <User className="w-3 h-3" />
-                                                {post.author_name}
-                                            </span>
-                                        </div>
-                                        <h3 className="text-2xl md:text-3xl font-black text-stone-900 dark:text-white leading-tight italic group-hover:text-moma-green transition-colors line-clamp-2">
-                                            {post.title}
-                                        </h3>
-                                        <div className="mt-8 flex items-center gap-2 text-stone-900 dark:text-white font-black uppercase text-[10px] tracking-widest group-hover:gap-4 transition-all">
-                                            Leer Historia <ChevronRight className="w-4 h-4 text-moma-green" />
-                                        </div>
-                                    </div>
-                                </Link>
+                                <div className="h-[500px]">
+                                    <DestinationCard
+                                        imageUrl={getImageUrl(post.cover_image)}
+                                        location={post.title}
+                                        flag="🍃"
+                                        stats={`${post.category_name || 'Expedición'} • ${format(new Date(post.created_at), 'dd MMM', { locale: es })}`}
+                                        href={`/blog/post?slug=${post.slug}`}
+                                        themeColor={idx % 3 === 0 ? "170 100% 25%" : idx % 3 === 1 ? "150 50% 25%" : "190 60% 30%"}
+                                    />
+                                </div>
                             </ScrollReveal>
                         ))
+                    ) : (
+                        <div className="col-span-full py-20 text-center">
+                            <p className="text-stone-400 font-medium italic">Nuevas historias están en camino...</p>
+                        </div>
                     )}
                 </div>
             </div>
