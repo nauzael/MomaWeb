@@ -43,6 +43,10 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
     const [optimizationProgress, setOptimizationProgress] = useState({ current: 0, total: 0 });
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+    // Store original filenames to allow server-side deduplication/reuse
+    const [coverFileName, setCoverFileName] = useState<string | null>(null);
+    const [galleryFileNames, setGalleryFileNames] = useState<Record<string, string>>({});
+
     // New states for MediaSelector
     const [isCoverSelectorOpen, setIsCoverSelectorOpen] = useState(false);
     const [isGallerySelectorOpen, setIsGallerySelectorOpen] = useState(false);
@@ -113,6 +117,7 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            setCoverFileName(file.name);
             // Detect HEIC files
             const isHEIC = file.type === 'image/heic' ||
                 file.type === 'image/heif' ||
@@ -183,6 +188,9 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
 
         for (const file of files) {
             const tempUrl = URL.createObjectURL(file);
+
+            // Map the temporary URL to the original filename
+            setGalleryFileNames(prev => ({ ...prev, [tempUrl]: file.name }));
 
             // Add tempUrl immediately
             setGalleryPreviews(prev => [...prev, tempUrl]);
@@ -276,7 +284,8 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                 const blob = await res.blob();
 
                 const formDataUpload = new FormData();
-                formDataUpload.append('file', blob, 'experience.webp');
+                // Send original name (PHP will slugify and check for existence)
+                formDataUpload.append('file', blob, coverFileName || 'experience.webp');
 
                 const uploadData = await fetchApi<any>('upload.php', {
                     method: 'POST',
@@ -295,9 +304,10 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                         const res = await fetch(url);
                         const blob = await res.blob();
                         const formDataGallery = new FormData();
-                        // Generate a unique name for this gallery file
-                        const fileName = `gallery_${Math.random().toString(36).substr(2, 9)}.webp`;
-                        formDataGallery.append('file', blob, fileName);
+
+                        // Use original name for the gallery file
+                        const originalName = galleryFileNames[url] || `gallery_${Math.random().toString(36).substr(2, 9)}.webp`;
+                        formDataGallery.append('file', blob, originalName);
 
                         const uploadData = await fetchApi<any>('upload.php', {
                             method: 'POST',
@@ -840,8 +850,14 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
 
             {/* Media Source Selector Modal */}
             {mediaSourceModal.isOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl p-8 max-w-sm w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-300 relative">
+                <div
+                    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+                    onClick={() => setMediaSourceModal(prev => ({ ...prev, isOpen: false }))}
+                >
+                    <div
+                        className="bg-white rounded-3xl p-8 max-w-sm w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-300 relative"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <button
                             onClick={() => setMediaSourceModal(prev => ({ ...prev, isOpen: false }))}
                             className="absolute top-4 right-4 p-2 hover:bg-stone-100 rounded-full text-stone-400 transition-colors"
@@ -903,8 +919,17 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
 
             {/* Success Modal */}
             {showSuccessModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-300">
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+                    onClick={() => {
+                        setShowSuccessModal(false);
+                        router.push('/admin/experiences');
+                    }}
+                >
+                    <div
+                        className="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-300"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <div className="flex flex-col items-center text-center space-y-4">
                             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center animate-in zoom-in duration-500">
                                 <svg

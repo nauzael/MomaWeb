@@ -29,8 +29,14 @@ export default function AdminBookingCalendar({ bookings, isOpen, onClose }: Admi
         : [];
 
     return (
-        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-stone-900 rounded-4xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col md:flex-row min-h-[600px] animate-in zoom-in-95 duration-200 ring-1 ring-stone-900/5">
+        <div
+            className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={onClose}
+        >
+            <div
+                className="bg-white dark:bg-stone-900 rounded-4xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col md:flex-row min-h-[600px] animate-in zoom-in-95 duration-200 ring-1 ring-stone-900/5"
+                onClick={(e) => e.stopPropagation()}
+            >
                 {/* Calendar Side */}
                 <div className="p-8 bg-stone-50 dark:bg-stone-950 flex-1 flex flex-col border-r border-stone-100 dark:border-stone-800 overflow-y-auto">
                     <div className="flex justify-between items-center mb-8">

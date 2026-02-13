@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Map, Calendar, Settings, Users, BarChart3, Loader2, ImageIcon } from "lucide-react";
+import { LayoutDashboard, Calendar, Map, Users, ImageIcon, BarChart3, Settings, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-client";
@@ -24,42 +24,30 @@ export default function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        console.log("SidebarNav Auth State:", { authLoading, userEmail: user?.email, userRole: user?.role });
         if (!authLoading) {
             if (user) {
-                // FAILSAFE: Si es el admin principal o tiene rol de admin en la sesión
                 const isAdmin =
                     user.email === 'admin@momaturismo.com' ||
                     user.email === 'admin@moma.com' ||
                     user.role?.toLowerCase() === 'admin' ||
                     user.role?.toLowerCase() === 'superadmin';
 
-                console.log("Is Admin Check:", isAdmin);
-
-                if (isAdmin) {
-                    setPermissions(['all']);
-                } else {
-                    setPermissions(['dashboard']);
-                }
-            } else {
-                console.log("No user found in SidebarNav");
+                setPermissions(isAdmin ? ['all'] : ['dashboard']);
             }
-            // Pequeño delay para asegurar que el renderizado no parpadee
-            const timer = setTimeout(() => setLoading(false), 100);
-            return () => clearTimeout(timer);
+            setLoading(false);
         }
     }, [user, authLoading]);
-
-    if (loading || authLoading) {
-        return <div className="p-8 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-stone-500" /></div>;
-    }
 
     const hasAccess = (key: string) => {
         if (permissions.includes('all')) return true;
         return permissions.includes(key);
     };
 
-    // Normalizar pathname para comparación (quitar barra final si existe)
+    // If we're loading and don't have permissions yet, show a subtle placeholder
+    if ((loading || authLoading) && permissions.length === 0) {
+        return <div className="px-8 mt-4"><Loader2 className="w-5 h-5 animate-spin text-white/10" /></div>;
+    }
+
     const normalizedPathname = pathname.replace(/\/$/, "");
 
     return (
