@@ -46,6 +46,10 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
     // New states for MediaSelector
     const [isCoverSelectorOpen, setIsCoverSelectorOpen] = useState(false);
     const [isGallerySelectorOpen, setIsGallerySelectorOpen] = useState(false);
+    const [mediaSourceModal, setMediaSourceModal] = useState<{ isOpen: boolean; target: 'cover' | 'gallery' }>({
+        isOpen: false,
+        target: 'cover'
+    });
 
     const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
@@ -724,7 +728,7 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                             </div>
 
                             <div
-                                onClick={handleFileClick}
+                                onClick={() => setMediaSourceModal({ isOpen: true, target: 'cover' })}
                                 className="border-2 border-dashed border-[#eef1f4] hover:border-moma-green bg-[#fcfdfd] rounded-[2rem] p-12 text-center cursor-pointer transition-all relative overflow-hidden group min-h-[400px] flex items-center justify-center"
                             >
                                 {previewUrl ? (
@@ -820,7 +824,7 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
 
                                     <button
                                         type="button"
-                                        onClick={() => galleryFileInputRef.current?.click()}
+                                        onClick={() => setMediaSourceModal({ isOpen: true, target: 'gallery' })}
                                         className="aspect-square rounded-2xl border-2 border-dashed border-[#eef1f4] hover:border-moma-green hover:bg-[#f5fbf9] transition-all flex flex-col items-center justify-center text-stone-400 gap-2 group"
                                     >
                                         <Plus className="w-6 h-6 group-hover:scale-110 transition-transform" />
@@ -865,6 +869,69 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                 onSelect={(url) => setGalleryPreviews(prev => [...prev, url])}
                 title="Añadir a Galería"
             />
+
+            {/* Media Source Selector Modal */}
+            {mediaSourceModal.isOpen && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-3xl p-8 max-w-sm w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-300 relative">
+                        <button
+                            onClick={() => setMediaSourceModal(prev => ({ ...prev, isOpen: false }))}
+                            className="absolute top-4 right-4 p-2 hover:bg-stone-100 rounded-full text-stone-400 transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        <div className="text-center space-y-6">
+                            <div className="space-y-2">
+                                <h3 className="text-xl font-black text-stone-900">Origen de Imagen</h3>
+                                <p className="text-sm text-stone-500">¿Cómo deseas añadir la fotografía?</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
+                                <button
+                                    onClick={() => {
+                                        setMediaSourceModal(prev => ({ ...prev, isOpen: false }));
+                                        if (mediaSourceModal.target === 'cover') {
+                                            handleFileClick();
+                                        } else {
+                                            galleryFileInputRef.current?.click();
+                                        }
+                                    }}
+                                    className="flex items-center gap-4 p-4 bg-[#f5fbf9] hover:bg-moma-green/5 border border-stone-100 hover:border-moma-green rounded-2xl transition-all group"
+                                >
+                                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm text-moma-green group-hover:scale-110 transition-transform">
+                                        <Upload className="w-6 h-6" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="font-bold text-stone-900">Subir Nueva</p>
+                                        <p className="text-[10px] text-stone-400 uppercase font-black">Desde tu dispositivo</p>
+                                    </div>
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                        setMediaSourceModal(prev => ({ ...prev, isOpen: false }));
+                                        if (mediaSourceModal.target === 'cover') {
+                                            setIsCoverSelectorOpen(true);
+                                        } else {
+                                            setIsGallerySelectorOpen(true);
+                                        }
+                                    }}
+                                    className="flex items-center gap-4 p-4 bg-stone-50 hover:bg-stone-100 border border-stone-100 hover:border-stone-200 rounded-2xl transition-all group"
+                                >
+                                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm text-stone-600 group-hover:scale-110 transition-transform">
+                                        <ImageIcon className="w-6 h-6" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="font-bold text-stone-900">De la Galería</p>
+                                        <p className="text-[10px] text-stone-400 uppercase font-black">Imágenes ya subidas</p>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Success Modal */}
             {showSuccessModal && (
