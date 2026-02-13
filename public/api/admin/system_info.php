@@ -3,6 +3,9 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 0); // Keep it JSON friendly
 
+// Load configuration and utilities
+require_once __DIR__ . '/../config/cors.php';
+
 header('Content-Type: application/json');
 
 /**
@@ -96,12 +99,14 @@ try {
             'last_deploy' => $last_deploy_time ?: 'Desconocido'
         ]
     ]);
+    exit;
 
 } catch (Throwable $e) {
-    http_response_code(500);
+    http_response_code(200); // Return 200 even on catch but with success=false to avoid "Failed to fetch" browser alerts
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage(),
         'trace' => $e->getTraceAsString()
     ]);
+    exit;
 }

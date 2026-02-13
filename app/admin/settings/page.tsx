@@ -15,35 +15,46 @@ export default function SettingsPage() {
         setIsLoadingStatus(true);
         setStatusError(null);
         try {
-            // Usamos fetchApi para asegurar consistencia con el entorno de producción
-            const data = await fetchApi<any>('admin/system_info.php');
-            if (data && data.success) {
+            // Usamos un fetch directo para el monitor para máxima compatibilidad
+            const res = await fetch('/api/admin/system_info.php', { cache: 'no-store' });
+            if (!res.ok) {
+                const text = await res.text();
+                try {
+                    const errorData = JSON.parse(text);
+                    throw new Error(errorData.error || `Error del servidor (${res.status})`);
+                } catch {
+                    throw new Error(`Error del servidor (${res.status})`);
+                }
+            }
+            const data = await res.json();
+            if (data.success) {
                 setSystemInfo(data);
             } else {
-                setStatusError(data?.error || 'Error al obtener información del servidor');
+                setStatusError(data.error || 'Error al obtener información');
             }
         } catch (e: any) {
-            console.error('Failed to fetch system info', e);
-            setStatusError(e.message || 'Error de conexión con el backend PHP');
+            console.error('Monitor Fetch Error:', e);
+            setStatusError(e.message || 'Error de conexión');
         } finally {
             setIsLoadingStatus(false);
         }
     };
 
     const handleManualDeploy = async () => {
-        if (!confirm('Esta acción forzará la sincronización de los archivos compilados hacia la carpeta pública. ¿Continuar?')) return;
+        if (!confirm('Esta acción forzará la sincronización de los archivos hacia la carpeta pública. ¿Continuar?')) return;
 
         setIsLoadingStatus(true);
         try {
-            const data = await fetchApi<any>('admin/system_info.php?action=deploy');
-            if (data && data.success) {
-                alert('¡Despliegue exitoso! Los cambios ya están en vivo en public_html');
+            const res = await fetch('/api/admin/system_info.php?action=deploy', { cache: 'no-store' });
+            const data = await res.json();
+            if (data.success) {
+                alert('¡Despliegue exitoso!');
                 fetchStatus();
             } else {
-                alert('Error al desplegar: ' + (data.message || 'Error desconocido'));
+                alert('Error: ' + (data.message || 'Error desconocido'));
             }
         } catch (e: any) {
-            alert('Error al intentar realizar el despliegue: ' + e.message);
+            alert('Error al intentar desplegar: ' + e.message);
         } finally {
             setIsLoadingStatus(false);
         }
