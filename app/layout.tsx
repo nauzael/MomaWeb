@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     images: ["/images/hero-bg.jpg"],
   },
   icons: {
-    icon: "/favicon.png",
+    icon: "/favicon.png?v=1",
   },
 };
 
