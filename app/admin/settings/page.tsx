@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Save, ToggleLeft, ToggleRight, Shield, Clock, Activity, GitBranch, RefreshCw, Server } from 'lucide-react';
+import { Save, ToggleLeft, ToggleRight, Shield, Clock, Activity, GitBranch, RefreshCw, Server, X } from 'lucide-react';
 import Link from 'next/link';
 import { fetchApi } from '@/lib/api-client';
 
@@ -10,22 +10,14 @@ export default function SettingsPage() {
     const [systemInfo, setSystemInfo] = useState<any>(null);
     const [isLoadingStatus, setIsLoadingStatus] = useState(false);
     const [statusError, setStatusError] = useState<string | null>(null);
+    const [showDeployModal, setShowDeployModal] = useState(false);
+    const [isDeploying, setIsDeploying] = useState(false);
 
     const fetchStatus = async () => {
         setIsLoadingStatus(true);
         setStatusError(null);
         try {
-            // Usamos un fetch directo para el monitor para máxima compatibilidad
             const res = await fetch('/api/admin/system_info.php', { cache: 'no-store' });
-            if (!res.ok) {
-                const text = await res.text();
-                try {
-                    const errorData = JSON.parse(text);
-                    throw new Error(errorData.error || `Error del servidor (${res.status})`);
-                } catch {
-                    throw new Error(`Error del servidor (${res.status})`);
-                }
-            }
             const data = await res.json();
             if (data.success) {
                 setSystemInfo(data);
@@ -33,22 +25,20 @@ export default function SettingsPage() {
                 setStatusError(data.error || 'Error al obtener información');
             }
         } catch (e: any) {
-            console.error('Monitor Fetch Error:', e);
             setStatusError(e.message || 'Error de conexión');
         } finally {
             setIsLoadingStatus(false);
         }
     };
 
-    const handleManualDeploy = async () => {
-        if (!confirm('Esta acción forzará la sincronización de los archivos hacia la carpeta pública. ¿Continuar?')) return;
-
-        setIsLoadingStatus(true);
+    const handleDeploy = async () => {
+        setIsDeploying(true);
         try {
-            const res = await fetch('/api/admin/system_info.php?action=deploy', { cache: 'no-store' });
+            const res = await fetch('/api/admin/system_info.php?action=deploy-head', { cache: 'no-store' });
             const data = await res.json();
             if (data.success) {
-                alert('¡Despliegue exitoso!');
+                setShowDeployModal(false);
+                alert(data.message);
                 fetchStatus();
             } else {
                 alert('Error: ' + (data.message || 'Error desconocido'));
@@ -56,7 +46,7 @@ export default function SettingsPage() {
         } catch (e: any) {
             alert('Error al intentar desplegar: ' + e.message);
         } finally {
-            setIsLoadingStatus(false);
+            setIsDeploying(false);
         }
     };
 
@@ -166,18 +156,8 @@ export default function SettingsPage() {
 
                                 <div className="grid grid-cols-1 gap-3">
                                     <button
-                                        onClick={async () => {
-                                            if (!confirm('¿Desplegar el commit HEAD actual a la carpeta pública?')) return;
-                                            setIsLoadingStatus(true);
-                                            try {
-                                                const res = await fetch('/api/admin/system_info.php?action=deploy-head');
-                                                const data = await res.json();
-                                                alert(data.message);
-                                                fetchStatus();
-                                            } catch (e) { alert('Error de despliegue'); }
-                                            finally { setIsLoadingStatus(false); }
-                                        }}
-                                        disabled={isLoadingStatus}
+                                        onClick={() => setShowDeployModal(true)}
+                                        disabled={isLoadingStatus || isDeploying}
                                         className="w-full py-2.5 bg-moma-green text-stone-900 rounded-xl text-xs font-black hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 shadow-md shadow-moma-green/20"
                                     >
                                         <Save className="w-3.5 h-3.5" />
@@ -188,6 +168,78 @@ export default function SettingsPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Confirm Deploy Modal */}
+                {showDeployModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => !isDeploying && setShowDeployModal(false)} />
+
+                        <div className="bg-white dark:bg-stone-900 w-full max-w-md rounded-3xl shadow-2xl border border-stone-100 dark:border-stone-800 overflow-hidden relative animate-in fade-in zoom-in duration-300">
+                            <div className="p-6 space-y-6">
+                                <div className="flex justify-between items-start">
+                                    <div className="w-12 h-12 bg-moma-green/10 rounded-2xl flex items-center justify-center">
+                                        <GitBranch className="w-6 h-6 text-moma-green" />
+                                    </div>
+                                    {!isDeploying && (
+                                        <button onClick={() => setShowDeployModal(false)} className="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full transition-colors text-stone-400">
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h3 className="text-xl font-black text-stone-900 dark:text-white">Confirmar Despliegue</h3>
+                                    <p className="text-sm text-stone-500">¿Estás seguro de poner en vivo el último commit del repositorio?</p>
+                                </div>
+
+                                {systemInfo?.git && (
+                                    <div className="p-4 bg-stone-50 dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-800 space-y-3">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-moma-green animate-pulse" />
+                                            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Commit Actual</span>
+                                        </div>
+                                        <p className="text-sm font-bold text-stone-800 dark:text-stone-200 leading-tight">
+                                            {systemInfo.git.subject}
+                                        </p>
+                                        <div className="flex items-center gap-3 text-[10px] text-stone-400">
+                                            <span className="font-mono bg-white dark:bg-stone-900 px-2 py-0.5 rounded border border-stone-100 dark:border-stone-800">
+                                                {systemInfo.git.hash.substring(0, 7)}
+                                            </span>
+                                            <span>Por {systemInfo.git.author}</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="grid grid-cols-2 gap-3 pt-2">
+                                    <button
+                                        disabled={isDeploying}
+                                        onClick={() => setShowDeployModal(false)}
+                                        className="py-3 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 rounded-2xl text-xs font-bold hover:bg-stone-200 transition-all"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        disabled={isDeploying}
+                                        onClick={handleDeploy}
+                                        className="py-3 bg-moma-green text-stone-900 rounded-2xl text-xs font-black hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-moma-green/20"
+                                    >
+                                        {isDeploying ? (
+                                            <>
+                                                <RefreshCw className="w-4 h-4 animate-spin" />
+                                                PROCESANDO...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Server className="w-4 h-4" />
+                                                ¡DESPLEGAR AHORA!
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <h2 className="text-lg font-bold text-stone-900 dark:text-white border-b border-stone-100 pb-4">Pasarela de Pagos</h2>
 
