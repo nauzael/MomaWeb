@@ -51,18 +51,18 @@ const DestinationCard = React.forwardRef<HTMLDivElement, DestinationCardProps>(
                     />
 
                     {/* Content */}
-                    <div className="relative flex flex-col justify-end h-full p-6 text-white">
-                        <h3 className="text-3xl font-bold tracking-tight">
-                            {location} <span className="text-2xl ml-1">{flag}</span>
+                    <div className="relative flex flex-col justify-end h-full p-8 text-white">
+                        <h3 className="text-3xl md:text-2xl lg:text-3xl font-heading font-black tracking-tight leading-tight italic drop-shadow-md">
+                            {location} <span className="text-xl ml-1 not-italic opacity-80">{flag}</span>
                         </h3>
-                        <p className="text-sm text-white/80 mt-1 font-medium">{stats}</p>
+                        <p className="text-xs font-sans text-white/70 mt-3 font-black uppercase tracking-[0.2em]">{stats}</p>
 
                         {/* Explore Button */}
-                        <div className="mt-8 flex items-center justify-between bg-[hsl(var(--theme-color)/0.2)] backdrop-blur-md border border-[hsl(var(--theme-color)/0.3)] 
-                           rounded-lg px-4 py-3 
+                        <div className="mt-8 flex items-center justify-between bg-white/10 backdrop-blur-md border border-white/20 
+                           rounded-full px-6 py-3 
                            transition-all duration-300 
-                           group-hover:bg-[hsl(var(--theme-color)/0.4)] group-hover:border-[hsl(var(--theme-color)/0.5)]">
-                            <span className="text-sm font-semibold tracking-wide">Explore Now</span>
+                           group-hover:bg-moma-green group-hover:border-moma-green group-hover:text-stone-900 group-hover:shadow-lg">
+                            <span className="text-[10px] font-sans font-black uppercase tracking-[0.2em]">Leer Historia</span>
                             <ArrowRight className="h-4 w-4 transform transition-transform duration-300 group-hover:translate-x-1" />
                         </div>
                     </div>

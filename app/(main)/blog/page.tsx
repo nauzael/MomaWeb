@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { fetchApi, getImageUrl } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
+import { DestinationCard } from '@/components/ui/card-21';
 
 export default function BlogListingPage() {
     const [posts, setPosts] = useState<any[]>([]);
@@ -115,31 +116,16 @@ export default function BlogListingPage() {
             {/* Featured Post */}
             {featuredPost && selectedCategory === 'all' && (
                 <section className="max-w-7xl mx-auto px-6 mb-24">
-                    <Link href={`/blog/post?slug=${featuredPost.slug}`} className="group relative block aspect-[21/9] rounded-[3rem] overflow-hidden shadow-2xl">
-                        <Image
-                            src={getImageUrl(featuredPost.cover_image)}
-                            alt={featuredPost.title}
-                            fill
-                            className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                    <div className="h-[400px] md:h-[600px]">
+                        <DestinationCard
+                            imageUrl={getImageUrl(featuredPost.cover_image)}
+                            location={featuredPost.title}
+                            flag="✨"
+                            stats={`Destacado • ${featuredPost.category_name || 'Expedición'} • ${format(new Date(featuredPost.created_at), 'dd MMM', { locale: es })}`}
+                            href={`/blog/post?slug=${featuredPost.slug}`}
+                            themeColor="170 100% 25%"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                        <div className="absolute bottom-0 left-0 p-12 w-full flex flex-col md:flex-row items-end justify-between gap-8">
-                            <div className="max-w-2xl">
-                                <span className="inline-block px-4 py-1.5 bg-moma-green text-stone-900 rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
-                                    Histórica
-                                </span>
-                                <h2 className="text-4xl md:text-6xl font-black text-white leading-[1.1] mb-6 italic">
-                                    {featuredPost.title}
-                                </h2>
-                                <p className="text-stone-300 text-lg line-clamp-2 md:line-clamp-3 opacity-90 font-medium">
-                                    {featuredPost.excerpt}
-                                </p>
-                            </div>
-                            <div className="bg-white p-6 rounded-full group-hover:bg-moma-green group-hover:scale-110 transition-all duration-500 shadow-2xl">
-                                <ArrowRight className="w-8 h-8 text-black" />
-                            </div>
-                        </div>
-                    </Link>
+                    </div>
                 </section>
             )}
 
@@ -152,7 +138,7 @@ export default function BlogListingPage() {
                         ))}
                     </div>
                 ) : filteredPosts.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-20">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
                         {remainingPosts.map((post, idx) => (
                             <motion.article
                                 key={post.id}
@@ -160,36 +146,16 @@ export default function BlogListingPage() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: idx * 0.1 }}
+                                className="h-[500px]"
                             >
-                                <Link href={`/blog/post?slug=${post.slug}`} className="group block">
-                                    <div className="relative aspect-[4/5] rounded-[3rem] overflow-hidden mb-8 shadow-sm group-hover:shadow-2xl transition-all duration-700">
-                                        <Image
-                                            src={getImageUrl(post.cover_image)}
-                                            alt={post.title}
-                                            fill
-                                            className="object-cover transition-transform duration-1000 group-hover:scale-110 origin-bottom"
-                                        />
-                                        <div className="absolute top-6 left-6 px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black text-white uppercase tracking-widest border border-white/20">
-                                            {post.category_name || 'Explora'}
-                                        </div>
-                                    </div>
-                                    <div className="px-2">
-                                        <div className="flex items-center gap-4 text-stone-400 text-[10px] font-black uppercase tracking-widest mb-4">
-                                            <span className="flex items-center gap-1.5"><Calendar className="w-3 h-3" /> {format(new Date(post.created_at), 'dd MMM, yyyy', { locale: es })}</span>
-                                            <div className="w-1 h-1 rounded-full bg-stone-200" />
-                                            <span className="flex items-center gap-1.5"><User className="w-3 h-3" /> {post.author_name}</span>
-                                        </div>
-                                        <h3 className="text-2xl md:text-3xl font-black text-stone-900 dark:text-white leading-tight italic group-hover:text-moma-green transition-colors">
-                                            {post.title}
-                                        </h3>
-                                        <p className="mt-4 text-stone-500 line-clamp-3 leading-relaxed font-medium">
-                                            {post.excerpt}
-                                        </p>
-                                        <div className="mt-8 flex items-center gap-2 text-stone-900 dark:text-white font-black uppercase text-[10px] tracking-widest group-hover:gap-4 transition-all">
-                                            Seguir Leyendo <ChevronRight className="w-4 h-4 text-moma-green" />
-                                        </div>
-                                    </div>
-                                </Link>
+                                <DestinationCard
+                                    imageUrl={getImageUrl(post.cover_image)}
+                                    location={post.title}
+                                    flag="🍃"
+                                    stats={`${post.category_name || 'Expedición'} • ${format(new Date(post.created_at), 'dd MMM', { locale: es })}`}
+                                    href={`/blog/post?slug=${post.slug}`}
+                                    themeColor={idx % 3 === 0 ? "170 100% 25%" : idx % 3 === 1 ? "150 50% 25%" : "190 60% 30%"}
+                                />
                             </motion.article>
                         ))}
                     </div>
