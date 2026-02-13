@@ -8,6 +8,7 @@ import { fetchApi, getImageUrl } from '@/lib/api-client';
 import { saveExperiencePersisted, type Experience } from '@/lib/experience-service';
 
 import DynamicMap from '@/components/map/DynamicMap';
+import MediaSelector from '@/components/admin/MediaSelector';
 
 interface ExperienceFormProps {
     initialData?: Experience;
@@ -41,6 +42,11 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
     const [galleryPreviews, setGalleryPreviews] = useState<string[]>(initialData?.gallery || []);
     const [optimizationProgress, setOptimizationProgress] = useState({ current: 0, total: 0 });
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+    // New states for MediaSelector
+    const [isCoverSelectorOpen, setIsCoverSelectorOpen] = useState(false);
+    const [isGallerySelectorOpen, setIsGallerySelectorOpen] = useState(false);
+
     const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
     // Auto-resize description textarea
@@ -699,6 +705,24 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                                 className="hidden"
                                 accept="image/*,.heic,.heif"
                             />
+
+                            <div className="flex gap-4 mb-4">
+                                <button
+                                    type="button"
+                                    onClick={handleFileClick}
+                                    className="flex-1 bg-[#f5fbf9] hover:bg-moma-green/10 text-stone-600 font-bold py-3 px-4 rounded-xl border border-dashed border-stone-200 hover:border-moma-green transition-all flex items-center justify-center gap-2 text-sm"
+                                >
+                                    <Upload className="w-4 h-4" /> Subir Nueva
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsCoverSelectorOpen(true)}
+                                    className="flex-1 bg-[#f5fbf9] hover:bg-stone-100 text-stone-600 font-bold py-3 px-4 rounded-xl border border-stone-200 transition-all flex items-center justify-center gap-2 text-sm"
+                                >
+                                    <ImageIcon className="w-4 h-4" /> De la Galería
+                                </button>
+                            </div>
+
                             <div
                                 onClick={handleFileClick}
                                 className="border-2 border-dashed border-[#eef1f4] hover:border-moma-green bg-[#fcfdfd] rounded-[2rem] p-12 text-center cursor-pointer transition-all relative overflow-hidden group min-h-[400px] flex items-center justify-center"
@@ -740,6 +764,23 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                                 className="hidden"
                                 accept="image/*,.heic,.heif"
                             />
+
+                            <div className="flex gap-4 mb-4">
+                                <button
+                                    type="button"
+                                    onClick={() => galleryFileInputRef.current?.click()}
+                                    className="flex-1 bg-[#f5fbf9] hover:bg-moma-green/10 text-stone-600 font-bold py-3 px-4 rounded-xl border border-dashed border-stone-200 hover:border-moma-green transition-all flex items-center justify-center gap-2 text-sm"
+                                >
+                                    <Upload className="w-4 h-4" /> Subir Fotos
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsGallerySelectorOpen(true)}
+                                    className="flex-1 bg-[#f5fbf9] hover:bg-stone-100 text-stone-600 font-bold py-3 px-4 rounded-xl border border-stone-200 transition-all flex items-center justify-center gap-2 text-sm"
+                                >
+                                    <ImageIcon className="w-4 h-4" /> Galería Infinita
+                                </button>
+                            </div>
 
                             <div className="bg-[#fcfdfd] border border-stone-100 rounded-[2rem] p-6 min-h-[400px]">
                                 {optimizationProgress.total > 0 && optimizationProgress.current < optimizationProgress.total && (
@@ -802,27 +843,34 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="bg-[#061a15] text-white px-10 py-4 rounded-2xl font-black text-lg hover:opacity-90 flex items-center shadow-2xl disabled:opacity-70 disabled:cursor-not-allowed transition-all transform hover:-translate-y-1 active:scale-95"
+                        className="bg-moma-green text-stone-900 px-12 py-4 rounded-2xl font-black text-lg hover:bg-moma-green/90 transition-all shadow-lg shadow-moma-green/20 disabled:opacity-50 flex items-center gap-3"
                     >
-                        {isSubmitting ? (
-                            <>
-                                <Loader2 className="w-6 h-6 mr-3 animate-spin" /> Guardando...
-                            </>
-                        ) : (
-                            <>
-                                <Save className="w-6 h-6 mr-4" /> Guardar Cambios
-                            </>
-                        )}
+                        {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : <Save className="w-6 h-6" />}
+                        {initialData ? 'Actualizar Experiencia' : 'Crear Experiencia'}
                     </button>
                 </div>
             </form>
+
+            {/* Media Selectors */}
+            <MediaSelector
+                isOpen={isCoverSelectorOpen}
+                onClose={() => setIsCoverSelectorOpen(false)}
+                onSelect={(url) => setPreviewUrl(url)}
+                title="Elegir Portada"
+            />
+
+            <MediaSelector
+                isOpen={isGallerySelectorOpen}
+                onClose={() => setIsGallerySelectorOpen(false)}
+                onSelect={(url) => setGalleryPreviews(prev => [...prev, url])}
+                title="Añadir a Galería"
+            />
 
             {/* Success Modal */}
             {showSuccessModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-300">
                         <div className="flex flex-col items-center text-center space-y-4">
-                            {/* Success Icon */}
                             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center animate-in zoom-in duration-500">
                                 <svg
                                     className="w-10 h-10 text-green-600"
@@ -839,7 +887,6 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                                 </svg>
                             </div>
 
-                            {/* Success Message */}
                             <div>
                                 <h3 className="text-2xl font-black text-stone-900 mb-2">
                                     {initialData?.id ? '¡Actualizado!' : '¡Creado!'}
@@ -851,12 +898,10 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                                 </p>
                             </div>
 
-                            {/* Auto-redirect message */}
                             <p className="text-sm text-stone-400">
                                 Redirigiendo en 2 segundos...
                             </p>
 
-                            {/* Close button */}
                             <button
                                 onClick={() => {
                                     setShowSuccessModal(false);
