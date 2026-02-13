@@ -30,24 +30,22 @@ export default function BlogSection() {
     return (
         <section className="py-24 bg-stone-50 dark:bg-stone-950 overflow-hidden">
             <div className="max-w-7xl mx-auto px-6">
-                <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+                <div className="text-center mb-20 max-w-4xl mx-auto">
                     <ScrollReveal>
-                        <span className="text-moma-green text-[10px] font-black uppercase tracking-[0.5em] mb-4 block">
+                        <span className="text-moma-green text-[10px] md:text-[11px] font-sans font-bold uppercase tracking-[0.4em] mb-6 block">
                             Historias de Expedición
                         </span>
-                        <h2 className="text-5xl md:text-7xl font-black text-stone-900 dark:text-white leading-[0.9] italic">
-                            Relatos del <br />
-                            <span className="text-stroke text-transparent dark:text-stroke-white opacity-20">Desconocido</span>
+                        <h2 className="text-5xl md:text-7xl font-heading font-bold text-stone-900 dark:text-white leading-tight">
+                            Relatos del Desconocido
                         </h2>
-                    </ScrollReveal>
-
-                    <ScrollReveal delay={0.2}>
-                        <Link
-                            href="/blog"
-                            className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all pb-2 border-b border-stone-200 dark:border-stone-800"
-                        >
-                            Ver todo el Blog <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
-                        </Link>
+                        <div className="mt-10 flex justify-center">
+                            <Link
+                                href="/blog"
+                                className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all pb-2 border-b border-stone-200 dark:border-stone-800"
+                            >
+                                Ver todo el Blog <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+                            </Link>
+                        </div>
                     </ScrollReveal>
                 </div>
 
