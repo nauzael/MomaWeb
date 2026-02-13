@@ -138,52 +138,69 @@ export default function SettingsPage() {
                             )}
                         </div>
 
-                        {/* Deployment Status Card */}
+                        {/* Deployment & Git Control Card */}
                         <div className="bg-[#fcfdfd] dark:bg-stone-800/40 p-5 rounded-2xl border border-stone-100 dark:border-stone-800 space-y-4">
                             <div className="flex items-center justify-between text-stone-500 text-xs font-bold uppercase tracking-widest">
                                 <div className="flex items-center gap-3">
                                     <Server className="w-4 h-4 text-stone-400" />
-                                    Estado en Vivo
+                                    Control de Versión de Git™
                                 </div>
                                 {systemInfo?.server?.is_deployed && (
-                                    <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px]">PÚBLICO</span>
+                                    <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px]">EN VIVO</span>
                                 )}
                             </div>
 
-                            {statusError ? (
-                                <div className="p-3 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-900/20">
-                                    <p className="text-[10px] text-red-600 dark:text-red-400 font-bold uppercase mb-1">Error de Carga</p>
-                                    <p className="text-xs text-red-500/70 invisible">Error persistente</p>
-                                </div>
-                            ) : systemInfo?.server ? (
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xs text-stone-500 text-nowrap">Último Despliegue</span>
-                                        <span className="text-xs font-bold text-stone-700 dark:text-stone-300">
-                                            {systemInfo.server.last_deploy.split(' ')[1]}
-                                        </span>
+                            <div className="space-y-4">
+                                <div className="p-3 bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 rounded-xl space-y-2">
+                                    <div className="flex justify-between items-center text-[10px]">
+                                        <span className="text-stone-400 font-bold uppercase">Repositorio</span>
+                                        <span className="text-stone-600 font-medium italic">/home/momaexcu/MomaWeb</span>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xs text-stone-500">Ruta Destino</span>
-                                        <span className="text-[10px] font-mono text-stone-400">.../public_html</span>
-                                    </div>
-                                    <div className="pt-2">
-                                        <button
-                                            onClick={handleManualDeploy}
-                                            disabled={isLoadingStatus}
-                                            className="w-full py-2 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2"
-                                        >
-                                            <Save className="w-3.5 h-3.5" />
-                                            FORZAR SINCRONIZACIÓN
-                                        </button>
+                                    <div className="flex justify-between items-center text-[10px]">
+                                        <span className="text-stone-400 font-bold uppercase">Rama Activa</span>
+                                        <span className="text-moma-green font-black">main</span>
                                     </div>
                                 </div>
-                            ) : (
-                                <div className="animate-pulse space-y-3">
-                                    <div className="h-4 bg-stone-100 dark:bg-stone-800 rounded w-full"></div>
-                                    <div className="h-10 bg-stone-100 dark:bg-stone-800 rounded w-full"></div>
+
+                                <div className="grid grid-cols-1 gap-3">
+                                    <button
+                                        onClick={async () => {
+                                            setIsLoadingStatus(true);
+                                            try {
+                                                const res = await fetch('/api/admin/system_info.php?action=update');
+                                                const data = await res.json();
+                                                alert(data.message);
+                                                fetchStatus();
+                                            } catch (e) { alert('Error de conexión'); }
+                                            finally { setIsLoadingStatus(false); }
+                                        }}
+                                        disabled={isLoadingStatus}
+                                        className="w-full py-2.5 bg-white border border-stone-200 text-stone-700 rounded-xl text-xs font-bold hover:bg-stone-50 transition-all flex items-center justify-center gap-2 shadow-sm"
+                                    >
+                                        <RefreshCw className={`w-3.5 h-3.5 ${isLoadingStatus ? 'animate-spin' : ''}`} />
+                                        Actualizar desde remoto
+                                    </button>
+
+                                    <button
+                                        onClick={async () => {
+                                            if (!confirm('¿Desplegar el commit HEAD actual a la carpeta pública?')) return;
+                                            setIsLoadingStatus(true);
+                                            try {
+                                                const res = await fetch('/api/admin/system_info.php?action=deploy-head');
+                                                const data = await res.json();
+                                                alert(data.message);
+                                                fetchStatus();
+                                            } catch (e) { alert('Error de despliegue'); }
+                                            finally { setIsLoadingStatus(false); }
+                                        }}
+                                        disabled={isLoadingStatus}
+                                        className="w-full py-2.5 bg-moma-green text-stone-900 rounded-xl text-xs font-black hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 shadow-md shadow-moma-green/20"
+                                    >
+                                        <Save className="w-3.5 h-3.5" />
+                                        Desplegar commit HEAD
+                                    </button>
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </div>
                 </div>

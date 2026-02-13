@@ -38,19 +38,35 @@ try {
         return $count;
     }
 
-    // 1. Manual Deployment Action
-    if ($action === 'deploy') {
+    // 1. Git & Deployment Actions
+    if ($action === 'update' || $action === 'pull') {
+        // Attempt git pull if enabled, otherwise explain
+        if (function_exists('exec')) {
+            @exec('git pull origin main 2>&1', $out, $ret);
+            echo json_encode([
+                'success' => $ret === 0,
+                'message' => $ret === 0 ? 'Actualización desde remoto exitosa.' : 'Error al actualizar: ' . implode("\n", $out),
+                'details' => $out
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'El hosting no permite ejecutar "git pull" directamente vía PHP. Por favor, usa el despliegue automático de GitHub o cPanel.',
+            ]);
+        }
+        exit;
+    }
+
+    if ($action === 'deploy' || $action === 'deploy-head') {
         $filesCopied = 0;
-        
-        // Potential roots:
-        // 1. One level above public_html (typical for private folder uploads)
-        // 2. Same level as public_html
         $currentPath = realpath(__DIR__);
+        
+        // Search for 'out' folder (build result)
         $possiblePaths = [
-            realpath(__DIR__ . '/../../../out'),          // Assumes project root is parent of public/api
-            realpath(__DIR__ . '/../../../../out'),       // Assumes project is sibling of public_html
-            realpath('/home/momaexcu/moma-web/out'),      // Fixed path if known
-            realpath('/home/momaexcu/out')                // Another common spot
+            realpath(__DIR__ . '/../../../out'),
+            realpath(__DIR__ . '/../../../../out'),
+            realpath('/home/momaexcu/out'),
+            realpath('/home/momaexcu/moma-web/out')
         ];
 
         $srcStatic = null;
@@ -61,33 +77,23 @@ try {
             }
         }
 
-        $debug = [
-            'tried_paths' => $possiblePaths,
-            'found_src' => $srcStatic,
-            'current_script_dir' => __DIR__
-        ];
-        
         if ($srcStatic) {
             $filesCopied += phpRecursiveCopy($srcStatic, $deployPath);
-            
-            // Also copy API folder if found nearby
+            // Sync API as well
             $srcApi = $srcStatic . '/../public/api';
-            if (is_dir($srcApi)) {
-                $filesCopied += phpRecursiveCopy($srcApi, $deployPath . '/api');
-            }
-        }
+            if (is_dir($srcApi)) phpRecursiveCopy($srcApi, $deployPath . '/api');
 
-        echo json_encode([
-            'success' => $filesCopied > 0,
-            'message' => $filesCopied > 0 
-                ? "Sincronización exitosa: $filesCopied archivos actualizados." 
-                : "No se encontraron archivos para sincronizar. Asegúrate de que la carpeta 'out' (del build) esté subida al servidor.",
-            'details' => [
-                'files_count' => $filesCopied,
-                'target' => $deployPath,
-                'debug_info' => $debug
-            ]
-        ]);
+            echo json_encode([
+                'success' => true,
+                'message' => "¡Commit HEAD desplegado con éxito! $filesCopied archivos actualizados en vivo.",
+                'details' => ['count' => $filesCopied, 'path' => $deployPath]
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'No se encontró la carpeta "out" para desplegar. Asegúrate de que el build esté en el servidor.',
+            ]);
+        }
         exit;
     }
     // 2. Git Information
