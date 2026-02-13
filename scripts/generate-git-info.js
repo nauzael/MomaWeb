@@ -4,37 +4,40 @@ const path = require('path');
 
 try {
     const commit_format = '%H|%an|%ar|%ad|%s';
-    const gitLog = execSync(`git log -1 --format="${commit_format}"`).toString().trim();
+    let gitLog = 'N/A';
+    try {
+        gitLog = execSync(`git log -1 --format="${commit_format}"`).toString().trim();
+    } catch (e) { }
+
     const parts = gitLog.split('|');
 
+    const now = new Date();
+    const build_time = now.toLocaleString('es-CO', {
+        timeZone: 'America/Bogota',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+
     const info = {
-        hash: parts[0] || 'N/A',
-        author: parts[1] || 'N/A',
-        date_relative: parts[2] || 'N/A',
-        date_full: parts[3] || 'N/A',
-        subject: parts[4] || 'N/A',
-        generated_at: new Date().toISOString()
+        hash: parts[0] || 'Desconocido',
+        author: parts[1] || 'Usuario Local',
+        date_relative: parts[2] || 'Recién generado',
+        date_full: parts[3] || build_time,
+        subject: parts[4] || 'Cambios sin commit local',
+        build_time: build_time,
+        timestamp: now.getTime()
     };
 
     const dir = path.join(__dirname, '../public/api/admin');
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-    }
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
     const targetPath = path.join(dir, 'git_info.json');
     fs.writeFileSync(targetPath, JSON.stringify(info, null, 2));
-    console.log('✅ Git info generated successfully in public/api/admin/git_info.json');
+    console.log(`✅ Info de Build generada: ${build_time}`);
 } catch (error) {
-    console.warn('⚠️ Could not generate git info (maybe not a git repo or git not in path):', error.message);
-    // Create a dummy file so the API doesn't fail
-    const dummy = {
-        hash: 'Desconocido',
-        author: 'System',
-        date_relative: 'Desconocido',
-        date_full: new Date().toISOString(),
-        subject: 'Información de Git no disponible en el build',
-        generated_at: new Date().toISOString()
-    };
-    const targetPath = path.join(__dirname, '../public/api/admin/git_info.json');
-    fs.writeFileSync(targetPath, JSON.stringify(dummy, null, 2));
+    console.warn('⚠️ Warning al generar info:', error.message);
 }

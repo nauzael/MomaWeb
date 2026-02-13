@@ -117,12 +117,12 @@ export default function SettingsPage() {
                                     <p className="text-sm font-bold text-stone-800 dark:text-stone-200 leading-tight">
                                         {systemInfo.git.subject}
                                     </p>
-                                    <div className="flex flex-wrap gap-3">
-                                        <div className="flex items-center gap-1.5 text-xs text-stone-500 bg-white dark:bg-stone-900 px-2 py-1 rounded-lg border border-stone-100 dark:border-stone-800">
+                                    <div className="flex flex-wrap gap-2">
+                                        <div className="flex items-center gap-1.5 text-[10px] text-stone-500 bg-white dark:bg-stone-900 px-2 py-1 rounded-lg border border-stone-100 dark:border-stone-800">
                                             <Clock className="w-3 h-3" />
-                                            {systemInfo.git.date_relative}
+                                            Build: {systemInfo.git.build_time || systemInfo.git.date_relative}
                                         </div>
-                                        <div className="flex items-center gap-1.5 text-xs text-stone-400 font-mono">
+                                        <div className="flex items-center gap-1.5 text-[10px] text-stone-400 font-mono bg-stone-50 dark:bg-stone-800 px-2 py-1 rounded-lg border border-stone-100 dark:border-stone-800">
                                             {systemInfo.git.hash.substring(0, 7)}
                                         </div>
                                     </div>
