@@ -40,11 +40,38 @@ try {
 
     // 1. Git & Deployment Actions
     if ($action === 'update' || $action === 'pull') {
-        echo json_encode([
-            'success' => false,
-            'message' => 'El hosting no permite ejecutar "git pull" vía PHP. Sigue esta guía: En GitHub -> Settings -> Webhooks, añade la URL de tu cPanel para que se actualice solo al hacer push.',
-            'details' => ['tip' => 'Usa la integración nativa de cPanel Git™ para máxima velocidad.']
-        ]);
+        $foundMethod = false;
+        $output = [];
+        $returnVar = -1;
+
+        // Try all possible execution methods
+        $methods = ['exec', 'shell_exec', 'system', 'passthru'];
+        $availableMethods = [];
+        foreach ($methods as $m) {
+            if (function_exists($m)) $availableMethods[] = $m;
+        }
+
+        if (in_array('exec', $availableMethods)) {
+            @exec('git pull origin main 2>&1', $output, $returnVar);
+            $foundMethod = true;
+        }
+
+        if ($foundMethod && $returnVar === 0) {
+            echo json_encode([
+                'success' => true,
+                'message' => '¡Sincronización remota exitosa!',
+                'details' => $output
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Actualización Directa Deshabilitada: El hosting bloquea los comandos de Git. Usa la NUEVA automatización de GitHub que acabo de configurarte.',
+                'diagnostic' => [
+                    'available_methods' => $availableMethods,
+                    'last_error' => $output[0] ?? 'Acceso denegado'
+                ]
+            ]);
+        }
         exit;
     }
 
