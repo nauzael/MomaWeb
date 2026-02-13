@@ -1,7 +1,6 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/momaexcu/public_html
-    - /bin/cp -rf out/* $DEPLOYPATH
-    - /bin/cp -rf public/api/* $DEPLOYPATH/api/
-    - /bin/chmod 755 $DEPLOYPATH/api/*.php 2>/dev/null || true
+    - export DEPLOYPATH=/home/momaexcu/public_html/
+    - /bin/cp -R out/* $DEPLOYPATH
+    - /bin/cp -R public/api/* $DEPLOYPATH/api/

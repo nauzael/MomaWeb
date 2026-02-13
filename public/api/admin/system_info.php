@@ -40,31 +40,18 @@ try {
 
     // 1. Git & Deployment Actions
     if ($action === 'update' || $action === 'pull') {
-        // Attempt git pull if enabled, otherwise explain
-        if (function_exists('exec')) {
-            @exec('git pull origin main 2>&1', $out, $ret);
-            echo json_encode([
-                'success' => $ret === 0,
-                'message' => $ret === 0 ? 'Actualización desde remoto exitosa.' : 'Error al actualizar: ' . implode("\n", $out),
-                'details' => $out
-            ]);
-        } else {
-            echo json_encode([
-                'success' => false,
-                'message' => 'El hosting no permite ejecutar "git pull" directamente vía PHP. Por favor, usa el despliegue automático de GitHub o cPanel.',
-            ]);
-        }
+        echo json_encode([
+            'success' => false,
+            'message' => 'El hosting no permite ejecutar "git pull" vía PHP. Sigue esta guía: En GitHub -> Settings -> Webhooks, añade la URL de tu cPanel para que se actualice solo al hacer push.',
+            'details' => ['tip' => 'Usa la integración nativa de cPanel Git™ para máxima velocidad.']
+        ]);
         exit;
     }
 
     if ($action === 'deploy' || $action === 'deploy-head') {
         $filesCopied = 0;
-        $currentPath = realpath(__DIR__);
-        
-        // Search for 'out' folder (build result)
         $possiblePaths = [
             realpath(__DIR__ . '/../../../out'),
-            realpath(__DIR__ . '/../../../../out'),
             realpath('/home/momaexcu/out'),
             realpath('/home/momaexcu/moma-web/out')
         ];
@@ -79,65 +66,51 @@ try {
 
         if ($srcStatic) {
             $filesCopied += phpRecursiveCopy($srcStatic, $deployPath);
-            // Sync API as well
             $srcApi = $srcStatic . '/../public/api';
             if (is_dir($srcApi)) phpRecursiveCopy($srcApi, $deployPath . '/api');
 
+            // Store deploy log
+            $log = [
+                'time' => date('Y-m-d H:i:s'),
+                'count' => $filesCopied,
+                'sha' => 'HEAD'
+            ];
+            @file_put_contents(__DIR__ . '/deploy_log.json', json_encode($log));
+
             echo json_encode([
                 'success' => true,
-                'message' => "¡Commit HEAD desplegado con éxito! $filesCopied archivos actualizados en vivo.",
-                'details' => ['count' => $filesCopied, 'path' => $deployPath]
+                'message' => "¡Despliegue exitoso! $filesCopied archivos sincronizados con la carpeta pública.",
             ]);
         } else {
             echo json_encode([
                 'success' => false,
-                'message' => 'No se encontró la carpeta "out" para desplegar. Asegúrate de que el build esté en el servidor.',
+                'message' => 'No se encontró el build (carpeta out). Asegúrate de que los archivos estén en el servidor fuera de public_html.',
             ]);
         }
         exit;
     }
-    // 2. Git Information
+
+    // 2. Information Retrieval
     $git_info = [
         'hash' => 'No disponible',
         'author' => 'System',
         'date_relative' => 'Desconocido',
-        'date_full' => date('Y-m-d H:i:s'),
-        'subject' => 'Información no sincronizada'
+        'date_full' => date('d/m/Y H:i:s'),
+        'subject' => 'Repositorio no sincronizado localmente',
+        'build_time' => 'N/A'
     ];
 
     $staticInfoPath = __DIR__ . '/git_info.json';
-    $hasStatic = file_exists($staticInfoPath);
-
-    // Try exec() first if available
-    if (function_exists('exec')) {
-        $commit_format = '%H|%an|%ar|%ad|%s';
-        @exec('git log -1 --format="' . $commit_format . '" 2>&1', $output, $return_var);
-        
-        if ($return_var === 0 && !empty($output)) {
-            $parts = explode('|', $output[0]);
-            if (count($parts) >= 5) {
-                $git_info = [
-                    'hash' => $parts[0],
-                    'author' => $parts[1],
-                    'date_relative' => $parts[2],
-                    'date_full' => $parts[3],
-                    'subject' => $parts[4]
-                ];
-            }
-        } elseif ($hasStatic) {
-            // Fallback to static JSON if exec fails (e.g. no .git folder or git command)
-            $staticData = json_decode(file_get_contents($staticInfoPath), true);
-            if ($staticData) $git_info = $staticData;
-        }
-    } elseif ($hasStatic) {
-        // exec is disabled, use static JSON
+    if (file_exists($staticInfoPath)) {
         $staticData = json_decode(file_get_contents($staticInfoPath), true);
-        if ($staticData) $git_info = $staticData;
+        if ($staticData) $git_info = array_merge($git_info, $staticData);
     }
 
-    // 3. Deployment Status
-    $is_deployed = @file_exists($deployPath);
-    $last_deploy_time = $is_deployed ? @date("Y-m-d H:i:s", @filemtime($deployPath)) : 'Nunca';
+    // 3. Deployment Log
+    $last_log = ['time' => 'Nunca', 'count' => 0];
+    if (file_exists(__DIR__ . '/deploy_log.json')) {
+        $last_log = json_decode(file_get_contents(__DIR__ . '/deploy_log.json'), true);
+    }
 
     echo json_encode([
         'success' => true,
@@ -147,8 +120,8 @@ try {
             'server_time' => date('Y-m-d H:i:s'),
             'os' => PHP_OS,
             'deploy_path' => $deployPath,
-            'is_deployed' => $is_deployed,
-            'last_deploy' => $last_deploy_time ?: 'Desconocido'
+            'last_deploy' => $last_log['time'],
+            'is_deployed' => true
         ]
     ]);
     exit;
