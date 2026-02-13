@@ -131,19 +131,19 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <h1 className="text-5xl md:text-7xl font-heading font-black text-white mb-4 leading-tight drop-shadow-xl">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-heading font-black text-white mb-4 leading-tight drop-shadow-xl">
                 {currentExperience
                   ? currentExperience.title
                   : t.hero.title}
               </h1>
               {/* Location element removed as per user request */}
 
-              <p className="text-lg md:text-xl text-stone-200 mb-10 font-light max-w-lg leading-relaxed line-clamp-3">
+              <p className="text-base sm:text-lg md:text-xl text-stone-200 mb-8 sm:mb-10 font-light max-w-lg leading-relaxed line-clamp-3">
                 {currentExperience
                   ? currentExperience.description
                   : t.hero.description}
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center w-full sm:w-auto">
                 <Link
                   href={currentExperience ? `/experiencia?slug=${currentExperience.slug}` : "/#experiencias"}
                   onClick={currentExperience ? undefined : (e) => {
@@ -161,15 +161,15 @@ export default function Home() {
                       }
                     }
                   }}
-                  className="bg-moma-green text-white px-8 py-4 rounded-full text-base font-bold hover:bg-white hover:text-moma-green transition-all shadow-lg shadow-moma-green/20 flex items-center justify-center min-w-[200px]"
+                  className="bg-moma-green text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-sm sm:text-base font-bold hover:bg-white hover:text-moma-green transition-all shadow-lg shadow-moma-green/20 flex items-center justify-center w-full sm:w-auto sm:min-w-[200px]"
                 >
                   {t.hero.viewExperience} <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
-                <div className="flex gap-2">
-                  <button onClick={prevSlide} className="p-3 rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all" aria-label={t.hero.prev}>
+                <div className="flex gap-2 justify-center sm:justify-start w-full sm:w-auto">
+                  <button onClick={prevSlide} className="p-3 rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all min-w-[48px] min-h-[48px] flex items-center justify-center" aria-label={t.hero.prev}>
                     <ChevronLeft className="w-6 h-6" />
                   </button>
-                  <button onClick={nextSlide} className="p-3 rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all" aria-label={t.hero.next}>
+                  <button onClick={nextSlide} className="p-3 rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all min-w-[48px] min-h-[48px] flex items-center justify-center" aria-label={t.hero.next}>
                     <ChevronRight className="w-6 h-6" />
                   </button>
                 </div>
@@ -179,7 +179,7 @@ export default function Home() {
         </div>
 
         {/* Indicators */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+        <div className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 z-20 flex gap-2">
           {experiences.map((_, i) => (
             <button
               key={i}
@@ -219,13 +219,13 @@ export default function Home() {
           </div>
         </ScrollReveal>
 
-        <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-4 gap-8">
+        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {t.whyChooseUs.features.map((item: any, i: number) => {
             const icons = [Leaf, Sprout, Tent, Users];
             const Icon = icons[i];
             return (
               <ScrollReveal key={i} delay={i * 0.1} variant="scale-up">
-                <div className="text-center group p-8 rounded-3xl bg-white/50 dark:bg-stone-900/50 backdrop-blur-sm border border-stone-100 dark:border-stone-800 hover:shadow-2xl hover:bg-white dark:hover:bg-stone-900 hover:-translate-y-2 transition-all duration-300 h-full">
+                <div className="text-center group p-6 sm:p-8 rounded-3xl bg-white/50 dark:bg-stone-900/50 backdrop-blur-sm border border-stone-100 dark:border-stone-800 hover:shadow-2xl hover:bg-white dark:hover:bg-stone-900 hover:-translate-y-2 transition-all duration-300 h-full">
                   <div className="w-20 h-20 bg-stone-50 dark:bg-stone-800 shadow-sm rounded-2xl flex items-center justify-center mx-auto mb-6 text-3xl group-hover:scale-110 group-hover:bg-moma-green group-hover:text-white transition-all duration-300 text-moma-green">
                     <Icon className="w-8 h-8" />
                   </div>
@@ -284,7 +284,7 @@ export default function Home() {
             <h2 className="text-4xl md:text-5xl font-heading font-bold text-stone-900 dark:text-white">{t.contact.title}</h2>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Contact Info Cards */}
             <div className="space-y-4">
               <ScrollReveal delay={0.2} variant="slide-right">
@@ -329,11 +329,11 @@ export default function Home() {
                   <form className="grid md:grid-cols-2 gap-6">
                     <div className="col-span-2 md:col-span-1">
                       <label htmlFor="name" className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">{t.contact.form.name}</label>
-                      <input id="name" type="text" className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-moma-green/50 focus:border-moma-green transition-all" placeholder={t.contact.form.namePlaceholder} />
+                      <input id="name" type="text" className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-moma-green/50 focus:border-moma-green transition-all" placeholder={t.contact.form.namePlaceholder} />
                     </div>
                     <div className="col-span-2 md:col-span-1">
                       <label htmlFor="email" className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">{t.contact.form.email}</label>
-                      <input id="email" type="email" className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-moma-green/50 focus:border-moma-green transition-all" placeholder={t.contact.form.emailPlaceholder} />
+                      <input id="email" type="email" className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-moma-green/50 focus:border-moma-green transition-all" placeholder={t.contact.form.emailPlaceholder} />
                     </div>
                     <div className="col-span-2">
                       <label htmlFor="message" className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">{t.contact.form.message}</label>

@@ -67,7 +67,7 @@ export default function BlogListingPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="text-6xl md:text-9xl font-heading font-black text-stone-900 dark:text-white leading-[1.1]"
+                        className="text-5xl sm:text-6xl md:text-7xl lg:text-9xl font-heading font-black text-stone-900 dark:text-white leading-[1.1]"
                     >
                         {t.nav.blogRelatos}
                     </motion.h1>
@@ -83,8 +83,8 @@ export default function BlogListingPage() {
             </section>
 
             {/* Categories */}
-            <section className="max-w-7xl mx-auto px-6 mb-16">
-                <div className="flex flex-wrap items-center justify-center gap-2">
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-12 sm:mb-16">
+                <div className="flex overflow-x-auto pb-4 gap-2 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:justify-center">
                     <button
                         onClick={() => setSelectedCategory('all')}
                         className={cn(
@@ -115,8 +115,8 @@ export default function BlogListingPage() {
 
             {/* Featured Post */}
             {featuredPost && selectedCategory === 'all' && (
-                <section className="max-w-7xl mx-auto px-6 mb-24">
-                    <div className="h-[400px] md:h-[600px]">
+                <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-16 sm:mb-24">
+                    <div className="h-[350px] sm:h-[400px] md:h-[600px]">
                         <DestinationCard
                             imageUrl={getImageUrl(featuredPost.cover_image)}
                             location={featuredPost.title}
@@ -130,7 +130,7 @@ export default function BlogListingPage() {
             )}
 
             {/* Grid */}
-            <section className="max-w-7xl mx-auto px-6 pb-32">
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-24 sm:pb-32">
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
                         {[1, 2, 3, 4, 5, 6].map(i => (

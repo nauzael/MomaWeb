@@ -131,77 +131,82 @@ export default function Navbar() {
                         </Link>
                     </div>
 
-                    <div className="-mr-2 flex md:hidden">
+                    <div className="md:hidden flex items-center gap-2">
+                        <button
+                            onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-3 rounded-full text-xs font-bold uppercase tracking-wider transition-all min-h-[44px]",
+                                (scrolled || isSpecialPage) ? "text-stone-600 hover:bg-stone-100" : "text-white/80 hover:bg-white/10"
+                            )}
+                        >
+                            <Globe className="w-4 h-4" />
+                            {language === 'es' ? 'EN' : 'ES'}
+                        </button>
                         <button
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className={cn("inline-flex items-center justify-center p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-moma-green", (scrolled || isSpecialPage) ? "text-stone-400 hover:text-stone-500 hover:bg-stone-100" : "text-white hover:bg-white/10")}
-                            aria-expanded={mobileMenuOpen}
-                            aria-controls="mobile-menu"
+                            className={cn("p-3 rounded-md transition-all min-w-[48px] min-h-[48px] flex items-center justify-center", (scrolled || isSpecialPage) ? "text-foreground hover:bg-stone-100" : "text-white hover:bg-white/10")}
                             aria-label={mobileMenuOpen ? t.nav.closeMenu : t.nav.openMenu}
                         >
-                            {mobileMenuOpen ? (
-                                <X className="h-6 w-6" aria-hidden="true" />
-                            ) : (
-                                <Menu className="h-6 w-6" aria-hidden="true" />
-                            )}
+                            {mobileMenuOpen ? <X className="h-6 w-6" aria-hidden="true" /> : <Menu className="h-6 w-6" aria-hidden="true" />}
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* Mobile menu */}
+            {/* Mobile Menu */}
             <AnimatePresence>
                 {mobileMenuOpen && (
-                    <motion.div
-                        id="mobile-menu"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="md:hidden bg-background/95 backdrop-blur-xl border-t border-stone-200 dark:border-stone-800"
-                    >
-                        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                            <Link
-                                href="/#experiencias"
-                                onClick={(e) => handleNavClick(e, '/#experiencias')}
-                                className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-800"
-                            >
-                                {t.nav.experiences}
-                            </Link>
-                            <Link
-                                href="/#nosotros"
-                                onClick={(e) => handleNavClick(e, '/#nosotros')}
-                                className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-800"
-                            >
-                                {t.nav.about}
-                            </Link>
-                            <Link
-                                href="/blog"
-                                className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-800"
-                            >
-                                {t.nav.blog}
-                            </Link>
-                            <Link
-                                href="/#contacto"
-                                onClick={(e) => handleNavClick(e, '/#contacto')}
-                                className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-800"
-                            >
-                                {t.nav.contact}
-                            </Link>
-                            <Link
-                                href="/admin/dashboard"
-                                className="block px-3 py-2 rounded-md text-base font-medium text-moma-green hover:text-moma-green/80 hover:bg-stone-100 dark:hover:bg-stone-800"
-                            >
-                                {t.nav.agency}
-                            </Link>
-                            <button
-                                onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-                                className="w-full flex items-center gap-3 px-3 py-3 rounded-md text-base font-medium text-stone-600 hover:bg-stone-100"
-                            >
-                                <Globe className="w-5 h-5" />
-                                {language === 'es' ? t.nav.englishLabel : t.nav.spanishLabel}
-                            </button>
-                        </div>
-                    </motion.div>
+                    <>
+                        {/* Backdrop */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="fixed inset-0 z-40 bg-black/50 md:hidden backdrop-blur-sm"
+                            onClick={() => setMobileMenuOpen(false)}
+                        />
+                        {/* Menu Panel */}
+                        <motion.div
+                            initial={{ opacity: 0, x: '100%' }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: '100%' }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                            className="fixed inset-y-0 right-0 z-50 w-[85vw] max-w-sm md:hidden bg-stone-50 dark:bg-stone-950 shadow-2xl"
+                        >
+                            <div className="flex flex-col h-full pt-24 px-6 pb-6 overflow-y-auto">
+                                <nav className="flex flex-col space-y-2">
+                                    <Link
+                                        href="/#experiencias"
+                                        onClick={(e) => handleNavClick(e, '/#experiencias')}
+                                        className="text-lg font-bold text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-900 transition-all py-4 px-4 rounded-xl border-b border-stone-200 dark:border-stone-800 min-h-[56px] flex items-center"
+                                    >
+                                        {t.nav.experiences}
+                                    </Link>
+                                    <Link
+                                        href="/#nosotros"
+                                        onClick={(e) => handleNavClick(e, '/#nosotros')}
+                                        className="text-lg font-bold text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-900 transition-all py-4 px-4 rounded-xl border-b border-stone-200 dark:border-stone-800 min-h-[56px] flex items-center"
+                                    >
+                                        {t.nav.about}
+                                    </Link>
+                                    <Link href="/blog" className="text-lg font-bold text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-900 transition-all py-4 px-4 rounded-xl border-b border-stone-200 dark:border-stone-800 min-h-[56px] flex items-center">
+                                        {t.nav.blog}
+                                    </Link>
+                                    <Link
+                                        href="/#contacto"
+                                        onClick={(e) => handleNavClick(e, '/#contacto')}
+                                        className="text-lg font-bold text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-900 transition-all py-4 px-4 rounded-xl border-b border-stone-200 dark:border-stone-800 min-h-[56px] flex items-center"
+                                    >
+                                        {t.nav.contact}
+                                    </Link>
+                                    <Link href="/admin/dashboard" className="bg-moma-green text-white px-6 py-4 rounded-full text-base font-bold hover:bg-opacity-90 transition-all text-center mt-6 min-h-[56px] flex items-center justify-center">
+                                        {t.nav.agency}
+                                    </Link>
+                                </nav>
+                            </div>
+                        </motion.div>
+                    </>
                 )}
             </AnimatePresence>
         </nav>

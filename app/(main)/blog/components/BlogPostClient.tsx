@@ -14,7 +14,7 @@ export default function BlogPostClient({ post, relatedPosts }: { post: any, rela
     return (
         <div className="min-h-screen bg-stone-50 dark:bg-stone-950 pb-32">
             {/* Header / Cover */}
-            <header className="relative h-[80vh] w-full overflow-hidden">
+            <div className="relative h-[50vh] sm:h-[60vh] md:h-[80vh] w-full overflow-hidden">
                 {post.cover_image && (
                     <Image
                         src={getImageUrl(post.cover_image)}
@@ -42,7 +42,7 @@ export default function BlogPostClient({ post, relatedPosts }: { post: any, rela
                             <span>{format(new Date(post.created_at), 'dd MMMM, yyyy', { locale: language === 'es' ? es : enUS })}</span>
                         </div>
 
-                        <h1 className="text-5xl md:text-8xl font-black text-white leading-[0.9] italic group">
+                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-heading font-black text-white leading-[1.1] drop-shadow-2xl">
                             {post.title}
                         </h1>
 
@@ -57,11 +57,11 @@ export default function BlogPostClient({ post, relatedPosts }: { post: any, rela
                         </div>
                     </motion.div>
                 </div>
-            </header>
+            </div>
 
             {/* Main Content */}
-            <div className="max-w-4xl mx-auto px-6 -mt-10 relative z-10">
-                <div className="bg-white dark:bg-stone-900 rounded-[3rem] p-8 md:p-16 shadow-2xl border border-stone-100 dark:border-stone-800">
+            <article className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 -mt-32 relative z-10">
+                <div className="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl p-6 sm:p-8 md:p-12 lg:p-16 border border-stone-100 dark:border-stone-800">
                     <div
                         className="prose prose-xl dark:prose-invert max-w-none 
                         prose-headings:font-black prose-headings:italic prose-headings:leading-[1.1] 
@@ -79,7 +79,7 @@ export default function BlogPostClient({ post, relatedPosts }: { post: any, rela
                             <span className="text-[10px] font-black uppercase text-stone-400 tracking-widest">{t.nav.blogMetaShare}</span>
                             <div className="flex gap-2">
                                 {[1, 2, 3].map(i => (
-                                    <button key={i} className="p-3 bg-stone-50 dark:bg-stone-800 rounded-2xl hover:bg-moma-green hover:text-stone-900 transition-all">
+                                    <button key={i} className="flex items-center justify-center w-12 h-12 rounded-full bg-stone-100 dark:bg-stone-800 hover:bg-moma-green hover:text-white transition-all duration-300 hover:-translate-y-1">
                                         <Share2 className="w-5 h-5" />
                                     </button>
                                 ))}
@@ -92,11 +92,11 @@ export default function BlogPostClient({ post, relatedPosts }: { post: any, rela
                         </div>
                     </div>
                 </div>
-            </div>
+            </article>
 
             {/* Related Posts */}
             {relatedPosts.length > 0 && (
-                <section className="max-w-7xl mx-auto px-6 mt-32">
+                <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
                     <div className="flex justify-between items-end mb-12">
                         <div>
                             <span className="text-[10px] font-black uppercase text-moma-green tracking-[0.3em] mb-2 block">{t.nav.blogMetaNext}</span>
