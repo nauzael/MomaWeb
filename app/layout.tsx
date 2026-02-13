@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import SessionProvider from "@/components/SessionProvider"
 import { LanguageProvider } from "@/context/LanguageContext"
 import { cn } from "@/lib/utils";
+import VersionCheck from "@/components/VersionCheck";
 
 const fontSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -19,6 +20,7 @@ const fontHeading = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  // ... metadata content stays the same ...
   metadataBase: new URL('https://momanature.com'),
   title: {
     default: "Moma | Turismo de Naturaleza y Aventura en Colombia",
@@ -37,7 +39,7 @@ export const metadata: Metadata = {
     siteName: "Moma Nature",
     images: [
       {
-        url: "/images/hero-bg.jpg", // Ensure this exists or use a valid public image path
+        url: "/images/hero-bg.jpg",
         width: 1200,
         height: 630,
         alt: "Moma Nature - Turismo de Naturaleza en Colombia",
@@ -62,6 +64,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
+      <head>
+        {/* Prevent aggressive caching of the HTML itself */}
+        <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta httpEquiv="Pragma" content="no-cache" />
+        <meta httpEquiv="Expires" content="0" />
+      </head>
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased text-foreground selection:bg-moma-green/30",
@@ -70,6 +78,7 @@ export default function RootLayout({
         )}
         suppressHydrationWarning
       >
+        <VersionCheck />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

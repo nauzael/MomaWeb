@@ -32,11 +32,15 @@ try {
         timestamp: now.getTime()
     };
 
-    const dir = path.join(__dirname, '../public/api/admin');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    // Save to admin API folder
+    const adminDir = path.join(__dirname, '../public/api/admin');
+    if (!fs.existsSync(adminDir)) fs.mkdirSync(adminDir, { recursive: true });
+    fs.writeFileSync(path.join(adminDir, 'git_info.json'), JSON.stringify(info, null, 2));
 
-    const targetPath = path.join(dir, 'git_info.json');
-    fs.writeFileSync(targetPath, JSON.stringify(info, null, 2));
+    // Save to public root for easy frontend checking
+    const publicDir = path.join(__dirname, '../public');
+    fs.writeFileSync(path.join(publicDir, 'version.json'), JSON.stringify({ timestamp: info.timestamp, hash: info.hash }));
+
     console.log(`✅ Info de Build generada: ${build_time}`);
 } catch (error) {
     console.warn('⚠️ Warning al generar info:', error.message);
