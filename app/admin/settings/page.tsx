@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Save, ToggleLeft, ToggleRight, Shield, Clock, Activity, GitBranch, RefreshCw, Server } from 'lucide-react';
 import Link from 'next/link';
+import { fetchApi } from '@/lib/api-client';
 
 export default function SettingsPage() {
     const [stripeEnabled, setStripeEnabled] = useState(true);
@@ -14,29 +15,16 @@ export default function SettingsPage() {
         setIsLoadingStatus(true);
         setStatusError(null);
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000);
-
-            const res = await fetch('/api/admin/system_info.php', { signal: controller.signal });
-            clearTimeout(timeoutId);
-
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-            const text = await res.text();
-            try {
-                const data = JSON.parse(text);
-                if (data.success) {
-                    setSystemInfo(data);
-                } else {
-                    setStatusError(data.error || 'Respuesta fallida del servidor');
-                }
-            } catch (jsonErr) {
-                console.error('Invalid JSON response:', text);
-                setStatusError('El servidor no devolvió un JSON válido');
+            // Usamos fetchApi para asegurar consistencia con el entorno de producción
+            const data = await fetchApi<any>('admin/system_info.php');
+            if (data && data.success) {
+                setSystemInfo(data);
+            } else {
+                setStatusError(data?.error || 'Error al obtener información del servidor');
             }
         } catch (e: any) {
             console.error('Failed to fetch system info', e);
-            setStatusError(e.name === 'AbortError' ? 'Tiempo de espera agotado' : 'Error de conexión');
+            setStatusError(e.message || 'Error de conexión con el backend PHP');
         } finally {
             setIsLoadingStatus(false);
         }
@@ -47,16 +35,15 @@ export default function SettingsPage() {
 
         setIsLoadingStatus(true);
         try {
-            const res = await fetch('/api/admin/system_info.php?action=deploy');
-            const data = await res.json();
-            if (data.success) {
-                alert('¡Despliegue exitoso! Los cambios ya están en vivo.');
+            const data = await fetchApi<any>('admin/system_info.php?action=deploy');
+            if (data && data.success) {
+                alert('¡Despliegue exitoso! Los cambios ya están en vivo en public_html');
                 fetchStatus();
             } else {
                 alert('Error al desplegar: ' + (data.message || 'Error desconocido'));
             }
-        } catch (e) {
-            alert('Error de conexión al intentar desplegar.');
+        } catch (e: any) {
+            alert('Error al intentar realizar el despliegue: ' + e.message);
         } finally {
             setIsLoadingStatus(false);
         }
@@ -84,117 +71,9 @@ export default function SettingsPage() {
             </div>
 
             <div className="bg-white dark:bg-stone-900 rounded-xl shadow-sm border border-stone-100 dark:border-stone-800 p-8 space-y-8">
-                <h2 className="text-lg font-bold text-stone-900 dark:text-white border-b border-stone-100 pb-4">Pasarela de Pagos</h2>
 
-                {/* Stripe Config */}
-                <div className="space-y-4 border-b border-stone-100 dark:border-stone-800 pb-8">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="text-lg font-bold text-stone-900 dark:text-white">Stripe (Pagos Internacionales)</h3>
-                            <p className="text-sm text-stone-500">Habilitar cobros en USD para clientes extranjeros.</p>
-                        </div>
-                        <button onClick={() => setStripeEnabled(!stripeEnabled)} className={`transition-colors ${stripeEnabled ? 'text-moma-green' : 'text-stone-300'}`}>
-                            {stripeEnabled ? <ToggleRight className="w-10 h-10" /> : <ToggleLeft className="w-10 h-10" />}
-                        </button>
-                    </div>
-                    {stripeEnabled && (
-                        <div className="space-y-3 animate-fade-in">
-                            <div>
-                                <label className="block text-xs font-bold uppercase text-stone-400 mb-1">Stripe Secret Key</label>
-                                <input type="password" value="sk_test_..." readOnly className="w-full bg-stone-50 border border-stone-200 rounded px-3 py-2 text-sm text-stone-500" />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold uppercase text-stone-400 mb-1">Webhook Secret</label>
-                                <input type="password" value="whsec_..." readOnly className="w-full bg-stone-50 border border-stone-200 rounded px-3 py-2 text-sm text-stone-500" />
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Wompi Config */}
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="text-lg font-bold text-stone-900 dark:text-white">Wompi (Pagos Colombia)</h3>
-                            <p className="text-sm text-stone-500">Habilitar cobros en COP con PSE, Bancolombia, Nequi.</p>
-                        </div>
-                        <button onClick={() => setWompiEnabled(!wompiEnabled)} className={`transition-colors ${wompiEnabled ? 'text-moma-green' : 'text-stone-300'}`}>
-                            {wompiEnabled ? <ToggleRight className="w-10 h-10" /> : <ToggleLeft className="w-10 h-10" />}
-                        </button>
-                    </div>
-                    {wompiEnabled && (
-                        <div className="space-y-3 animate-fade-in">
-                            <div>
-                                <label className="block text-xs font-bold uppercase text-stone-400 mb-1">Public Key</label>
-                                <input type="text" value="pub_test_..." readOnly className="w-full bg-stone-50 border border-stone-200 rounded px-3 py-2 text-sm text-stone-500" />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold uppercase text-stone-400 mb-1">Integrity Secret</label>
-                                <input type="password" value="prod_integrity_..." readOnly className="w-full bg-stone-50 border border-stone-200 rounded px-3 py-2 text-sm text-stone-500" />
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Database Governance */}
-                <div className="space-y-4 border-t border-stone-100 dark:border-stone-800 pt-8">
-                    <h2 className="text-lg font-bold text-stone-900 dark:text-white">Gobernanza de Base de Datos</h2>
-
-                    {/* Diagnostic Tool */}
-                    <div className="bg-stone-50 dark:bg-stone-800/50 p-4 rounded-xl space-y-3">
-                        <div className="flex justify-between items-center">
-                            <h3 className="font-bold text-sm text-stone-700 dark:text-stone-300">Diagnóstico de Conexión y Permisos</h3>
-                            <button
-                                onClick={async () => {
-                                    try {
-                                        const res = await fetch('/api/debug_db_permissions.php');
-                                        const data = await res.json();
-                                        alert(JSON.stringify(data, null, 2));
-                                    } catch (e) { alert('Error check: ' + e); }
-                                }}
-                                className="px-3 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-700 rounded-lg text-xs font-bold transition-colors"
-                            >
-                                Ejecutar Diagnóstico
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* SQL Runner */}
-                    <div className="bg-stone-50 dark:bg-stone-800/50 p-4 rounded-xl space-y-3">
-                        <h3 className="font-bold text-sm text-stone-700 dark:text-stone-300">Consola SQL (Control Total)</h3>
-                        <p className="text-xs text-stone-500">Ejecuta comandos SQL directamente. Úsalo con extrema precaución.</p>
-                        <textarea
-                            id="sql-input"
-                            placeholder="SELECT * FROM experiences..."
-                            className="w-full h-24 p-2 text-sm font-mono bg-white border border-stone-200 rounded-lg focus:ring-2 focus:ring-moma-green outline-none"
-                        ></textarea>
-                        <div className="flex justify-end">
-                            <button
-                                onClick={async () => {
-                                    const sql = (document.getElementById('sql-input') as HTMLTextAreaElement).value;
-                                    if (!sql) return;
-                                    if (!confirm('¿Ejecutar este SQL?')) return;
-                                    try {
-                                        const res = await fetch('/api/admin/raw_sql.php', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ sql })
-                                        });
-                                        const data = await res.json();
-                                        console.log('SQL Result:', data);
-                                        alert(JSON.stringify(data, null, 2));
-                                    } catch (e) { alert('Error Exec: ' + e); }
-                                }}
-                                className="px-4 py-2 bg-stone-800 text-white hover:bg-stone-900 rounded-lg text-xs font-bold"
-                            >
-                                Ejecutar Query
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Update Monitor */}
-                <div className="space-y-6 border-t border-stone-100 dark:border-stone-800 pt-8">
+                {/* Update Monitor - MOVED ABOVE PAYMENT GATEWAY */}
+                <div className="space-y-6 pb-8 border-b border-stone-100 dark:border-stone-800">
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-bold text-stone-900 dark:text-white flex items-center gap-2">
                             <Activity className="w-5 h-5 text-moma-green" />
@@ -260,7 +139,12 @@ export default function SettingsPage() {
                                 )}
                             </div>
 
-                            {systemInfo?.server ? (
+                            {statusError ? (
+                                <div className="p-3 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-900/20">
+                                    <p className="text-[10px] text-red-600 dark:text-red-400 font-bold uppercase mb-1">Error de Carga</p>
+                                    <p className="text-xs text-red-500/70 invisible">Error persistente</p>
+                                </div>
+                            ) : systemInfo?.server ? (
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs text-stone-500 text-nowrap">Último Despliegue</span>
@@ -293,6 +177,112 @@ export default function SettingsPage() {
                     </div>
                 </div>
 
+                <h2 className="text-lg font-bold text-stone-900 dark:text-white border-b border-stone-100 pb-4">Pasarela de Pagos</h2>
+
+                {/* Stripe Config */}
+                <div className="space-y-4 border-b border-stone-100 dark:border-stone-800 pb-8">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-lg font-bold text-stone-900 dark:text-white">Stripe (Pagos Internacionales)</h3>
+                            <p className="text-sm text-stone-500">Habilitar cobros en USD para clientes extranjeros.</p>
+                        </div>
+                        <button onClick={() => setStripeEnabled(!stripeEnabled)} className={`transition-colors ${stripeEnabled ? 'text-moma-green' : 'text-stone-300'}`}>
+                            {stripeEnabled ? <ToggleRight className="w-10 h-10" /> : <ToggleLeft className="w-10 h-10" />}
+                        </button>
+                    </div>
+                    {stripeEnabled && (
+                        <div className="space-y-3 animate-fade-in">
+                            <div>
+                                <label className="block text-xs font-bold uppercase text-stone-400 mb-1">Stripe Secret Key</label>
+                                <input type="password" value="sk_test_..." readOnly className="w-full bg-stone-50 border border-stone-200 rounded px-3 py-2 text-sm text-stone-500" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold uppercase text-stone-400 mb-1">Webhook Secret</label>
+                                <input type="password" value="whsec_..." readOnly className="w-full bg-stone-50 border border-stone-200 rounded px-3 py-2 text-sm text-stone-500" />
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Wompi Config */}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-lg font-bold text-stone-900 dark:text-white">Wompi (Pagos Colombia)</h3>
+                            <p className="text-sm text-stone-500">Habilitar cobros en COP con PSE, Bancolombia, Nequi.</p>
+                        </div>
+                        <button onClick={() => setWompiEnabled(!wompiEnabled)} className={`transition-colors ${wompiEnabled ? 'text-moma-green' : 'text-stone-300'}`}>
+                            {wompiEnabled ? <ToggleRight className="w-10 h-10" /> : <ToggleLeft className="w-10 h-10" />}
+                        </button>
+                    </div>
+                    {wompiEnabled && (
+                        <div className="space-y-3 animate-fade-in">
+                            <div>
+                                <label className="block text-xs font-bold uppercase text-stone-400 mb-1">Public Key</label>
+                                <input type="text" value="pub_test_..." readOnly className="w-full bg-stone-50 border border-stone-200 rounded px-3 py-2 text-sm text-stone-500" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold uppercase text-stone-400 mb-1">Integrity Secret</label>
+                                <input type="password" value="prod_integrity_..." readOnly className="w-full bg-stone-50 border border-stone-200 rounded px-3 py-2 text-sm text-stone-500" />
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Database Governance */}
+                <div className="space-y-4 border-t border-stone-100 dark:border-stone-800 pt-8">
+                    <h2 className="text-lg font-bold text-stone-900 dark:text-white">Gobernanza de Base de Datos</h2>
+
+                    {/* Diagnostic Tool */}
+                    <div className="bg-stone-50 dark:bg-stone-800/50 p-4 rounded-xl space-y-3">
+                        <div className="flex justify-between items-center">
+                            <h3 className="font-bold text-sm text-stone-700 dark:text-stone-300">Diagnóstico de Conexión y Permisos</h3>
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        const data = await fetchApi<any>('debug_db_permissions.php');
+                                        alert(JSON.stringify(data, null, 2));
+                                    } catch (e: any) { alert('Error check: ' + e.message); }
+                                }}
+                                className="px-3 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-700 rounded-lg text-xs font-bold transition-colors"
+                            >
+                                Ejecutar Diagnóstico
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* SQL Runner */}
+                    <div className="bg-stone-50 dark:bg-stone-800/50 p-4 rounded-xl space-y-3">
+                        <h3 className="font-bold text-sm text-stone-700 dark:text-stone-300">Consola SQL (Control Total)</h3>
+                        <p className="text-xs text-stone-500">Ejecuta comandos SQL directamente. Úsalo con extrema precaución.</p>
+                        <textarea
+                            id="sql-input"
+                            placeholder="SELECT * FROM experiences..."
+                            className="w-full h-24 p-2 text-sm font-mono bg-white border border-stone-200 rounded-lg focus:ring-2 focus:ring-moma-green outline-none"
+                        ></textarea>
+                        <div className="flex justify-end">
+                            <button
+                                onClick={async () => {
+                                    const sql = (document.getElementById('sql-input') as HTMLTextAreaElement).value;
+                                    if (!sql) return;
+                                    if (!confirm('¿Ejecutar este SQL?')) return;
+                                    try {
+                                        const data = await fetchApi<any>('admin/raw_sql.php', {
+                                            method: 'POST',
+                                            body: JSON.stringify({ sql })
+                                        });
+                                        console.log('SQL Result:', data);
+                                        alert(JSON.stringify(data, null, 2));
+                                    } catch (e: any) { alert('Error Exec: ' + e.message); }
+                                }}
+                                className="px-4 py-2 bg-stone-800 text-white hover:bg-stone-900 rounded-lg text-xs font-bold"
+                            >
+                                Ejecutar Query
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Danger Zone */}
                 <div className="space-y-4 border-t border-stone-100 dark:border-stone-800 pt-8">
                     <h2 className="text-lg font-bold text-red-600 dark:text-red-400">Zona de Peligro</h2>
@@ -306,8 +296,7 @@ export default function SettingsPage() {
                                 onClick={async () => {
                                     if (confirm('¿ESTÁS ABSOLUTAMENTE SEGURO? Esta acción borrará TODO y dejará el sitio en 0 para producción.')) {
                                         try {
-                                            const res = await fetch('/api/master_cleanup.php');
-                                            const data = await res.json();
+                                            const data = await fetchApi<any>('master_cleanup.php');
                                             if (data.success) {
                                                 console.log('Reset Details:', data.details);
                                                 alert('Reseteo completado con éxito.\n' + JSON.stringify(data.details, null, 2));
@@ -316,8 +305,8 @@ export default function SettingsPage() {
                                                 console.error('Reset Error:', data);
                                                 alert('Error: ' + (data.error || 'Unknown error'));
                                             }
-                                        } catch (e) {
-                                            alert('Error de conexión con el servidor.');
+                                        } catch (e: any) {
+                                            alert('Error de conexión con el servidor: ' + e.message);
                                         }
                                     }
                                 }}
