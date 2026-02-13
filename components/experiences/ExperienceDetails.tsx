@@ -8,12 +8,14 @@ import DynamicMap from '../map/DynamicMap';
 import { type Experience } from '@/lib/experience-service';
 import ExperienceDetailCarousel from '@/components/experiences/ExperienceDetailCarousel';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface ExperienceDetailsProps {
     experience: Experience;
 }
 
 export default function ExperienceDetails({ experience }: ExperienceDetailsProps) {
+    const { t, language } = useLanguage();
     const [activeTab, setActiveTab] = useState<'description' | 'itinerary' | 'reviews'>('description');
     const containerRef = useRef<HTMLDivElement>(null);
     const { scrollYProgress } = useScroll({
@@ -74,7 +76,7 @@ export default function ExperienceDetails({ experience }: ExperienceDetailsProps
                         <div className="flex flex-wrap items-center gap-8 text-white/90 text-sm md:text-base font-bold">
                             <div className="flex items-center bg-white/5 backdrop-blur-md px-7 py-3.5 rounded-2xl border border-white/10 hover:bg-white/15 transition-all cursor-default shadow-md group">
                                 <MapPin className="w-5 h-5 mr-3 text-moma-green group-hover:scale-110 transition-transform" />
-                                <span className="tracking-tight">{experience.location_name || 'Ubicación remota'}</span>
+                                <span className="tracking-tight">{experience.location_name || (language === 'es' ? 'Ubicación remota' : 'Remote location')}</span>
                             </div>
                             {experience.duration && (
                                 <div className="flex items-center bg-white/5 backdrop-blur-md px-7 py-3.5 rounded-2xl border border-white/10 hover:bg-white/15 transition-all cursor-default shadow-md group">
@@ -84,7 +86,7 @@ export default function ExperienceDetails({ experience }: ExperienceDetailsProps
                             )}
                             <div className="flex items-center bg-white/5 backdrop-blur-md px-7 py-3.5 rounded-2xl border border-white/10 hover:bg-white/15 transition-all cursor-default shadow-md group">
                                 <Users className="w-5 h-5 mr-3 text-moma-green group-hover:scale-110 transition-transform" />
-                                <span className="tracking-tight">Máximo {experience.max_capacity} viajeros</span>
+                                <span className="tracking-tight">{t.experienceDetail.maxTravelers.replace('{count}', String(experience.max_capacity))}</span>
                             </div>
                         </div>
                     </motion.div>
@@ -106,7 +108,7 @@ export default function ExperienceDetails({ experience }: ExperienceDetailsProps
                                         : 'text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 hover:text-stone-600 dark:hover:text-white'
                                         }`}
                                 >
-                                    {tab === 'description' ? 'Descripción' : tab === 'itinerary' ? 'Itinerario' : 'Reseñas'}
+                                    {tab === 'description' ? t.experienceDetail.tabs.description : tab === 'itinerary' ? t.experienceDetail.tabs.itinerary : t.experienceDetail.tabs.reviews}
                                 </button>
                             ))}
                         </div>
@@ -119,7 +121,7 @@ export default function ExperienceDetails({ experience }: ExperienceDetailsProps
                                     transition={{ duration: 0.4 }}
                                     className="prose dark:prose-invert max-w-none"
                                 >
-                                    <h2 className="text-2xl font-bold font-heading mb-6 text-stone-900 dark:text-white">Sobre esta experiencia</h2>
+                                    <h2 className="text-2xl font-bold font-heading mb-6 text-stone-900 dark:text-white">{t.experienceDetail.aboutTitle}</h2>
                                     <div className="text-stone-600 dark:text-stone-300 leading-relaxed text-lg whitespace-pre-line">
                                         {experience.description}
                                     </div>
@@ -132,7 +134,7 @@ export default function ExperienceDetails({ experience }: ExperienceDetailsProps
                                                 <div className="p-2 bg-green-100 text-green-600 rounded-lg">
                                                     <Check className="w-5 h-5" />
                                                 </div>
-                                                Incluye
+                                                {t.experienceDetail.includes}
                                             </h3>
                                             <ul className="space-y-3">
                                                 {experience.includes?.map((item, i) => (
@@ -148,7 +150,7 @@ export default function ExperienceDetails({ experience }: ExperienceDetailsProps
                                                 <div className="p-2 bg-red-100 text-red-600 rounded-lg">
                                                     <CloseIcon className="w-5 h-5" />
                                                 </div>
-                                                No Incluye
+                                                {t.experienceDetail.excludes}
                                             </h3>
                                             <ul className="space-y-3">
                                                 {experience.excludes?.map((item, i) => (
@@ -164,7 +166,7 @@ export default function ExperienceDetails({ experience }: ExperienceDetailsProps
                                     {experience.recommendations && (
                                         <div className="mt-10 bg-amber-50 dark:bg-amber-900/20 p-6 rounded-2xl border border-amber-100 dark:border-amber-800/30">
                                             <h3 className="text-lg font-bold font-heading mb-3 text-amber-800 dark:text-amber-200 flex items-center gap-2">
-                                                <span className="text-2xl">💡</span> Recomendaciones
+                                                <span className="text-2xl">💡</span> {t.experienceDetail.recommendations}
                                             </h3>
                                             <p className="text-stone-700 dark:text-stone-300">{experience.recommendations}</p>
                                         </div>
@@ -175,7 +177,7 @@ export default function ExperienceDetails({ experience }: ExperienceDetailsProps
                                         <div className="flex items-center justify-between">
                                             <h3 className="text-2xl font-black text-stone-900 dark:text-white flex items-center gap-3 italic">
                                                 <MapPin className="w-6 h-6 text-moma-green" />
-                                                Ubicación de la aventura
+                                                {t.experienceDetail.locationTitle}
                                             </h3>
                                             <span className="text-sm font-bold text-stone-400 uppercase tracking-widest">{experience.location_name || 'Región Caribe'}</span>
                                         </div>
@@ -190,8 +192,8 @@ export default function ExperienceDetails({ experience }: ExperienceDetailsProps
                                                 <MapPin className="w-6 h-6 text-moma-green" />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-black text-stone-900 dark:text-white uppercase tracking-wider mb-0.5">Punto de encuentro</p>
-                                                <p className="text-stone-500 text-sm">{experience.location_name || 'Se coordinará directamente con el guía tras la reserva.'}</p>
+                                                <p className="text-sm font-black text-stone-900 dark:text-white uppercase tracking-wider mb-0.5">{t.experienceDetail.meetingPoint}</p>
+                                                <p className="text-stone-500 text-sm">{experience.location_name || t.experienceDetail.meetingPointCoord}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -205,12 +207,12 @@ export default function ExperienceDetails({ experience }: ExperienceDetailsProps
                                     className="space-y-12"
                                 >
                                     <div className="flex items-center justify-between mb-8">
-                                        <h2 className="text-3xl font-black text-stone-900 dark:text-white">Plan de Aventura</h2>
+                                        <h2 className="text-3xl font-black text-stone-900 dark:text-white">{t.experienceDetail.itineraryTitle}</h2>
                                     </div>
 
                                     {!experience.itinerary || experience.itinerary.length === 0 ? (
                                         <div className="text-center py-20 bg-stone-50 dark:bg-stone-800/50 rounded-[3rem] border-2 border-dashed border-stone-100 dark:border-stone-800">
-                                            <p className="text-stone-500 italic">El itinerario detallado estará disponible próximamente.</p>
+                                            <p className="text-stone-500 italic">{t.experienceDetail.itineraryFallback}</p>
                                         </div>
                                     ) : (
                                         <div className="space-y-10 relative before:content-[''] before:absolute before:left-6 before:top-2 before:bottom-2 before:w-0.5 before:bg-stone-100 dark:before:bg-stone-800">
@@ -239,7 +241,7 @@ export default function ExperienceDetails({ experience }: ExperienceDetailsProps
                                     <div className="flex justify-center mb-4 text-amber-400">
                                         {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-6 h-6 fill-current" />)}
                                     </div>
-                                    <p className="text-stone-500">Sé el primero en dejar una reseña para esta experiencia.</p>
+                                    <p className="text-stone-500">{t.experienceDetail.reviewsFallback}</p>
                                 </motion.div>
                             )}
                         </div>

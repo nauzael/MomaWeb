@@ -4,11 +4,13 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
 import { fetchApi, getImageUrl } from '@/lib/api-client';
+import { useLanguage } from '@/context/LanguageContext';
 
 const defaultImages: string[] = [];
 
 
 export default function ParallaxGallery() {
+    const { t } = useLanguage();
     const containerRef = useRef<HTMLDivElement>(null);
     const { scrollYProgress } = useScroll({
         target: containerRef,
@@ -104,7 +106,7 @@ export default function ParallaxGallery() {
             {/* Content overlay */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
                 <h2 className="text-6xl md:text-9xl font-heading font-black text-stone-900/5 dark:text-white/5 uppercase tracking-tighter text-center mix-blend-overlay">
-                    Naturaleza <br /> Indómita
+                    {t.gallery.title}
                 </h2>
             </div>
 
@@ -133,7 +135,7 @@ export default function ParallaxGallery() {
                         >
                             <Image
                                 src={getImageUrl(selectedImage)}
-                                alt="Gallery View"
+                                alt={t.gallery.viewAlt}
                                 fill
                                 className="object-contain"
                                 sizes="100vw"
@@ -148,6 +150,7 @@ export default function ParallaxGallery() {
 }
 
 const Column = ({ images, y, className, onImageClick }: { images: string[], y: any, className?: string, onImageClick: (src: string) => void }) => {
+    const { t } = useLanguage();
     return (
         <motion.div style={{ y }} className={cn("flex flex-col gap-8 relative", className)}>
             {images.map((src, i) => (
@@ -158,7 +161,7 @@ const Column = ({ images, y, className, onImageClick }: { images: string[], y: a
                 >
                     <Image
                         src={getImageUrl(src)}
-                        alt="Gallery image"
+                        alt={t.gallery.imageAlt}
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-110"
                         sizes="(max-width: 768px) 50vw, 20vw"

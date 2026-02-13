@@ -56,11 +56,11 @@ export default function Navbar() {
                                         ? "h-12 w-40"
                                         : "h-20 w-64"
                             )}
-                            aria-label="Moma Excursiones - Inicio"
+                            aria-label={t.nav.logoAria}
                         >
                             <Image
                                 src={(scrolled || isBlog) ? "/images/logo.png" : "/images/logo-white.png"}
-                                alt="Moma Excursiones Logo"
+                                alt={t.nav.logoAlt}
                                 fill
                                 className="object-contain object-left"
                                 priority
@@ -107,7 +107,7 @@ export default function Navbar() {
                             className={cn("inline-flex items-center justify-center p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-moma-green", (scrolled || isBlog) ? "text-stone-400 hover:text-stone-500 hover:bg-stone-100" : "text-white hover:bg-white/10")}
                             aria-expanded={mobileMenuOpen}
                             aria-controls="mobile-menu"
-                            aria-label={mobileMenuOpen ? "Cerrar menú principal" : "Abrir menú principal"}
+                            aria-label={mobileMenuOpen ? t.nav.closeMenu : t.nav.openMenu}
                         >
                             {mobileMenuOpen ? (
                                 <X className="h-6 w-6" aria-hidden="true" />
@@ -165,7 +165,7 @@ export default function Navbar() {
                                 className="w-full flex items-center gap-3 px-3 py-3 rounded-md text-base font-medium text-stone-600 hover:bg-stone-100"
                             >
                                 <Globe className="w-5 h-5" />
-                                {language === 'es' ? 'English (EN)' : 'Español (ES)'}
+                                {language === 'es' ? t.nav.englishLabel : t.nav.spanishLabel}
                             </button>
                         </div>
                     </motion.div>

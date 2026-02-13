@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { es, enUS } from 'date-fns/locale';
 import { fetchApi, getImageUrl } from '@/lib/api-client';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { DestinationCard } from '@/components/ui/card-21';
@@ -13,7 +13,8 @@ import { useLanguage } from '@/context/LanguageContext';
 export default function BlogSection() {
     const [posts, setPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
+    const dateLocale = language === 'es' ? es : enUS;
 
     useEffect(() => {
         const loadPosts = async () => {
@@ -64,7 +65,7 @@ export default function BlogSection() {
                                         imageUrl={getImageUrl(post.cover_image)}
                                         location={post.title}
                                         flag="🍃"
-                                        stats={`${post.category_name || 'Expedición'} • ${format(new Date(post.created_at), 'dd MMM', { locale: es })}`}
+                                        stats={`${post.category_name || (language === 'es' ? 'Expedición' : 'Expedition')} • ${format(new Date(post.created_at), 'dd MMM', { locale: dateLocale })}`}
                                         href={`/blog/post?slug=${post.slug}`}
                                         themeColor={idx % 3 === 0 ? "170 100% 25%" : idx % 3 === 1 ? "150 50% 25%" : "190 60% 30%"}
                                         buttonText={t.blog.readMore}

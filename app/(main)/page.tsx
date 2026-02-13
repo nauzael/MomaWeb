@@ -148,13 +148,13 @@ export default function Home() {
                   href={currentExperience ? `/experiencia?slug=${currentExperience.slug}` : "#experiencias"}
                   className="bg-moma-green text-white px-8 py-4 rounded-full text-base font-bold hover:bg-white hover:text-moma-green transition-all shadow-lg shadow-moma-green/20 flex items-center justify-center min-w-[200px]"
                 >
-                  Ver Experiencia <ArrowRight className="ml-2 w-5 h-5" />
+                  {t.hero.viewExperience} <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
                 <div className="flex gap-2">
-                  <button onClick={prevSlide} className="p-3 rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all" aria-label="Anterior">
+                  <button onClick={prevSlide} className="p-3 rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all" aria-label={t.hero.prev}>
                     <ChevronLeft className="w-6 h-6" />
                   </button>
-                  <button onClick={nextSlide} className="p-3 rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all" aria-label="Siguiente">
+                  <button onClick={nextSlide} className="p-3 rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all" aria-label={t.hero.next}>
                     <ChevronRight className="w-6 h-6" />
                   </button>
                 </div>
@@ -170,7 +170,7 @@ export default function Home() {
               key={i}
               onClick={() => setCurrentSlide(i)}
               className={`w-12 h-1 rounded-full transition-all ${i === currentSlide ? 'bg-moma-green' : 'bg-white/30'}`}
-              aria-label={`Ir a la diapositiva ${i + 1}`}
+              aria-label={`${t.hero.slideAria} ${i + 1}`}
               aria-current={i === currentSlide ? 'true' : 'false'}
             />
           ))}
@@ -199,8 +199,8 @@ export default function Home() {
       <section id="nosotros" className="relative py-24 bg-white dark:bg-stone-900">
         <ScrollReveal>
           <div className="max-w-7xl mx-auto px-4 text-center mb-16">
-            <span className="text-moma-green uppercase tracking-widest text-xs font-bold mb-3 block">Una elección brillante</span>
-            <h2 className="text-4xl md:text-5xl font-heading font-bold text-stone-900 dark:text-white">¿Por qué elegirnos?</h2>
+            <span className="text-moma-green uppercase tracking-widest text-xs font-bold mb-3 block">{t.whyChooseUs.subtitle}</span>
+            <h2 className="text-4xl md:text-5xl font-heading font-bold text-stone-900 dark:text-white">{t.whyChooseUs.title}</h2>
           </div>
         </ScrollReveal>
 
@@ -241,9 +241,9 @@ export default function Home() {
 
         <div className="max-w-5xl mx-auto px-4 relative z-10 flex flex-col items-center justify-center text-center pb-32 pt-10">
           <ScrollReveal>
-            <span className="text-moma-green text-xl md:text-2xl font-light mb-4 font-sans tracking-wide block">Ideas que transforman</span>
+            <span className="text-moma-green text-xl md:text-2xl font-light mb-4 font-sans tracking-wide block">{t.cta.subtitle}</span>
             <h2 className="text-5xl md:text-7xl font-heading font-bold text-white mb-8 leading-tight drop-shadow-lg">
-              Únete a nuestra aventura <br className="hidden md:block" /> y deja huellas positivas
+              {t.cta.title}
             </h2>
             <div className="w-24 h-1.5 bg-moma-green rounded-full mb-12 mx-auto"></div>
 
@@ -251,7 +251,7 @@ export default function Home() {
               href="/experiencias"
               className="bg-[#009688] text-white px-10 py-4 rounded-full text-lg font-bold hover:bg-[#00796b] transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 inline-block"
             >
-              Empezar la Aventura
+              {t.cta.button}
             </Link>
           </ScrollReveal>
         </div>
@@ -265,8 +265,8 @@ export default function Home() {
       <section id="contacto" className="relative py-24 bg-stone-50 dark:bg-stone-950" >
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <span className="text-moma-green uppercase tracking-widest text-xs font-bold mb-3 block">Ponte en contacto</span>
-            <h2 className="text-4xl md:text-5xl font-heading font-bold text-stone-900 dark:text-white">Envíanos un mensaje</h2>
+            <span className="text-moma-green uppercase tracking-widest text-xs font-bold mb-3 block">{t.contact.subtitle}</span>
+            <h2 className="text-4xl md:text-5xl font-heading font-bold text-stone-900 dark:text-white">{t.contact.title}</h2>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
@@ -278,7 +278,7 @@ export default function Home() {
                     <Phone className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Whatsapp</p>
+                    <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">{t.contact.whatsapp}</p>
                     <p className="font-bold text-stone-900 dark:text-white font-heading text-lg">+57 301 6566932</p>
                   </div>
                 </div>
@@ -289,7 +289,7 @@ export default function Home() {
                     <Mail className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Email</p>
+                    <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">{t.contact.email}</p>
                     <p className="font-bold text-stone-900 dark:text-white font-heading text-lg">momaexcursiones@gmail.com</p>
                   </div>
                 </div>
@@ -300,7 +300,7 @@ export default function Home() {
                     <MapPin className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Ubicación</p>
+                    <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">{t.contact.location}</p>
                     <p className="font-bold text-stone-900 dark:text-white font-heading text-lg">Sucre, Colombia</p>
                   </div>
                 </div>
@@ -313,20 +313,20 @@ export default function Home() {
                 <div className="bg-white dark:bg-stone-900 p-8 rounded-3xl shadow-lg shadow-stone-200/50 dark:shadow-none border border-stone-100 dark:border-stone-800">
                   <form className="grid md:grid-cols-2 gap-6">
                     <div className="col-span-2 md:col-span-1">
-                      <label htmlFor="name" className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Nombre</label>
-                      <input id="name" type="text" className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-moma-green/50 focus:border-moma-green transition-all" placeholder="Tu nombre" />
+                      <label htmlFor="name" className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">{t.contact.form.name}</label>
+                      <input id="name" type="text" className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-moma-green/50 focus:border-moma-green transition-all" placeholder={t.contact.form.namePlaceholder} />
                     </div>
                     <div className="col-span-2 md:col-span-1">
-                      <label htmlFor="email" className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Email</label>
-                      <input id="email" type="email" className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-moma-green/50 focus:border-moma-green transition-all" placeholder="tucorreo@email.com" />
+                      <label htmlFor="email" className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">{t.contact.form.email}</label>
+                      <input id="email" type="email" className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-moma-green/50 focus:border-moma-green transition-all" placeholder={t.contact.form.emailPlaceholder} />
                     </div>
                     <div className="col-span-2">
-                      <label htmlFor="message" className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Mensaje</label>
-                      <textarea id="message" rows={4} className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-moma-green/50 focus:border-moma-green transition-all" placeholder="Cuéntanos tus planes..."></textarea>
+                      <label htmlFor="message" className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">{t.contact.form.message}</label>
+                      <textarea id="message" rows={4} className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-moma-green/50 focus:border-moma-green transition-all" placeholder={t.contact.form.messagePlaceholder}></textarea>
                     </div>
                     <div className="col-span-2">
                       <button type="submit" className="bg-stone-900 dark:bg-white text-white dark:text-stone-900 px-8 py-4 rounded-xl font-bold hover:bg-moma-green dark:hover:bg-stone-200 transition-all w-full md:w-auto shadow-lg hover:shadow-xl hover:-translate-y-1 duration-300">
-                        Enviar Mensaje
+                        {t.contact.form.send}
                       </button>
                     </div>
                   </form>

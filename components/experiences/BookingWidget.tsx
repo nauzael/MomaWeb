@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Calendar as CalendarIcon, Users, Minus, Plus, Loader2, X, CheckCircle } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { es, enUS } from 'date-fns/locale';
+import { useLanguage } from '@/context/LanguageContext';
 import 'react-day-picker/dist/style.css';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +19,8 @@ interface BookingWidgetProps {
 import ButtonFlex from '@/components/ui/ButtonFlex';
 
 export default function BookingWidget({ experience }: BookingWidgetProps) {
+    const { t, language } = useLanguage();
+    const dateLocale = language === 'es' ? es : enUS;
     // Extract props from experience object for backward compatibility with internal logic
     const priceCop = experience.price_cop;
     const priceUsd = experience.price_usd;
@@ -68,7 +71,7 @@ export default function BookingWidget({ experience }: BookingWidgetProps) {
 
     const handleBookingClick = () => {
         if (!selectedDate) {
-            alert('Por favor selecciona una fecha para tu viaje.');
+            alert(t.booking.dateError);
             return;
         }
         setShowConfirmation(true);
@@ -76,7 +79,7 @@ export default function BookingWidget({ experience }: BookingWidgetProps) {
 
     const confirmBooking = async () => {
         if (!contactName.trim() || !contactEmail.trim() || !contactPhone.trim()) {
-            alert('Por favor completa tu nombre, correo y teléfono.');
+            alert(t.booking.formError);
             return;
         }
 
@@ -103,7 +106,7 @@ export default function BookingWidget({ experience }: BookingWidgetProps) {
 
         } catch (error: any) {
             console.error('Booking error:', error);
-            alert(`Hubo un error al procesar tu reserva: ${error.message}`);
+            alert(`${language === 'es' ? 'Hubo un error al procesar tu reserva' : 'Ther was an error processing your booking'}: ${error.message}`);
         } finally {
             setLoading(false);
         }
@@ -153,14 +156,14 @@ export default function BookingWidget({ experience }: BookingWidgetProps) {
         <>
             <div id="booking-widget-container" className="sticky top-24 bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border border-white/20 shadow-xl rounded-2xl p-6 transition-all font-sans z-10">
                 <div className="mb-6">
-                    <span className="text-stone-500 text-sm font-medium">Precio por persona</span>
+                    <span className="text-stone-500 text-sm font-medium">{t.booking.pricePerPerson}</span>
                     <div className="flex items-baseline font-heading">
                         <span className="text-3xl font-bold bg-clip-text text-transparent bg-linear-to-r from-moma-green to-teal-500">
-                            ${numPriceCop.toLocaleString('es-CO')}
+                            ${numPriceCop.toLocaleString(language === 'es' ? 'es-CO' : 'en-US')}
                         </span>
                         <span className="text-sm text-stone-400 ml-2 font-bold font-sans">COP</span>
                     </div>
-                    <p className="text-xs text-stone-400 mt-1">Aprox. ${Math.round(numPriceUsd)} USD</p>
+                    <p className="text-xs text-stone-400 mt-1">{t.booking.approx} ${Math.round(numPriceUsd)} USD</p>
                 </div>
 
                 <div className="space-y-4">
@@ -175,14 +178,14 @@ export default function BookingWidget({ experience }: BookingWidgetProps) {
                             )}
                             aria-haspopup="dialog"
                             aria-expanded={isCalendarOpen}
-                            aria-label={selectedDate ? `Fecha seleccionada: ${format(selectedDate, 'PPP', { locale: es })}` : "Seleccionar fecha de viaje"}
+                            aria-label={selectedDate ? `${language === 'es' ? 'Fecha seleccionada' : 'Selected date'}: ${format(selectedDate, 'PPP', { locale: dateLocale })}` : t.booking.travelDateLabel}
                         >
                             <div className="flex-1">
-                                <span className="block text-xs font-bold uppercase text-stone-400 mb-2 group-hover:text-moma-green transition-colors">Fecha de Viaje</span>
+                                <span className="block text-xs font-bold uppercase text-stone-400 mb-2 group-hover:text-moma-green transition-colors">{t.booking.travelDateLabel}</span>
                                 <div className="flex items-center text-stone-700 dark:text-stone-200">
                                     <CalendarIcon className="w-5 h-5 mr-3 text-stone-400 group-hover:text-moma-green" aria-hidden="true" />
                                     <span className={cn("text-sm font-medium", !selectedDate && "text-stone-400 font-normal")}>
-                                        {selectedDate ? format(selectedDate, 'PPP', { locale: es }) : 'Seleccionar fecha'}
+                                        {selectedDate ? format(selectedDate, 'PPP', { locale: dateLocale }) : t.booking.selectDate}
                                     </span>
                                 </div>
                             </div>
@@ -193,11 +196,11 @@ export default function BookingWidget({ experience }: BookingWidgetProps) {
                             <div
                                 className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl shadow-2xl z-50 p-4 animate-in fade-in zoom-in-95 duration-200"
                                 role="dialog"
-                                aria-label="Calendario de disponibilidad"
+                                aria-label={t.booking.availabilityCalendar}
                             >
                                 <div className="flex justify-between items-center mb-2 px-2">
-                                    <span className="text-xs font-bold uppercase text-stone-500">Disponibilidad</span>
-                                    <button onClick={() => setIsCalendarOpen(false)} className="text-stone-400 hover:text-stone-600" aria-label="Cerrar calendario">
+                                    <span className="text-xs font-bold uppercase text-stone-500">{t.booking.availability}</span>
+                                    <button onClick={() => setIsCalendarOpen(false)} className="text-stone-400 hover:text-stone-600" aria-label={language === 'es' ? "Cerrar calendario" : "Close calendar"}>
                                         <X className="w-4 h-4" />
                                     </button>
                                 </div>
@@ -211,15 +214,15 @@ export default function BookingWidget({ experience }: BookingWidgetProps) {
                                     mode="single"
                                     selected={selectedDate}
                                     onSelect={handleDateSelect}
-                                    locale={es}
+                                    locale={dateLocale}
                                     disabled={isDateDisabled}
                                     modifiersStyles={{
                                         disabled: { textDecoration: 'line-through', color: '#a8a29e', background: 'transparent' }
                                     }}
                                     footer={
                                         <div className="mt-4 text-xs text-center border-t pt-2 border-stone-100 dark:border-stone-800 text-stone-400 flex justify-center gap-4">
-                                            <div className="flex items-center"><div className="w-2 h-2 rounded-full bg-moma-green mr-1"></div> Libre</div>
-                                            <div className="flex items-center"><div className="w-2 h-2 rounded-full bg-stone-300 mr-1"></div> Ocupado</div>
+                                            <div className="flex items-center"><div className="w-2 h-2 rounded-full bg-moma-green mr-1"></div> {t.booking.free}</div>
+                                            <div className="flex items-center"><div className="w-2 h-2 rounded-full bg-stone-300 mr-1"></div> {t.booking.busy}</div>
                                         </div>
                                     }
                                 />
@@ -229,18 +232,18 @@ export default function BookingWidget({ experience }: BookingWidgetProps) {
 
                     {/* Guest Selection */}
                     <div className="p-4 bg-stone-50 rounded-xl border border-stone-100 dark:bg-stone-800 dark:border-stone-700">
-                        <label className="block text-xs font-bold uppercase text-stone-400 mb-2">Viajeros</label>
+                        <label className="block text-xs font-bold uppercase text-stone-400 mb-2">{t.booking.travelers}</label>
                         <div className="flex items-center justify-between text-stone-700 dark:text-stone-200">
                             <div className="flex items-center">
                                 <Users className="w-5 h-5 mr-3 text-stone-400" />
-                                <span className="text-sm font-medium">{guests} {guests === 1 ? 'Viajero' : 'Viajeros'}</span>
+                                <span className="text-sm font-medium">{guests} {guests === 1 ? t.booking.guest : t.booking.guests}</span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <button
                                     onClick={() => handleGuestChange(-1)}
                                     disabled={guests <= 1}
                                     className="w-8 h-8 rounded-full bg-white dark:bg-stone-700 flex items-center justify-center text-stone-500 hover:bg-stone-200 disabled:opacity-50 transition-colors shadow-sm"
-                                    aria-label="Disminuir número de viajeros"
+                                    aria-label={t.booking.decreaseGuests}
                                 >
                                     <Minus className="w-4 h-4" />
                                 </button>
@@ -248,7 +251,7 @@ export default function BookingWidget({ experience }: BookingWidgetProps) {
                                     onClick={() => handleGuestChange(1)}
                                     disabled={guests >= maxCapacity}
                                     className="w-8 h-8 rounded-full bg-white dark:bg-stone-700 flex items-center justify-center text-stone-500 hover:bg-stone-200 disabled:opacity-50 transition-colors shadow-sm"
-                                    aria-label="Aumentar número de viajeros"
+                                    aria-label={t.booking.increaseGuests}
                                 >
                                     <Plus className="w-4 h-4" />
                                 </button>
@@ -259,22 +262,22 @@ export default function BookingWidget({ experience }: BookingWidgetProps) {
                     {/* Payment Summary (Conditional) */}
                     <div className="pt-2 pb-2">
                         <div className="flex justify-between items-center text-sm font-medium text-stone-600 dark:text-stone-300 font-sans">
-                            <span>Total estimado</span>
-                            <span className="text-lg font-bold text-stone-900 dark:text-white font-heading">${totalCop.toLocaleString('es-CO')}</span>
+                            <span>{t.booking.totalEstimated}</span>
+                            <span className="text-lg font-bold text-stone-900 dark:text-white font-heading">${totalCop.toLocaleString(language === 'es' ? 'es-CO' : 'en-US')}</span>
                         </div>
                     </div>
 
                     <div className="flex justify-center w-full">
                         <ButtonFlex
                             onClick={handleBookingClick}
-                            text="Reservar Ahora"
+                            text={t.booking.reserveButton}
                             className="w-full"
                             disabled={guests < 1}
                         />
                     </div>
 
                     <p className="text-xs text-center text-stone-400 mt-4">
-                        No se cobrará nada todavía.
+                        {t.booking.noChargeNote}
                     </p>
                 </div>
             </div>
@@ -284,60 +287,60 @@ export default function BookingWidget({ experience }: BookingWidgetProps) {
                 <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-stone-200 dark:border-stone-800">
                         <div className="px-5 py-3 border-b border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900 text-center font-sans">
-                            <h3 className="text-xl font-heading font-bold text-stone-900 dark:text-white">Confirma tu Reserva</h3>
-                            <p className="text-xs text-stone-500 mt-0.5">Revisa los detalles antes de continuar.</p>
+                            <h3 className="text-xl font-heading font-bold text-stone-900 dark:text-white">{t.booking.confirmTitle}</h3>
+                            <p className="text-xs text-stone-500 mt-0.5">{t.booking.confirmSubtitle}</p>
                         </div>
 
                         <div className="px-4 py-3 space-y-2 bg-white dark:bg-stone-900">
                             <div className="flex justify-between items-center py-1 border-b border-stone-50 dark:border-stone-800">
-                                <span className="text-stone-500 text-xs font-medium">Experiencia</span>
+                                <span className="text-stone-500 text-xs font-medium">{t.booking.experience}</span>
                                 <span className="font-bold text-stone-900 dark:text-white text-right max-w-[60%] truncate text-sm">{experienceTitle}</span>
                             </div>
                             <div className="flex justify-between items-center py-1 border-b border-stone-50 dark:border-stone-800">
-                                <span className="text-stone-500 text-xs font-medium">Fecha</span>
+                                <span className="text-stone-500 text-xs font-medium">{t.booking.date}</span>
                                 <span className="font-bold text-stone-900 dark:text-white text-sm">
-                                    {selectedDate ? format(selectedDate, 'PPP', { locale: es }) : '-'}
+                                    {selectedDate ? format(selectedDate, 'PPP', { locale: dateLocale }) : '-'}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center py-1 border-b border-stone-50 dark:border-stone-800">
-                                <span className="text-stone-500 text-xs font-medium">Pasajeros</span>
-                                <span className="font-bold text-stone-900 dark:text-white text-sm">{guests} personas</span>
+                                <span className="text-stone-500 text-xs font-medium">{t.booking.travelers}</span>
+                                <span className="font-bold text-stone-900 dark:text-white text-sm">{guests} {guests === 1 ? t.booking.guest : t.booking.guests}</span>
                             </div>
                             <div className="pt-2 space-y-2 font-sans">
-                                <h4 className="text-xs font-heading font-bold text-stone-800 dark:text-stone-100 uppercase tracking-wide">Datos de contacto</h4>
+                                <h4 className="text-xs font-heading font-bold text-stone-800 dark:text-stone-100 uppercase tracking-wide">{t.booking.contactData}</h4>
                                 <div className="space-y-2">
                                     <div className="space-y-0.5">
-                                        <label htmlFor="contact-name" className="text-[10px] font-bold uppercase text-stone-400">Nombre completo</label>
+                                        <label htmlFor="contact-name" className="text-[10px] font-bold uppercase text-stone-400">{t.booking.fullNameTitle}</label>
                                         <input
                                             id="contact-name"
                                             type="text"
                                             value={contactName}
                                             onChange={(e) => setContactName(e.target.value)}
                                             className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-2.5 py-1.5 text-sm text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-moma-green"
-                                            placeholder="Tu nombre"
+                                            placeholder={t.booking.fullNamePlaceholder}
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-2">
                                         <div className="space-y-0.5">
-                                            <label htmlFor="contact-email" className="text-[10px] font-bold uppercase text-stone-400">Correo</label>
+                                            <label htmlFor="contact-email" className="text-[10px] font-bold uppercase text-stone-400">{t.booking.emailTitle}</label>
                                             <input
                                                 id="contact-email"
                                                 type="email"
                                                 value={contactEmail}
                                                 onChange={(e) => setContactEmail(e.target.value)}
                                                 className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-2.5 py-1.5 text-sm text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-moma-green"
-                                                placeholder="tucorreo@ejemplo.com"
+                                                placeholder={t.booking.emailPlaceholder}
                                             />
                                         </div>
                                         <div className="space-y-0.5">
-                                            <label htmlFor="contact-phone" className="text-[10px] font-bold uppercase text-stone-400">Teléfono</label>
+                                            <label htmlFor="contact-phone" className="text-[10px] font-bold uppercase text-stone-400">{t.booking.phoneTitle}</label>
                                             <input
                                                 id="contact-phone"
                                                 type="tel"
                                                 value={contactPhone}
                                                 onChange={(e) => setContactPhone(e.target.value)}
                                                 className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-2.5 py-1.5 text-sm text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-moma-green"
-                                                placeholder="+57 300..."
+                                                placeholder={t.booking.phonePlaceholder}
                                             />
                                         </div>
                                     </div>
@@ -345,8 +348,8 @@ export default function BookingWidget({ experience }: BookingWidgetProps) {
                             </div>
                             <div className="pt-2 mt-0 font-sans">
                                 <div className="flex justify-between items-center bg-stone-50 dark:bg-stone-800 px-3 py-2 rounded-xl">
-                                    <span className="font-bold text-sm text-stone-700 dark:text-stone-300">Total a Pagar</span>
-                                    <span className="font-bold text-xl text-moma-earth font-heading">${totalCop.toLocaleString('es-CO')}</span>
+                                    <span className="font-bold text-sm text-stone-700 dark:text-stone-300">{t.booking.totalToPay}</span>
+                                    <span className="font-bold text-xl text-moma-earth font-heading">${totalCop.toLocaleString(language === 'es' ? 'es-CO' : 'en-US')}</span>
                                 </div>
                             </div>
                         </div>
@@ -356,14 +359,14 @@ export default function BookingWidget({ experience }: BookingWidgetProps) {
                                 onClick={() => setShowConfirmation(false)}
                                 className="flex-1 px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 font-bold hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
                             >
-                                Cancelar
+                                {t.booking.cancel}
                             </button>
                             <button
                                 onClick={confirmBooking}
                                 disabled={loading}
                                 className="flex-1 px-4 py-3 rounded-xl bg-moma-green text-white font-bold hover:bg-opacity-90 transition-colors flex items-center justify-center shadow-lg shadow-moma-green/20"
                             >
-                                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Aceptar y Pagar'}
+                                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t.booking.acceptAndPay}
                             </button>
                         </div>
                     </div>
@@ -378,17 +381,17 @@ export default function BookingWidget({ experience }: BookingWidgetProps) {
                             <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
                                 <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
                             </div>
-                            <h3 className="text-2xl font-heading font-black text-stone-900 dark:text-white">¡Gracias por tu compra!</h3>
+                            <h3 className="text-2xl font-heading font-black text-stone-900 dark:text-white">{t.booking.successTitle}</h3>
                             <p className="text-stone-500 mt-2 text-sm max-w-[80%]">
-                                Tu reserva ha sido confirmada exitosamente. Hemos enviado los detalles a tu correo.
+                                {t.booking.successSubtitle}
                             </p>
                         </div>
 
                         <div className="px-6 py-4 bg-stone-50 dark:bg-stone-800/50 space-y-3">
-                            <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Resumen de la Reserva</h4>
+                            <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">{t.booking.summaryTitle}</h4>
 
                             <div className="flex justify-between items-start">
-                                <span className="text-sm text-stone-500">Referencia</span>
+                                <span className="text-sm text-stone-500">{t.booking.reference}</span>
                                 <span className="text-sm font-mono font-bold text-stone-900 dark:text-white bg-white dark:bg-stone-800 px-2 py-0.5 rounded border border-stone-200 dark:border-stone-700">
                                     {lastBookingId.slice(0, 8).toUpperCase()}
                                 </span>
@@ -397,30 +400,30 @@ export default function BookingWidget({ experience }: BookingWidgetProps) {
                             <div className="h-px bg-stone-200 dark:bg-stone-700 my-2" />
 
                             <div className="flex justify-between items-center">
-                                <span className="text-sm text-stone-500">Experiencia</span>
+                                <span className="text-sm text-stone-500">{t.booking.experience}</span>
                                 <span className="text-sm font-bold text-stone-900 dark:text-white text-right max-w-[60%] truncate">
                                     {experienceTitle}
                                 </span>
                             </div>
 
                             <div className="flex justify-between items-center">
-                                <span className="text-sm text-stone-500">Fecha</span>
+                                <span className="text-sm text-stone-500">{t.booking.date}</span>
                                 <span className="text-sm font-bold text-stone-900 dark:text-white">
-                                    {selectedDate ? format(selectedDate, 'PPP', { locale: es }) : '-'}
+                                    {selectedDate ? format(selectedDate, 'PPP', { locale: dateLocale }) : '-'}
                                 </span>
                             </div>
 
                             <div className="flex justify-between items-center">
-                                <span className="text-sm text-stone-500">Pasajeros</span>
+                                <span className="text-sm text-stone-500">{t.booking.travelers}</span>
                                 <span className="text-sm font-bold text-stone-900 dark:text-white">
-                                    {guests} personas
+                                    {guests} {guests === 1 ? t.booking.guest : t.booking.guests}
                                 </span>
                             </div>
 
                             <div className="flex justify-between items-center pt-2">
-                                <span className="text-sm font-bold text-stone-700 dark:text-stone-300">Total Pagado</span>
+                                <span className="text-sm font-bold text-stone-700 dark:text-stone-300">{t.booking.totalPaid}</span>
                                 <span className="text-lg font-black text-moma-green">
-                                    ${totalCop.toLocaleString('es-CO')}
+                                    ${totalCop.toLocaleString(language === 'es' ? 'es-CO' : 'en-US')}
                                 </span>
                             </div>
                         </div>
@@ -430,7 +433,7 @@ export default function BookingWidget({ experience }: BookingWidgetProps) {
                                 onClick={handleCloseSuccess}
                                 className="w-full py-3.5 rounded-xl bg-stone-900 dark:bg-white text-white dark:text-stone-900 font-bold hover:opacity-90 transition-all shadow-lg flex items-center justify-center gap-2"
                             >
-                                Entendido, gracias
+                                {t.booking.closeButton}
                             </button>
                         </div>
                     </div>

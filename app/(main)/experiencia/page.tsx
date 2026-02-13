@@ -5,8 +5,10 @@ import { useSearchParams } from 'next/navigation';
 import { getExperiencePersisted, type Experience } from '@/lib/experience-service';
 import ExperienceDetails from '@/components/experiences/ExperienceDetails';
 import { Loader2 } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 function ExperienceContent() {
+    const { t } = useLanguage();
     const searchParams = useSearchParams();
     const slug = searchParams.get('slug');
     const [experience, setExperience] = useState<Experience | null>(null);
@@ -48,8 +50,8 @@ function ExperienceContent() {
         return (
             <div className="flex justify-center items-center min-h-screen bg-white dark:bg-stone-950">
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold text-stone-900 dark:text-white mb-2">Experiencia no encontrada</h1>
-                    <p className="text-stone-500">La experiencia que buscas no existe o ha sido eliminada.</p>
+                    <h1 className="text-2xl font-bold text-stone-900 dark:text-white mb-2">{t.experienceDetail.experienceNotFound}</h1>
+                    <p className="text-stone-500">{t.experienceDetail.experienceNotFoundDesc}</p>
                 </div>
             </div>
         );

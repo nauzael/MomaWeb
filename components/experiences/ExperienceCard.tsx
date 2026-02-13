@@ -4,6 +4,7 @@ import { type Experience } from '@/lib/experience-service';
 import { cn } from '@/lib/utils';
 import { getImageUrl } from '@/lib/api-client';
 import { ArrowRight } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface ExperienceCardProps {
     experience: Experience;
@@ -11,6 +12,7 @@ interface ExperienceCardProps {
 }
 
 export default function ExperienceCard({ experience, priority = false }: ExperienceCardProps) {
+    const { t } = useLanguage();
     const coverImage = getImageUrl(experience.image) || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=2574&auto=format&fit=crop';
 
     // Moma Green HSL: approx 168 100% 36% (for #00b894)
@@ -30,7 +32,7 @@ export default function ExperienceCard({ experience, priority = false }: Experie
                 className="relative block w-full h-full rounded-2xl overflow-hidden shadow-lg 
                      transition-all duration-500 ease-in-out 
                      group-hover:scale-105 group-hover:shadow-[0_0_60px_-15px_hsl(var(--theme-color)/0.6)]"
-                aria-label={`Ver detalles de ${experience.title}`}
+                aria-label={t.experienceDetail.viewDetailsAria.replace('{title}', experience.title)}
                 style={{
                     boxShadow: `0 0 40px -15px hsl(var(--theme-color) / 0.5)`
                 }}
@@ -72,7 +74,7 @@ export default function ExperienceCard({ experience, priority = false }: Experie
                                     transition-all duration-300 
                                     group-hover/btn:bg-white group-hover/btn:border-white group-hover/btn:text-[hsl(var(--theme-color))]
                                     hover:bg-white! hover:border-white! hover:text-[hsl(var(--theme-color))]! hover:shadow-lg hover:scale-[1.05]">
-                            <span className="text-sm font-semibold tracking-wide">Ver Experiencia</span>
+                            <span className="text-sm font-semibold tracking-wide">{t.hero.viewExperience}</span>
                             <ArrowRight className="h-4 w-4 transform transition-transform duration-300 group-hover:translate-x-1" />
                         </div>
                     </div>

@@ -5,13 +5,15 @@ import Image from 'next/image';
 import { getImageUrl } from '@/lib/api-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface ExperienceDetailCarouselProps {
     images: string[];
     experienceTitle?: string;
 }
 
-export default function ExperienceDetailCarousel({ images, experienceTitle = "Experiencia turística" }: ExperienceDetailCarouselProps) {
+export default function ExperienceDetailCarousel({ images, experienceTitle = "Experiencia" }: ExperienceDetailCarouselProps) {
+    const { t } = useLanguage();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [loaded, setLoaded] = useState(false);
 
@@ -49,7 +51,7 @@ export default function ExperienceDetailCarousel({ images, experienceTitle = "Ex
                 >
                     <Image
                         src={getImageUrl(images[currentIndex])}
-                        alt={`${experienceTitle} - Imagen ${currentIndex + 1}`}
+                        alt={t.experienceDetail.imageAlt.replace('{title}', experienceTitle).replace('{index}', String(currentIndex + 1))}
                         fill
                         priority={currentIndex === 0}
                         className={`object-cover transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}
@@ -75,7 +77,7 @@ export default function ExperienceDetailCarousel({ images, experienceTitle = "Ex
                                 ? 'w-8 bg-white'
                                 : 'w-2 bg-white/40 hover:bg-white/70'
                                 }`}
-                            aria-label={`Ver imagen ${idx + 1}`}
+                            aria-label={t.experienceDetail.dotAria.replace('{index}', String(idx + 1))}
                         />
                     ))}
                 </div>
@@ -87,14 +89,14 @@ export default function ExperienceDetailCarousel({ images, experienceTitle = "Ex
                     <button
                         onClick={prevImage}
                         className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full border border-white/10 bg-black/10 text-white/50 hover:bg-black/40 hover:text-white hover:border-white/30 backdrop-blur-md transition-all duration-300 z-30 opacity-0 group-hover:opacity-100 md:opacity-100"
-                        aria-label="Imagen anterior"
+                        aria-label={t.hero.prev}
                     >
                         <ChevronLeft className="w-6 h-6" />
                     </button>
                     <button
                         onClick={nextImage}
                         className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full border border-white/10 bg-black/10 text-white/50 hover:bg-black/40 hover:text-white hover:border-white/30 backdrop-blur-md transition-all duration-300 z-30 opacity-0 group-hover:opacity-100 md:opacity-100"
-                        aria-label="Siguiente imagen"
+                        aria-label={t.hero.next}
                     >
                         <ChevronRight className="w-6 h-6" />
                     </button>
