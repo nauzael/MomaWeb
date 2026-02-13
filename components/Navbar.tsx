@@ -73,7 +73,7 @@ export default function Navbar() {
                             <Link href="/#nosotros" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isBlog) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
                                 Nosotros
                             </Link>
-                            <Link href="/blog" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isBlog) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
+                            <Link href="/#blog" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isBlog) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
                                 Blog
                             </Link>
                             <Link href="/#contacto" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isBlog) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
@@ -130,7 +130,7 @@ export default function Navbar() {
                                 Nosotros
                             </Link>
                             <Link
-                                href="/blog"
+                                href="/#blog"
                                 className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-800"
                             >
                                 Blog

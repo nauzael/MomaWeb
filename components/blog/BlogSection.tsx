@@ -28,7 +28,7 @@ export default function BlogSection() {
     }, []);
 
     return (
-        <section className="py-24 bg-stone-50 dark:bg-stone-950 overflow-hidden">
+        <section id="blog" className="py-24 bg-stone-50 dark:bg-stone-950 overflow-hidden">
             <div className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-14 max-w-4xl mx-auto">
                     <ScrollReveal>
