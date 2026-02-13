@@ -145,7 +145,22 @@ export default function Home() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 items-center">
                 <Link
-                  href={currentExperience ? `/experiencia?slug=${currentExperience.slug}` : "#experiencias"}
+                  href={currentExperience ? `/experiencia?slug=${currentExperience.slug}` : "/#experiencias"}
+                  onClick={currentExperience ? undefined : (e) => {
+                    const target = '/#experiencias';
+                    if (window.location.pathname === '/') {
+                      e.preventDefault();
+                      const id = 'experiencias';
+                      const element = document.getElementById(id);
+                      if (element) {
+                        const offset = 100;
+                        const elementRect = element.getBoundingClientRect().top;
+                        const bodyRect = document.body.getBoundingClientRect().top;
+                        const offsetPosition = elementRect - bodyRect - offset;
+                        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+                      }
+                    }
+                  }}
                   className="bg-moma-green text-white px-8 py-4 rounded-full text-base font-bold hover:bg-white hover:text-moma-green transition-all shadow-lg shadow-moma-green/20 flex items-center justify-center min-w-[200px]"
                 >
                   {t.hero.viewExperience} <ArrowRight className="ml-2 w-5 h-5" />

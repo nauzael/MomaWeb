@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
 import { Globe } from 'lucide-react';
@@ -15,10 +15,34 @@ export default function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { language, setLanguage, t } = useLanguage();
     const pathname = usePathname();
+    const router = useRouter();
     const isListingExperiences = pathname === '/experiencias';
-    const isExperienceDetail = pathname?.startsWith('/experiencia'); // Covers both /experiencia and /experiencias/ detail patterns
+    const isExperienceDetail = pathname?.startsWith('/experiencia');
     const isBlog = pathname?.startsWith('/blog');
     const isSpecialPage = isListingExperiences || isExperienceDetail || isBlog;
+
+    const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, target: string) => {
+        if (target.startsWith('/#')) {
+            if (pathname === '/') {
+                e.preventDefault();
+                const id = target.split('#')[1];
+                const element = document.getElementById(id);
+                if (element) {
+                    const offset = 100;
+                    const bodyRect = document.body.getBoundingClientRect().top;
+                    const elementRect = element.getBoundingClientRect().top;
+                    const elementPosition = elementRect - bodyRect;
+                    const offsetPosition = elementPosition - offset;
+
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                    setMobileMenuOpen(false);
+                }
+            }
+        }
+    };
 
     useEffect(() => {
         const handleScroll = () => {
@@ -30,7 +54,7 @@ export default function Navbar() {
 
     // Close mobile menu when route changes
     useEffect(() => {
-        setMobileMenuOpen(false);
+        if (mobileMenuOpen) setMobileMenuOpen(false);
     }, [pathname]);
 
     return (
@@ -67,16 +91,28 @@ export default function Navbar() {
 
                     <div className="hidden md:block">
                         <div className="ml-10 flex items-baseline space-x-6">
-                            <Link href="/#experiencias" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isSpecialPage) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
+                            <Link
+                                href="/#experiencias"
+                                onClick={(e) => handleNavClick(e, '/#experiencias')}
+                                className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isSpecialPage) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}
+                            >
                                 {t.nav.experiences}
                             </Link>
-                            <Link href="/#nosotros" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isSpecialPage) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
+                            <Link
+                                href="/#nosotros"
+                                onClick={(e) => handleNavClick(e, '/#nosotros')}
+                                className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isSpecialPage) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}
+                            >
                                 {t.nav.about}
                             </Link>
                             <Link href="/blog" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isSpecialPage) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
                                 {t.nav.blog}
                             </Link>
-                            <Link href="/#contacto" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isSpecialPage) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
+                            <Link
+                                href="/#contacto"
+                                onClick={(e) => handleNavClick(e, '/#contacto')}
+                                className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isSpecialPage) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}
+                            >
                                 {t.nav.contact}
                             </Link>
                         </div>
@@ -129,12 +165,14 @@ export default function Navbar() {
                         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                             <Link
                                 href="/#experiencias"
+                                onClick={(e) => handleNavClick(e, '/#experiencias')}
                                 className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-800"
                             >
                                 {t.nav.experiences}
                             </Link>
                             <Link
                                 href="/#nosotros"
+                                onClick={(e) => handleNavClick(e, '/#nosotros')}
                                 className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-800"
                             >
                                 {t.nav.about}
@@ -147,6 +185,7 @@ export default function Navbar() {
                             </Link>
                             <Link
                                 href="/#contacto"
+                                onClick={(e) => handleNavClick(e, '/#contacto')}
                                 className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-800"
                             >
                                 {t.nav.contact}

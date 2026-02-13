@@ -5,6 +5,26 @@ import { useLanguage } from '@/context/LanguageContext';
 
 export default function Footer() {
     const { t } = useLanguage();
+    const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, target: string) => {
+        if (target.startsWith('/#') && window.location.pathname === '/') {
+            e.preventDefault();
+            const id = target.split('#')[1];
+            const element = document.getElementById(id);
+            if (element) {
+                const offset = 100;
+                const bodyRect = document.body.getBoundingClientRect().top;
+                const elementRect = element.getBoundingClientRect().top;
+                const elementPosition = elementRect - bodyRect;
+                const offsetPosition = elementPosition - offset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        }
+    };
+
     return (
         <footer className="bg-stone-950 border-t border-stone-800 text-stone-400 pt-20 pb-10 font-sans">
             <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-4 gap-12 mb-16">
@@ -35,9 +55,9 @@ export default function Footer() {
                     <h3 className="text-white font-heading font-bold mb-6 text-lg">{t.footer.navTitle}</h3>
                     <ul className="space-y-4 text-sm">
                         <li><a href="/" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.footer.home}</a></li>
-                        <li><a href="/#experiencias" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.nav.experiences}</a></li>
-                        <li><a href="/#nosotros" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.footer.about}</a></li>
-                        <li><a href="/#contacto" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.nav.contact}</a></li>
+                        <li><a href="/#experiencias" onClick={(e) => handleNavClick(e, '/#experiencias')} className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.nav.experiences}</a></li>
+                        <li><a href="/#nosotros" onClick={(e) => handleNavClick(e, '/#nosotros')} className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.footer.about}</a></li>
+                        <li><a href="/#contacto" onClick={(e) => handleNavClick(e, '/#contacto')} className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.nav.contact}</a></li>
                     </ul>
                 </div>
 
