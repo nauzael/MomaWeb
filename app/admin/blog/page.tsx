@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, Search, MoreVertical, Edit, Trash2, ExternalLink, Filter, Calendar } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, ExternalLink, Calendar } from 'lucide-react';
 import { fetchApi, getImageUrl } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -119,7 +119,7 @@ export default function BlogAdminPage() {
                                     />
                                 ) : (
                                     <div className="absolute inset-0 flex items-center justify-center text-stone-300">
-                                        <ImageIcon className="w-12 h-12" />
+                                        <div className="w-12 h-12 bg-stone-200 dark:bg-stone-800 rounded-full" />
                                     </div>
                                 )}
                                 <div className="absolute top-4 left-4">
@@ -151,7 +151,7 @@ export default function BlogAdminPage() {
 
                                 <div className="flex items-center justify-between pt-6 border-t border-stone-100 dark:border-stone-800">
                                     <div className="flex gap-2">
-                                        <Link href={`/admin/blog/edit/${post.id}`}>
+                                        <Link href={`/admin/blog/edit?id=${post.id}`}>
                                             <button className="p-3 bg-stone-50 dark:bg-stone-800 rounded-2xl text-stone-500 hover:text-stone-900 dark:hover:text-white transition-all">
                                                 <Edit className="w-5 h-5" />
                                             </button>
@@ -176,7 +176,7 @@ export default function BlogAdminPage() {
             ) : (
                 <div className="bg-white dark:bg-stone-900 rounded-[3rem] p-20 text-center border-2 border-dashed border-stone-100 dark:border-stone-800">
                     <div className="w-24 h-24 bg-stone-50 dark:bg-stone-800 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <PenTool className="w-10 h-10 text-stone-200" />
+                        <Plus className="w-10 h-10 text-stone-200" />
                     </div>
                     <h2 className="text-2xl font-black text-stone-900 dark:text-white mb-2 italic">Aún no hay historias...</h2>
                     <p className="text-stone-400 max-w-sm mx-auto mb-8 font-medium">Comparte tus experiencias con el mundo creando tu primera entrada de blog.</p>
@@ -188,48 +188,5 @@ export default function BlogAdminPage() {
                 </div>
             )}
         </div>
-    );
-}
-
-function PenTool(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <path d="M12 19l7-7 3 3-7 7-3-3z" />
-            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
-            <path d="M2 2l7.586 7.586" />
-            <circle cx="11" cy="11" r="2" />
-        </svg>
-    );
-}
-
-function ImageIcon(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-            <circle cx="9" cy="9" r="2" />
-            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-        </svg>
     );
 }

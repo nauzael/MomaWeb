@@ -1,9 +1,9 @@
 {
-  "hash": "3f012e69c22dc120194bc891bee2fafe3921d1a5",
+  "hash": "445cb495c9e6a0ad95d4e82630a867c9af482678",
   "author": "Tu Nombre",
-  "date_relative": "6 minutes ago",
-  "date_full": "Fri Feb 13 12:08:59 2026 -0500",
-  "subject": "feat: Add new admin panel including dashboard, bookings, experiences, gallery, customers, reports, and settings management.",
-  "build_time": "13/02/2026, 12:14:44 p. m.",
-  "timestamp": 1771002884503
+  "date_relative": "2 hours ago",
+  "date_full": "Fri Feb 13 13:03:54 2026 -0500",
+  "subject": "fix: use client-side routing for blog posts to support static export and clean URLs",
+  "build_time": "13/02/2026, 02:34:07 p. m.",
+  "timestamp": 1771011247044
 }
