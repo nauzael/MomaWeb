@@ -77,59 +77,47 @@ try {
 
     if ($action === 'deploy' || $action === 'deploy-head') {
         $filesCopied = 0;
+        clearstatcache(); // Clear file cache for real-time detection
         
-        // Final Path Detection
         $possiblePaths = [
-            realpath(__DIR__ . '/../../../out'),          // Adjacent out
-            realpath('/home/momaexcu/out'),                // Root out
-            realpath('/home/momaexcu/repositories/MomaWeb/out'), // Repositories folder
-            realpath('/home/momaexcu/moma-web/out')        // Sibling folder
+            realpath(__DIR__ . '/../../../out'),
+            realpath('/home/momaexcu/repositories/MomaWeb/out'),
+            realpath('/home/momaexcu/out')
         ];
 
         $srcStatic = null;
         foreach ($possiblePaths as $p) {
-            if ($p && is_dir($p) && file_exists($p . '/index.html')) {
+            if ($p && is_dir($p)) {
                 $srcStatic = $p;
                 break;
             }
         }
 
         if ($srcStatic) {
-            // First, try to sync the git info from the repo if possible
-            $repoRoot = realpath($srcStatic . '/..');
-            $repoGitInfo = $repoRoot . '/public/api/admin/git_info.json';
-            if (file_exists($repoGitInfo)) {
-                @copy($repoGitInfo, __DIR__ . '/git_info.json');
-            }
-
-            // Perform recursive copy
+            // Instant recursive copy
             $filesCopied += phpRecursiveCopy($srcStatic, $deployPath);
             
-            // Sync API code as well
-            $srcApi = $srcStatic . '/../public/api';
-            if (is_dir($srcApi)) {
-                $filesCopied += phpRecursiveCopy($srcApi, $deployPath . '/api');
+            // Sync API code
+            $srcApi = realpath($srcStatic . '/../public/api');
+            if ($srcApi && is_dir($srcApi)) {
+                phpRecursiveCopy($srcApi, $deployPath . '/api');
             }
 
-            // Record success
             $log = [
                 'time' => date('d/m/Y H:i:s'),
                 'count' => $filesCopied,
-                'status' => 'EXITO',
-                'source' => $srcStatic
+                'status' => 'EXITO'
             ];
             @file_put_contents(__DIR__ . '/deploy_log.json', json_encode($log));
 
             echo json_encode([
                 'success' => true,
-                'message' => "¡Despliegue completado! $filesCopied archivos actualizados desde: " . basename($srcStatic),
-                'details' => $log
+                'message' => "¡Sincronización instantánea completada ($filesCopied archivos)! Web actualizada.",
             ]);
         } else {
             echo json_encode([
                 'success' => false,
-                'message' => 'No se encontraron archivos de construcción (out) para copiar. Asegúrate de que la carpeta "out" esté subida en tu hosting (fuera de public_html).',
-                'paths_checked' => $possiblePaths
+                'message' => 'No se encontraron archivos nuevos para desplegar. Asegúrate de que el build en tu PC ha terminado.',
             ]);
         }
         exit;
