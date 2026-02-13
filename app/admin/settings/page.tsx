@@ -165,24 +165,6 @@ export default function SettingsPage() {
                                 <div className="grid grid-cols-1 gap-3">
                                     <button
                                         onClick={async () => {
-                                            setIsLoadingStatus(true);
-                                            try {
-                                                const res = await fetch('/api/admin/system_info.php?action=update');
-                                                const data = await res.json();
-                                                alert(data.message);
-                                                fetchStatus();
-                                            } catch (e) { alert('Error de conexión'); }
-                                            finally { setIsLoadingStatus(false); }
-                                        }}
-                                        disabled={isLoadingStatus}
-                                        className="w-full py-2.5 bg-white border border-stone-200 text-stone-700 rounded-xl text-xs font-bold hover:bg-stone-50 transition-all flex items-center justify-center gap-2 shadow-sm"
-                                    >
-                                        <RefreshCw className={`w-3.5 h-3.5 ${isLoadingStatus ? 'animate-spin' : ''}`} />
-                                        Actualizar desde remoto
-                                    </button>
-
-                                    <button
-                                        onClick={async () => {
                                             if (!confirm('¿Desplegar el commit HEAD actual a la carpeta pública?')) return;
                                             setIsLoadingStatus(true);
                                             try {
