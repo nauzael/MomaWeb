@@ -1,9 +1,9 @@
 {
-  "hash": "445cb495c9e6a0ad95d4e82630a867c9af482678",
+  "hash": "101c08a9f735e6afd44618fd94a4513997f44618",
   "author": "Tu Nombre",
-  "date_relative": "2 hours ago",
-  "date_full": "Fri Feb 13 13:03:54 2026 -0500",
-  "subject": "fix: use client-side routing for blog posts to support static export and clean URLs",
-  "build_time": "13/02/2026, 02:34:07 p. m.",
-  "timestamp": 1771011247044
+  "date_relative": "18 minutes ago",
+  "date_full": "Fri Feb 13 14:36:18 2026 -0500",
+  "subject": "feat: Implement admin blog pages and generate static site output.",
+  "build_time": "13/02/2026, 02:54:08 p. m.",
+  "timestamp": 1771012448629
 }

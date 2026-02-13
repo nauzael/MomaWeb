@@ -12,6 +12,7 @@ import SectionDivider from '@/components/ui/SectionDivider';
 import ParallaxGallery from '@/components/ui/ParallaxGallery';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { getImageUrl } from '@/lib/api-client';
+import BlogSection from '@/components/blog/BlogSection';
 
 const CTA_IMAGE_URL = "/images/montes-m-frame.webp";
 
@@ -255,6 +256,9 @@ export default function Home() {
         </div>
 
       </section >
+
+      {/* Blog Section */}
+      <BlogSection />
 
       {/* Contact Section */}
       <section id="contacto" className="relative py-24 bg-stone-50 dark:bg-stone-950" >
