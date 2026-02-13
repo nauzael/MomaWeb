@@ -1,11 +1,32 @@
 'use client';
-import { useState } from 'react';
-import { Save, ToggleLeft, ToggleRight, Shield } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Save, ToggleLeft, ToggleRight, Shield, Clock, Activity, GitBranch, RefreshCw, Server } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SettingsPage() {
     const [stripeEnabled, setStripeEnabled] = useState(true);
     const [wompiEnabled, setWompiEnabled] = useState(true);
+    const [systemInfo, setSystemInfo] = useState<any>(null);
+    const [isLoadingStatus, setIsLoadingStatus] = useState(false);
+
+    const fetchStatus = async () => {
+        setIsLoadingStatus(true);
+        try {
+            const res = await fetch('/api/admin/system_info.php');
+            const data = await res.json();
+            if (data.success) {
+                setSystemInfo(data);
+            }
+        } catch (e) {
+            console.error('Failed to fetch system info', e);
+        } finally {
+            setIsLoadingStatus(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchStatus();
+    }, []);
 
     return (
         <div className="max-w-2xl mx-auto space-y-6">
@@ -130,6 +151,90 @@ export default function SettingsPage() {
                             >
                                 Ejecutar Query
                             </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Update Monitor */}
+                <div className="space-y-6 border-t border-stone-100 dark:border-stone-800 pt-8">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-xl font-bold text-stone-900 dark:text-white flex items-center gap-2">
+                            <Activity className="w-5 h-5 text-moma-green" />
+                            Monitor de Actualización
+                        </h2>
+                        <button
+                            onClick={fetchStatus}
+                            disabled={isLoadingStatus}
+                            className="p-2 hover:bg-stone-50 dark:hover:bg-stone-800 rounded-full transition-all text-stone-400 hover:text-moma-green disabled:opacity-50"
+                        >
+                            <RefreshCw className={`w-5 h-5 ${isLoadingStatus ? 'animate-spin' : ''}`} />
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Git Last Commit Card */}
+                        <div className="bg-[#f8fbfa] dark:bg-stone-800/40 p-5 rounded-2xl border border-moma-green/10 space-y-4">
+                            <div className="flex items-center gap-3 text-stone-500 text-xs font-bold uppercase tracking-widest">
+                                <GitBranch className="w-4 h-4 text-moma-green" />
+                                Último Cambio (Git)
+                            </div>
+
+                            {systemInfo?.git ? (
+                                <div className="space-y-3">
+                                    <p className="text-sm font-bold text-stone-800 dark:text-stone-200 leading-tight">
+                                        {systemInfo.git.subject}
+                                    </p>
+                                    <div className="flex flex-wrap gap-3">
+                                        <div className="flex items-center gap-1.5 text-xs text-stone-500 bg-white dark:bg-stone-900 px-2 py-1 rounded-lg border border-stone-100 dark:border-stone-800">
+                                            <Clock className="w-3 h-3" />
+                                            {systemInfo.git.date_relative}
+                                        </div>
+                                        <div className="flex items-center gap-1.5 text-xs text-stone-400 font-mono">
+                                            {systemInfo.git.hash.substring(0, 7)}
+                                        </div>
+                                    </div>
+                                    <div className="text-[10px] text-stone-400 mt-2">
+                                        Autor: <span className="text-stone-600 dark:text-stone-300 font-medium">{systemInfo.git.author}</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="animate-pulse space-y-3">
+                                    <div className="h-4 bg-stone-200 dark:bg-stone-700 rounded w-3/4"></div>
+                                    <div className="h-3 bg-stone-100 dark:bg-stone-800 rounded w-1/2"></div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Deployment Status Card */}
+                        <div className="bg-[#fcfdfd] dark:bg-stone-800/40 p-5 rounded-2xl border border-stone-100 dark:border-stone-800 space-y-4">
+                            <div className="flex items-center gap-3 text-stone-500 text-xs font-bold uppercase tracking-widest">
+                                <Server className="w-4 h-4 text-stone-400" />
+                                Estado del Servidor
+                            </div>
+
+                            {systemInfo?.server ? (
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-stone-500">Versión PHP</span>
+                                        <span className="text-xs font-bold text-stone-700 dark:text-stone-300">{systemInfo.server.php_version}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-stone-500">Última Aplicación</span>
+                                        <span className="text-xs font-bold text-moma-green">{systemInfo.server.last_updated.split(' ')[1]}</span>
+                                    </div>
+                                    <div className="pt-2">
+                                        <div className="flex items-center gap-2 text-[10px] text-green-600 font-black uppercase">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                            Sitio Activo y Sincronizado
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="animate-pulse space-y-3">
+                                    <div className="h-8 bg-stone-100 dark:bg-stone-800 rounded"></div>
+                                    <div className="h-8 bg-stone-100 dark:bg-stone-800 rounded"></div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
