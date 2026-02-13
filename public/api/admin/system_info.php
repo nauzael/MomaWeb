@@ -1,30 +1,23 @@
 <?php
-// Enable error reporting for debugging
+// Moma Nature - System Info & Deployment Engine PRO
 error_reporting(E_ALL);
-ini_set('display_errors', 0); // Keep it JSON friendly
+ini_set('display_errors', 0);
 
-// Load configuration and utilities
 require_once __DIR__ . '/../config/cors.php';
-
 header('Content-Type: application/json');
-
-/**
- * Moma Nature - System Info & Deployment API
- */
 
 $deployPath = '/home/momaexcu/public_html';
 
 try {
     $action = $_GET['action'] ?? 'info';
 
-    // Helper for recursive copy without exec()
     function phpRecursiveCopy($src, $dst) {
         if (!is_dir($src)) return false;
         if (!is_dir($dst)) @mkdir($dst, 0755, true);
         $dir = opendir($src);
         $count = 0;
         while(false !== ( $file = readdir($dir)) ) {
-            if (( $file != '.' ) && ( $file != '..' )) {
+            if (( $file != '.' ) && ( $file != '..' ) && ( $file != '.git' )) {
                 if ( is_dir($src . '/' . $file) ) {
                     $count += phpRecursiveCopy($src . '/' . $file, $dst . '/' . $file);
                 } else {
@@ -38,110 +31,60 @@ try {
         return $count;
     }
 
-    // 1. Git & Deployment Actions
-    if ($action === 'update' || $action === 'pull') {
-        $foundMethod = false;
-        $output = [];
-        $returnVar = -1;
-
-        // Try all possible execution methods
-        $methods = ['exec', 'shell_exec', 'system', 'passthru'];
-        $availableMethods = [];
-        foreach ($methods as $m) {
-            if (function_exists($m)) $availableMethods[] = $m;
-        }
-
-        if (in_array('exec', $availableMethods)) {
-            @exec('git pull origin main 2>&1', $output, $returnVar);
-            $foundMethod = true;
-        }
-
-        if ($foundMethod && $returnVar === 0) {
-            echo json_encode([
-                'success' => true,
-                'message' => '¡Sincronización remota exitosa!',
-                'details' => $output
-            ]);
-        } else {
-            echo json_encode([
-                'success' => false,
-                'message' => 'Actualización Directa Deshabilitada: El hosting bloquea los comandos de Git. Usa la NUEVA automatización de GitHub que acabo de configurarte.',
-                'diagnostic' => [
-                    'available_methods' => $availableMethods,
-                    'last_error' => $output[0] ?? 'Acceso denegado'
-                ]
-            ]);
-        }
-        exit;
-    }
-
-    if ($action === 'deploy' || $action === 'deploy-head') {
+    if ($action === 'deploy-head') {
+        clearstatcache();
         $filesCopied = 0;
-        clearstatcache(); // Clear file cache for real-time detection
         
+        // Buscador de rutas inteligente (Orden de prioridad)
         $possiblePaths = [
-            realpath(__DIR__ . '/../../../out'),
-            realpath(__DIR__ . '/../../out_deploy'),
-            realpath('/home/momaexcu/out_deploy'),
-            realpath('/home/momaexcu/repositories/MomaWeb/out'),
-            realpath('/home/momaexcu/out')
+            '/home/momaexcu/repositories/MomaWeb/out', // Tu ruta de cPanel
+            '/home/momaexcu/moma-web/out',
+            '/home/momaexcu/out_deploy', 
+            '/home/momaexcu/out',
+            realpath(__DIR__ . '/../../../out')
         ];
 
         $srcStatic = null;
         foreach ($possiblePaths as $p) {
-            if ($p && is_dir($p)) {
+            if ($p && is_dir($p) && file_exists($p . '/index.html')) {
                 $srcStatic = $p;
                 break;
             }
         }
 
         if ($srcStatic) {
-            // Instant recursive copy
             $filesCopied += phpRecursiveCopy($srcStatic, $deployPath);
-            
-            // Sync API code
             $srcApi = realpath($srcStatic . '/../public/api');
-            if ($srcApi && is_dir($srcApi)) {
-                phpRecursiveCopy($srcApi, $deployPath . '/api');
-            }
+            if ($srcApi && is_dir($srcApi)) phpRecursiveCopy($srcApi, $deployPath . '/api');
 
-            $log = [
+            @file_put_contents(__DIR__ . '/deploy_log.json', json_encode([
                 'time' => date('d/m/Y H:i:s'),
                 'count' => $filesCopied,
-                'status' => 'EXITO'
-            ];
-            @file_put_contents(__DIR__ . '/deploy_log.json', json_encode($log));
+                'source' => basename($srcStatic)
+            ]));
 
             echo json_encode([
                 'success' => true,
-                'message' => "¡Sincronización instantánea completada ($filesCopied archivos)! Web actualizada.",
+                'message' => "¡ÉXITO! $filesCopied archivos actualizados desde: " . basename($srcStatic),
             ]);
         } else {
             echo json_encode([
                 'success' => false,
-                'message' => 'No se encontraron archivos nuevos para desplegar. Asegúrate de que el build en tu PC ha terminado.',
+                'message' => 'ERROR: No se encontró la carpeta de construcción (out). Por favor, asegúrate de que GitHub o el cPanel Git hayan descargado los archivos en el servidor.',
+                'debug_paths' => $possiblePaths
             ]);
         }
         exit;
     }
 
-    // 2. Information Retrieval
-    $git_info = [
-        'hash' => 'No disponible',
-        'author' => 'System',
-        'date_relative' => 'Desconocido',
-        'date_full' => date('d/m/Y H:i:s'),
-        'subject' => 'Repositorio no sincronizado localmente',
-        'build_time' => 'N/A'
-    ];
-
+    // Información del Git (Monitor)
+    $git_info = ['hash' => 'N/A', 'author' => 'System', 'date_full' => date('d/m/Y H:i:s'), 'subject' => 'Monitor Activo'];
     $staticInfoPath = __DIR__ . '/git_info.json';
     if (file_exists($staticInfoPath)) {
-        $staticData = json_decode(file_get_contents($staticInfoPath), true);
-        if ($staticData) $git_info = array_merge($git_info, $staticData);
+        $data = json_decode(file_get_contents($staticInfoPath), true);
+        if ($data) $git_info = array_merge($git_info, $data);
     }
 
-    // 3. Deployment Log
     $last_log = ['time' => 'Nunca', 'count' => 0];
     if (file_exists(__DIR__ . '/deploy_log.json')) {
         $last_log = json_decode(file_get_contents(__DIR__ . '/deploy_log.json'), true);
@@ -151,22 +94,12 @@ try {
         'success' => true,
         'git' => $git_info,
         'server' => [
-            'php_version' => PHP_VERSION,
-            'server_time' => date('Y-m-d H:i:s'),
-            'os' => PHP_OS,
-            'deploy_path' => $deployPath,
             'last_deploy' => $last_log['time'],
-            'is_deployed' => true
+            'php_version' => PHP_VERSION,
+            'status' => 'Conectado'
         ]
     ]);
-    exit;
 
 } catch (Throwable $e) {
-    http_response_code(200); // Return 200 even on catch but with success=false to avoid "Failed to fetch" browser alerts
-    echo json_encode([
-        'success' => false,
-        'error' => $e->getMessage(),
-        'trace' => $e->getTraceAsString()
-    ]);
-    exit;
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
