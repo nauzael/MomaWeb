@@ -15,9 +15,10 @@ export default function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { language, setLanguage, t } = useLanguage();
     const pathname = usePathname();
-    const isExperienceDetail = pathname?.startsWith('/experiencias/');
+    const isListingExperiences = pathname === '/experiencias';
+    const isExperienceDetail = pathname?.startsWith('/experiencia'); // Covers both /experiencia and /experiencias/ detail patterns
     const isBlog = pathname?.startsWith('/blog');
-    const isSpecialPage = isExperienceDetail || isBlog;
+    const isSpecialPage = isListingExperiences || isExperienceDetail || isBlog;
 
     useEffect(() => {
         const handleScroll = () => {
@@ -36,11 +37,9 @@ export default function Navbar() {
         <nav
             className={cn(
                 "fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out",
-                (scrolled || isBlog)
+                (scrolled || isSpecialPage)
                     ? "bg-background/60 backdrop-blur-xl shadow-sm py-3"
-                    : isExperienceDetail
-                        ? "bg-black/30 backdrop-blur-xl border-b border-white/10 py-3"
-                        : "bg-transparent py-8"
+                    : "bg-transparent py-8"
             )}
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -50,16 +49,14 @@ export default function Navbar() {
                             href="/"
                             className={cn(
                                 "relative transition-all duration-500 ease-in-out block",
-                                scrolled || isBlog
+                                scrolled || isSpecialPage
                                     ? "h-10 w-32"
-                                    : isExperienceDetail
-                                        ? "h-12 w-40"
-                                        : "h-20 w-64"
+                                    : "h-20 w-64"
                             )}
                             aria-label={t.nav.logoAria}
                         >
                             <Image
-                                src={(scrolled || isBlog) ? "/images/logo.png" : "/images/logo-white.png"}
+                                src={(scrolled || isSpecialPage) ? "/images/logo.png" : "/images/logo-white.png"}
                                 alt={t.nav.logoAlt}
                                 fill
                                 className="object-contain object-left"
@@ -70,16 +67,16 @@ export default function Navbar() {
 
                     <div className="hidden md:block">
                         <div className="ml-10 flex items-baseline space-x-6">
-                            <Link href="/#experiencias" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isBlog) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
+                            <Link href="/#experiencias" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isSpecialPage) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
                                 {t.nav.experiences}
                             </Link>
-                            <Link href="/#nosotros" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isBlog) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
+                            <Link href="/#nosotros" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isSpecialPage) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
                                 {t.nav.about}
                             </Link>
-                            <Link href="/#blog" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isBlog) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
+                            <Link href="/#blog" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isSpecialPage) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
                                 {t.nav.blog}
                             </Link>
-                            <Link href="/#contacto" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isBlog) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
+                            <Link href="/#contacto" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isSpecialPage) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
                                 {t.nav.contact}
                             </Link>
                         </div>
@@ -90,7 +87,7 @@ export default function Navbar() {
                             onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
                             className={cn(
                                 "flex items-center gap-2 px-3 py-2 rounded-full text-sm font-bold uppercase tracking-wider transition-all",
-                                (scrolled || isBlog) ? "text-stone-600 hover:bg-stone-100" : "text-white/80 hover:bg-white/10"
+                                (scrolled || isSpecialPage) ? "text-stone-600 hover:bg-stone-100" : "text-white/80 hover:bg-white/10"
                             )}
                         >
                             <Globe className="w-4 h-4" />
@@ -104,7 +101,7 @@ export default function Navbar() {
                     <div className="-mr-2 flex md:hidden">
                         <button
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className={cn("inline-flex items-center justify-center p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-moma-green", (scrolled || isBlog) ? "text-stone-400 hover:text-stone-500 hover:bg-stone-100" : "text-white hover:bg-white/10")}
+                            className={cn("inline-flex items-center justify-center p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-moma-green", (scrolled || isSpecialPage) ? "text-stone-400 hover:text-stone-500 hover:bg-stone-100" : "text-white hover:bg-white/10")}
                             aria-expanded={mobileMenuOpen}
                             aria-controls="mobile-menu"
                             aria-label={mobileMenuOpen ? t.nav.closeMenu : t.nav.openMenu}

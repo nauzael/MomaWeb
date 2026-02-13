@@ -174,7 +174,20 @@ export const translations = {
             openMenu: 'Open main menu',
             closeMenu: 'Close main menu',
             englishLabel: 'English (EN)',
-            spanishLabel: 'Spanish (ES)'
+            spanishLabel: 'Spanish (ES)',
+            allExperiences: 'All Experiences',
+            allExperiencesDesc: 'Explore our complete collection of adventures and connections with nature.',
+            discoverBadge: 'Discover',
+            blogRelatos: 'Expeditions in Black and White',
+            blogSubtitle: 'Stories and Adventures',
+            blogDesc: 'Explore the hidden treasures of Sucre and beyond. Travel stories, local guides, and the magic of the unknown.',
+            blogAll: 'All',
+            blogFeatured: 'Featured',
+            blogStoryNotWritten: 'This story has not been written yet...',
+            blogBack: 'Back to Blog',
+            blogMetaShare: 'Share:',
+            blogMetaNext: 'Next reading',
+            blogMetaRelated: 'Related Stories'
         },
         hero: {
             title: 'Black and White Expeditions',
@@ -307,20 +320,8 @@ export const translations = {
             terms: 'Terms of Service',
             sustainability: 'Sustainability',
             certified: 'Certified Experience',
-            allRightsReserved: 'All rights reserved.',
-            allExperiences: 'All Experiences',
-            allExperiencesDesc: 'Explore our complete collection of adventures and connections with nature.',
-            discoverBadge: 'Discover',
-            blogRelatos: 'Expeditions in Black and White',
-            blogSubtitle: 'Stories and Adventures',
-            blogDesc: 'Explore the hidden treasures of Sucre and beyond. Travel stories, local guides, and the magic of the unknown.',
-            blogAll: 'All',
-            blogFeatured: 'Featured',
-            blogStoryNotWritten: 'This story has not been written yet...',
-            blogBack: 'Back to Blog',
-            blogMetaShare: 'Share:',
-            blogMetaNext: 'Next reading',
-            blogMetaRelated: 'Related Stories'
+            certified: 'Certified Experience',
+            allRightsReserved: 'All rights reserved.'
         }
     }
 };
