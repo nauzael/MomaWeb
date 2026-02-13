@@ -17,30 +17,55 @@ $deployPath = '/home/momaexcu/public_html';
 try {
     $action = $_GET['action'] ?? 'info';
 
+    // Helper for recursive copy without exec()
+    function phpRecursiveCopy($src, $dst) {
+        if (!is_dir($src)) return false;
+        if (!is_dir($dst)) @mkdir($dst, 0755, true);
+        $dir = opendir($src);
+        $count = 0;
+        while(false !== ( $file = readdir($dir)) ) {
+            if (( $file != '.' ) && ( $file != '..' )) {
+                if ( is_dir($src . '/' . $file) ) {
+                    $count += phpRecursiveCopy($src . '/' . $file, $dst . '/' . $file);
+                } else {
+                    if (@copy($src . '/' . $file, $dst . '/' . $file)) {
+                        $count++;
+                    }
+                }
+            }
+        }
+        closedir($dir);
+        return $count;
+    }
+
     // 1. Manual Deployment Action
     if ($action === 'deploy') {
-        // Only run on Linux environments where cp is available
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            echo json_encode(['success' => false, 'message' => 'El despliegue manual no está disponible en entorno Windows local.']);
-            exit;
-        }
-
-        // We still need exec for deploy, but we can check it here specifically
-        if (!function_exists('exec')) {
-            echo json_encode(['success' => false, 'message' => 'No se puede realizar despliegue manual: la función exec() está deshabilitada en este hosting.']);
-            exit;
-        }
-
-        $cmd1 = "cp -rf ../../../out/* $deployPath/ 2>&1";
-        $cmd2 = "cp -rf ../../../public/api/* $deployPath/api/ 2>&1";
+        // Detect paths relative to this script (public_html/api/admin/system_info.php)
+        // We want to copy from ~/moma-web/out to ~/public_html
+        // Or if everything is in public_html, adjust accordingly.
+        // For CPanel deployment, typically the build lives next to public_html or inside a subfolder.
         
-        exec($cmd1, $out1, $ret1);
-        exec($cmd2, $out2, $ret2);
+        $baseDir = realpath(__DIR__ . '/../../..'); // Should be the root of the project
+        $srcStatic = $baseDir . '/out';
+        $srcApi = $baseDir . '/public/api';
+        
+        $filesCopied = 0;
+        
+        if (file_exists($srcStatic)) {
+            $filesCopied += phpRecursiveCopy($srcStatic, $deployPath);
+        }
+        
+        if (file_exists($srcApi)) {
+            $filesCopied += phpRecursiveCopy($srcApi, $deployPath . '/api');
+        }
 
         echo json_encode([
-            'success' => $ret1 === 0 && $ret2 === 0,
-            'message' => 'Despliegue manual completado',
-            'details' => ['static' => $out1, 'api' => $out2]
+            'success' => $filesCopied > 0,
+            'message' => "Despliegue completado. $filesCopied archivos sincronizados.",
+            'details' => [
+                'files_count' => $filesCopied,
+                'target' => $deployPath
+            ]
         ]);
         exit;
     }
