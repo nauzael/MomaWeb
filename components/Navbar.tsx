@@ -16,10 +16,7 @@ export default function Navbar() {
     const { language, setLanguage, t } = useLanguage();
     const pathname = usePathname();
     const router = useRouter();
-    const isListingExperiences = pathname === '/experiencias';
-    const isExperienceDetail = pathname?.startsWith('/experiencia');
-    const isBlog = pathname?.startsWith('/blog');
-    const isSpecialPage = isListingExperiences || isExperienceDetail || isBlog;
+    const isSpecialPage = pathname !== '/';
 
     const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, target: string) => {
         if (target.startsWith('/#')) {

@@ -57,6 +57,7 @@ export default function Footer() {
                         <li><a href="/" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.footer.home}</a></li>
                         <li><a href="/#experiencias" onClick={(e) => handleNavClick(e, '/#experiencias')} className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.nav.experiences}</a></li>
                         <li><a href="/#nosotros" onClick={(e) => handleNavClick(e, '/#nosotros')} className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.footer.about}</a></li>
+                        <li><a href="/blog" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.nav.blog}</a></li>
                         <li><a href="/#contacto" onClick={(e) => handleNavClick(e, '/#contacto')} className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.nav.contact}</a></li>
                     </ul>
                 </div>

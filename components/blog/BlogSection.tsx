@@ -43,7 +43,7 @@ export default function BlogSection() {
                         </h2>
                         <div className="mt-10 flex justify-center">
                             <Link
-                                href="/#blog"
+                                href="/blog"
                                 className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all pb-2 border-b border-stone-200 dark:border-stone-800"
                             >
                                 {t.blog.viewAll} <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
