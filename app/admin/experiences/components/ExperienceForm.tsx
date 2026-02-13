@@ -844,7 +844,8 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
             <MediaSelector
                 isOpen={isGallerySelectorOpen}
                 onClose={() => setIsGallerySelectorOpen(false)}
-                onSelect={(url) => setGalleryPreviews(prev => [...prev, url])}
+                onSelectMultiple={(urls) => setGalleryPreviews(prev => [...prev, ...urls])}
+                multiple={true}
                 title="Añadir a Galería"
             />
 

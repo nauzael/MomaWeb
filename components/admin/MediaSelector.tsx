@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { X, Loader2, Search, ImageIcon } from 'lucide-react';
+import { X, Loader2, Search, ImageIcon, XCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { fetchApi, getImageUrl } from '@/lib/api-client';
+import { cn } from '@/lib/utils';
 
 interface GalleryImage {
     id: string;
@@ -16,18 +17,29 @@ interface GalleryImage {
 interface MediaSelectorProps {
     isOpen: boolean;
     onClose: () => void;
-    onSelect: (url: string) => void;
+    onSelect?: (url: string) => void;
+    onSelectMultiple?: (urls: string[]) => void;
+    multiple?: boolean;
     title?: string;
 }
 
-export default function MediaSelector({ isOpen, onClose, onSelect, title = "Seleccionar Imagen" }: MediaSelectorProps) {
+export default function MediaSelector({
+    isOpen,
+    onClose,
+    onSelect,
+    onSelectMultiple,
+    multiple = false,
+    title = "Seleccionar Imagen"
+}: MediaSelectorProps) {
     const [images, setImages] = useState<GalleryImage[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedUrls, setSelectedUrls] = useState<string[]>([]);
 
     useEffect(() => {
         if (isOpen) {
             loadImages();
+            setSelectedUrls([]);
         }
     }, [isOpen]);
 
@@ -41,6 +53,27 @@ export default function MediaSelector({ isOpen, onClose, onSelect, title = "Sele
         } finally {
             setLoading(false);
         }
+    };
+
+    const toggleSelection = (url: string) => {
+        if (!multiple) {
+            onSelect?.(url);
+            onClose();
+            return;
+        }
+
+        setSelectedUrls(prev =>
+            prev.includes(url)
+                ? prev.filter(u => u !== url)
+                : [...prev, url]
+        );
+    };
+
+    const handleConfirm = () => {
+        if (multiple && onSelectMultiple) {
+            onSelectMultiple(selectedUrls);
+        }
+        onClose();
     };
 
     const filteredImages = images.filter(img =>
@@ -60,10 +93,14 @@ export default function MediaSelector({ isOpen, onClose, onSelect, title = "Sele
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="p-6 md:p-8 border-b border-stone-100 flex items-center justify-between">
+                <div className="p-6 md:p-8 border-b border-stone-100 flex items-center justify-between bg-white">
                     <div>
                         <h2 className="text-2xl font-black text-stone-900">{title}</h2>
-                        <p className="text-stone-500 text-sm">Elige una imagen de la Galería Infinita</p>
+                        <p className="text-stone-500 text-sm">
+                            {multiple
+                                ? `Seleccionadas: ${selectedUrls.length} imágenes`
+                                : 'Elige una imagen de la Galería Infinita'}
+                        </p>
                     </div>
                     <button
                         onClick={onClose}
@@ -107,35 +144,54 @@ export default function MediaSelector({ isOpen, onClose, onSelect, title = "Sele
                         </div>
                     ) : filteredImages.length > 0 ? (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            {filteredImages.map((image) => (
-                                <div
-                                    key={image.id}
-                                    onClick={() => {
-                                        onSelect(image.url);
-                                        onClose();
-                                    }}
-                                    className="group relative aspect-square bg-stone-100 rounded-2xl overflow-hidden cursor-pointer border border-stone-200 hover:border-moma-green hover:ring-2 hover:ring-moma-green/20 transition-all shadow-sm hover:shadow-md"
-                                >
-                                    <Image
-                                        src={getImageUrl(image.url.replace('/gallery/', '/gallery/thumbs/'))}
-                                        alt={image.alt_text || 'Imagen de la galería'}
-                                        fill
-                                        sizes="(max-width: 768px) 50vw, 20vw"
-                                        className="object-cover transition-transform group-hover:scale-110"
-                                        onError={(e) => {
-                                            const target = e.target as HTMLImageElement;
-                                            if (target.src.includes('/thumbs/')) {
-                                                target.src = getImageUrl(image.url);
-                                            }
-                                        }}
-                                    />
-                                    <div className="absolute inset-0 bg-moma-green/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <div className="bg-white px-3 py-1.5 rounded-full text-[10px] font-black uppercase text-stone-900 shadow-xl scale-90 group-hover:scale-100 transition-transform">
-                                            Seleccionar
+                            {filteredImages.map((image) => {
+                                const isSelected = selectedUrls.includes(image.url);
+                                return (
+                                    <div
+                                        key={image.id}
+                                        onClick={() => toggleSelection(image.url)}
+                                        className={cn(
+                                            "group relative aspect-square bg-stone-100 rounded-2xl overflow-hidden cursor-pointer border transition-all shadow-sm hover:shadow-md",
+                                            isSelected
+                                                ? "border-moma-green ring-4 ring-moma-green/20"
+                                                : "border-stone-200 hover:border-moma-green"
+                                        )}
+                                    >
+                                        <Image
+                                            src={getImageUrl(image.url.replace('/gallery/', '/gallery/thumbs/'))}
+                                            alt={image.alt_text || 'Imagen de la galería'}
+                                            fill
+                                            sizes="(max-width: 768px) 50vw, 20vw"
+                                            className={cn(
+                                                "object-cover transition-transform group-hover:scale-110",
+                                                isSelected && "scale-90 opacity-80"
+                                            )}
+                                            onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                if (target.src.includes('/thumbs/')) {
+                                                    target.src = getImageUrl(image.url);
+                                                }
+                                            }}
+                                        />
+
+                                        {/* Selection Overlay */}
+                                        <div className={cn(
+                                            "absolute inset-0 flex items-center justify-center transition-all",
+                                            isSelected ? "bg-moma-green/20" : "bg-black/0 group-hover:bg-black/10"
+                                        )}>
+                                            {isSelected ? (
+                                                <div className="bg-moma-green text-black w-8 h-8 rounded-full flex items-center justify-center shadow-lg animate-in zoom-in-50">
+                                                    <XCircle className="w-5 h-5 fill-black text-moma-green" />
+                                                </div>
+                                            ) : (
+                                                <div className="bg-white/90 px-3 py-1.5 rounded-full text-[10px] font-black uppercase text-stone-900 shadow-xl opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all">
+                                                    {multiple ? 'Seleccionar' : 'Elegir'}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ) : (
                         <div className="h-64 flex flex-col items-center justify-center text-stone-400 gap-4 border-2 border-dashed border-stone-100 rounded-3xl">
@@ -146,10 +202,20 @@ export default function MediaSelector({ isOpen, onClose, onSelect, title = "Sele
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 md:px-8 border-t border-stone-100 bg-stone-50/30 flex justify-end">
-                    <Button variant="outline" onClick={onClose} className="rounded-xl px-6">
-                        Cerrar
+                <div className="p-6 md:px-8 border-t border-stone-100 bg-stone-50/50 flex justify-between items-center">
+                    <Button variant="outline" onClick={onClose} className="rounded-xl px-6 font-bold">
+                        Cancelar
                     </Button>
+
+                    {multiple && (
+                        <Button
+                            onClick={handleConfirm}
+                            disabled={selectedUrls.length === 0}
+                            className="bg-moma-green text-stone-900 hover:bg-moma-green/90 rounded-xl px-12 font-black shadow-lg shadow-moma-green/20"
+                        >
+                            Añadir {selectedUrls.length} {selectedUrls.length === 1 ? 'imagen' : 'imágenes'}
+                        </Button>
+                    )}
                 </div>
             </div>
         </div>
