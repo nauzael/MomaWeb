@@ -2,21 +2,39 @@
 header('Content-Type: application/json');
 
 /**
- * Moma Nature - System Info API
- * Returns information about the current deployment status and git history.
+ * Moma Nature - System Info & Deployment API
  */
 
+$deployPath = '/home/momaexcu/public_html';
+
 try {
-    // 1. Git Information
-    // Format: hash | author | relative date | full date | subject
+    $action = $_GET['action'] ?? 'info';
+
+    // 1. Manual Deployment Action
+    if ($action === 'deploy') {
+        // This simulates what .cpanel.yml does but triggered manually
+        // 1. Copy out (static build) to public_html
+        $cmd1 = "cp -rf ../../../out/* $deployPath/ 2>&1";
+        // 2. Copy public/api to public_html/api
+        $cmd2 = "cp -rf ../../../public/api/* $deployPath/api/ 2>&1";
+        
+        exec($cmd1, $out1, $ret1);
+        exec($cmd2, $out2, $ret2);
+
+        echo json_encode([
+            'success' => $ret1 === 0 && $ret2 === 0,
+            'message' => 'Despliegue manual completado',
+            'details' => [
+                'static' => $out1,
+                'api' => $out2
+            ]
+        ]);
+        exit;
+    }
+
+    // 2. Git Information
     $commit_format = '%H|%an|%ar|%ad|%s';
-    
-    // Attempt to run git log
-    // We use a specific path if needed, but assuming git is in path
-    $command = 'git log -1 --format="' . $commit_format . '"';
-    
-    // On Windows development, we might need to handle shell issues
-    exec($command, $output, $return_var);
+    exec('git log -1 --format="' . $commit_format . '"', $output, $return_var);
     
     $git_info = null;
     if ($return_var === 0 && !empty($output)) {
@@ -29,34 +47,27 @@ try {
             'subject' => $parts[4] ?? 'N/A'
         ];
     } else {
-        // Fallback or empty state
-        $git_info = [
-            'hash' => 'No disponible',
-            'author' => 'System',
-            'date_relative' => 'Desconocido',
-            'date_full' => date('Y-m-d H:i:s'),
-            'subject' => 'No se pudo obtener información de Git'
-        ];
+        $git_info = ['hash' => 'No disponible', 'author' => 'System', 'date_relative' => 'Desconocido', 'date_full' => date('Y-m-d H:i:s'), 'subject' => 'No se pudo obtener información de Git'];
     }
 
-    // 2. Server Information
-    $server_info = [
-        'php_version' => PHP_VERSION,
-        'server_time' => date('Y-m-d H:i:s'),
-        'os' => PHP_OS,
-        'last_updated' => date('Y-m-d H:i:s') // Assuming current check means it's active
-    ];
+    // 3. Deployment Status (Live Check)
+    $is_deployed = file_exists($deployPath);
+    $last_deploy_time = $is_deployed ? date("Y-m-d H:i:s", filemtime($deployPath)) : 'Nunca';
 
     echo json_encode([
         'success' => true,
         'git' => $git_info,
-        'server' => $server_info
+        'server' => [
+            'php_version' => PHP_VERSION,
+            'server_time' => date('Y-m-d H:i:s'),
+            'os' => PHP_OS,
+            'deploy_path' => $deployPath,
+            'is_deployed' => $is_deployed,
+            'last_deploy' => $last_deploy_time
+        ]
     ]);
 
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'error' => $e->getMessage()
-    ]);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }

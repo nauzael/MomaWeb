@@ -24,6 +24,26 @@ export default function SettingsPage() {
         }
     };
 
+    const handleManualDeploy = async () => {
+        if (!confirm('Esta acción forzará la sincronización de los archivos compilados hacia la carpeta pública. ¿Continuar?')) return;
+
+        setIsLoadingStatus(true);
+        try {
+            const res = await fetch('/api/admin/system_info.php?action=deploy');
+            const data = await res.json();
+            if (data.success) {
+                alert('¡Despliegue exitoso! Los cambios ya están en vivo.');
+                fetchStatus();
+            } else {
+                alert('Error al desplegar: ' + (data.message || 'Error desconocido'));
+            }
+        } catch (e) {
+            alert('Error de conexión al intentar desplegar.');
+        } finally {
+            setIsLoadingStatus(false);
+        }
+    };
+
     useEffect(() => {
         fetchStatus();
     }, []);
@@ -207,32 +227,43 @@ export default function SettingsPage() {
 
                         {/* Deployment Status Card */}
                         <div className="bg-[#fcfdfd] dark:bg-stone-800/40 p-5 rounded-2xl border border-stone-100 dark:border-stone-800 space-y-4">
-                            <div className="flex items-center gap-3 text-stone-500 text-xs font-bold uppercase tracking-widest">
-                                <Server className="w-4 h-4 text-stone-400" />
-                                Estado del Servidor
+                            <div className="flex items-center justify-between text-stone-500 text-xs font-bold uppercase tracking-widest">
+                                <div className="flex items-center gap-3">
+                                    <Server className="w-4 h-4 text-stone-400" />
+                                    Estado en Vivo
+                                </div>
+                                {systemInfo?.server?.is_deployed && (
+                                    <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px]">PÚBLICO</span>
+                                )}
                             </div>
 
                             {systemInfo?.server ? (
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-xs text-stone-500">Versión PHP</span>
-                                        <span className="text-xs font-bold text-stone-700 dark:text-stone-300">{systemInfo.server.php_version}</span>
+                                        <span className="text-xs text-stone-500 text-nowrap">Último Despliegue</span>
+                                        <span className="text-xs font-bold text-stone-700 dark:text-stone-300">
+                                            {systemInfo.server.last_deploy.split(' ')[1]}
+                                        </span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-xs text-stone-500">Última Aplicación</span>
-                                        <span className="text-xs font-bold text-moma-green">{systemInfo.server.last_updated.split(' ')[1]}</span>
+                                        <span className="text-xs text-stone-500">Ruta Destino</span>
+                                        <span className="text-[10px] font-mono text-stone-400">.../public_html</span>
                                     </div>
                                     <div className="pt-2">
-                                        <div className="flex items-center gap-2 text-[10px] text-green-600 font-black uppercase">
-                                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                            Sitio Activo y Sincronizado
-                                        </div>
+                                        <button
+                                            onClick={handleManualDeploy}
+                                            disabled={isLoadingStatus}
+                                            className="w-full py-2 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <Save className="w-3.5 h-3.5" />
+                                            FORZAR SINCRONIZACIÓN
+                                        </button>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="animate-pulse space-y-3">
-                                    <div className="h-8 bg-stone-100 dark:bg-stone-800 rounded"></div>
-                                    <div className="h-8 bg-stone-100 dark:bg-stone-800 rounded"></div>
+                                    <div className="h-4 bg-stone-100 dark:bg-stone-800 rounded w-full"></div>
+                                    <div className="h-10 bg-stone-100 dark:bg-stone-800 rounded w-full"></div>
                                 </div>
                             )}
                         </div>
