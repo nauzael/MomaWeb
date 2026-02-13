@@ -16,7 +16,7 @@ export default function BlogSection() {
     useEffect(() => {
         const loadPosts = async () => {
             try {
-                const data = await fetchApi<any>('blog/list.php?status=published&limit=3');
+                const data = await fetchApi<any>('blog/list.php?status=published&limit=4');
                 setPosts(data.posts || []);
             } catch (error) {
                 console.error('Error loading homepage posts:', error);
@@ -49,9 +49,9 @@ export default function BlogSection() {
                     </ScrollReveal>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 md:gap-12">
                     {loading ? (
-                        [1, 2, 3].map((i) => (
+                        [1, 2, 3, 4].map((i) => (
                             <div key={i} className="h-[500px] bg-stone-200 dark:bg-stone-900 rounded-[2rem] animate-pulse" />
                         ))
                     ) : posts.length > 0 ? (
