@@ -30,7 +30,7 @@ export default function BlogSection() {
     return (
         <section className="py-24 bg-stone-50 dark:bg-stone-950 overflow-hidden">
             <div className="max-w-7xl mx-auto px-6">
-                <div className="text-center mb-20 max-w-4xl mx-auto">
+                <div className="text-center mb-14 max-w-4xl mx-auto">
                     <ScrollReveal>
                         <span className="text-moma-green text-[10px] md:text-[11px] font-sans font-bold uppercase tracking-[0.4em] mb-6 block">
                             Historias de Expedición
@@ -49,15 +49,15 @@ export default function BlogSection() {
                     </ScrollReveal>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 md:gap-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 md:gap-6">
                     {loading ? (
                         [1, 2, 3, 4].map((i) => (
-                            <div key={i} className="h-[500px] bg-stone-200 dark:bg-stone-900 rounded-[2rem] animate-pulse" />
+                            <div key={i} className="h-[480px] bg-stone-200 dark:bg-stone-900 rounded-[2rem] animate-pulse" />
                         ))
                     ) : posts.length > 0 ? (
                         posts.map((post, idx) => (
                             <ScrollReveal key={post.id} delay={idx * 0.1} variant="fade-up">
-                                <div className="h-[500px]">
+                                <div className="h-[480px]">
                                     <DestinationCard
                                         imageUrl={getImageUrl(post.cover_image)}
                                         location={post.title}
