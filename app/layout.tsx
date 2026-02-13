@@ -3,6 +3,7 @@ import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider"
 import SessionProvider from "@/components/SessionProvider"
+import { LanguageProvider } from "@/context/LanguageContext"
 import { cn } from "@/lib/utils";
 
 const fontSans = Plus_Jakarta_Sans({
@@ -105,9 +106,11 @@ export default function RootLayout({
           forcedTheme="light"
           disableTransitionOnChange
         >
-          <SessionProvider>
-            {children}
-          </SessionProvider>
+          <LanguageProvider>
+            <SessionProvider>
+              {children}
+            </SessionProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

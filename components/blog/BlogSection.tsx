@@ -8,10 +8,12 @@ import { es } from 'date-fns/locale';
 import { fetchApi, getImageUrl } from '@/lib/api-client';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { DestinationCard } from '@/components/ui/card-21';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function BlogSection() {
     const [posts, setPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const { t } = useLanguage();
 
     useEffect(() => {
         const loadPosts = async () => {
@@ -33,17 +35,17 @@ export default function BlogSection() {
                 <div className="text-center mb-14 max-w-4xl mx-auto">
                     <ScrollReveal>
                         <span className="text-moma-green text-[10px] md:text-[11px] font-sans font-bold uppercase tracking-[0.4em] mb-6 block">
-                            Historias de Expedición
+                            {t.blog.subtitle}
                         </span>
                         <h2 className="text-5xl md:text-7xl font-heading font-bold text-stone-900 dark:text-white leading-tight">
-                            Relatos del Desconocido
+                            {t.blog.title}
                         </h2>
                         <div className="mt-10 flex justify-center">
                             <Link
-                                href="/blog"
+                                href="/#blog"
                                 className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all pb-2 border-b border-stone-200 dark:border-stone-800"
                             >
-                                Ver todo el Blog <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+                                {t.blog.viewAll} <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
                             </Link>
                         </div>
                     </ScrollReveal>
@@ -65,13 +67,14 @@ export default function BlogSection() {
                                         stats={`${post.category_name || 'Expedición'} • ${format(new Date(post.created_at), 'dd MMM', { locale: es })}`}
                                         href={`/blog/post?slug=${post.slug}`}
                                         themeColor={idx % 3 === 0 ? "170 100% 25%" : idx % 3 === 1 ? "150 50% 25%" : "190 60% 30%"}
+                                        buttonText={t.blog.readMore}
                                     />
                                 </div>
                             </ScrollReveal>
                         ))
                     ) : (
                         <div className="col-span-full py-20 text-center">
-                            <p className="text-stone-400 font-medium italic">Nuevas historias están en camino...</p>
+                            <p className="text-stone-400 font-medium italic">{t.blog.noPosts}</p>
                         </div>
                     )}
                 </div>

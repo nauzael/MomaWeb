@@ -1,7 +1,10 @@
+'use client';
 import { Facebook, Instagram } from 'lucide-react';
 import Image from 'next/image';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function Footer() {
+    const { t } = useLanguage();
     return (
         <footer className="bg-stone-950 border-t border-stone-800 text-stone-400 pt-20 pb-10 font-sans">
             <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-4 gap-12 mb-16">
@@ -16,7 +19,7 @@ export default function Footer() {
                         />
                     </div>
                     <p className="text-sm leading-relaxed text-stone-300">
-                        Excursiones Montes de María es una iniciativa que busca mostrar el majestuoso aporte visual y cultural de nuestra región a través del turismo sostenible.
+                        {t.footer.description}
                     </p>
                     <div className="flex space-x-4">
                         <a href="https://www.instagram.com/momaexcursiones/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-stone-900 border border-stone-800 rounded-full flex items-center justify-center hover:bg-moma-green hover:border-moma-green hover:text-white transition-all duration-300 hover:-translate-y-1" aria-label="Síguenos en Instagram">
@@ -29,33 +32,33 @@ export default function Footer() {
                 </div>
 
                 <div>
-                    <h3 className="text-white font-heading font-bold mb-6 text-lg">Navegación</h3>
+                    <h3 className="text-white font-heading font-bold mb-6 text-lg">{t.footer.navTitle}</h3>
                     <ul className="space-y-4 text-sm">
-                        <li><a href="#" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">Inicio</a></li>
-                        <li><a href="#" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">Excursiones</a></li>
-                        <li><a href="#" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">Quienes somos</a></li>
-                        <li><a href="#" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">Contacto</a></li>
+                        <li><a href="/" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.footer.home}</a></li>
+                        <li><a href="/#experiencias" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.nav.experiences}</a></li>
+                        <li><a href="/#nosotros" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.footer.about}</a></li>
+                        <li><a href="/#contacto" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.nav.contact}</a></li>
                     </ul>
                 </div>
 
                 <div>
-                    <h3 className="text-white font-heading font-bold mb-6 text-lg">Información</h3>
+                    <h3 className="text-white font-heading font-bold mb-6 text-lg">{t.footer.infoTitle}</h3>
                     <ul className="space-y-4 text-sm">
-                        <li><a href="#" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">Política de privacidad</a></li>
-                        <li><a href="#" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">Términos de servicio</a></li>
-                        <li><a href="#" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">Sostenibilidad</a></li>
+                        <li><a href="#" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.footer.privacy}</a></li>
+                        <li><a href="#" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.footer.terms}</a></li>
+                        <li><a href="#" className="hover:text-moma-green transition-colors hover:pl-1 duration-300 block">{t.footer.sustainability}</a></li>
                     </ul>
                 </div>
             </div>
 
             <div className="max-w-7xl mx-auto px-4 pt-8 border-t border-stone-800/50 flex flex-col md:flex-row justify-between items-center text-xs text-stone-500">
-                <p>&copy; {new Date().getFullYear()} Excursiones Montes de María. Todos los derechos reservados.</p>
+                <p>&copy; {new Date().getFullYear()} Excursiones Montes de María. {t.footer.allRightsReserved}</p>
                 <div className="flex items-center space-x-2 mt-4 md:mt-0 bg-stone-900/50 px-3 py-1 rounded-full border border-stone-800">
                     <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                     </span>
-                    <span className="font-medium text-stone-300">Experiencia Certificada</span>
+                    <span className="font-medium text-stone-300">{t.footer.certified}</span>
                 </div>
             </div>
         </footer>

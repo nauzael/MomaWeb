@@ -13,6 +13,7 @@ import ParallaxGallery from '@/components/ui/ParallaxGallery';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { getImageUrl } from '@/lib/api-client';
 import BlogSection from '@/components/blog/BlogSection';
+import { useLanguage } from '@/context/LanguageContext';
 
 const CTA_IMAGE_URL = "/images/montes-m-frame.webp";
 
@@ -20,6 +21,7 @@ export default function Home() {
   const [experiences, setExperiences] = useState<Experience[]>(MOCK_EXPERIENCES as unknown as Experience[]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(1); // 1 for next, -1 for prev
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -132,14 +134,14 @@ export default function Home() {
               <h1 className="text-5xl md:text-7xl font-heading font-black text-white mb-4 leading-tight drop-shadow-xl">
                 {currentExperience
                   ? currentExperience.title
-                  : <>La magia de la <br /><span className="text-moma-green italic font-serif">naturaleza</span> te <br />espera</>}
+                  : t.hero.title}
               </h1>
               {/* Location element removed as per user request */}
 
               <p className="text-lg md:text-xl text-stone-200 mb-10 font-light max-w-lg leading-relaxed line-clamp-3">
                 {currentExperience
                   ? currentExperience.description
-                  : 'Explora experiencias únicas en la naturaleza colombiana, seleccionadas y gestionadas desde nuestro panel de tours.'}
+                  : t.hero.description}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 items-center">
                 <Link
@@ -181,9 +183,9 @@ export default function Home() {
         <div className="w-full">
           <ScrollReveal>
             <div className="text-center mb-10 px-4">
-              <span className="text-moma-green uppercase tracking-widest text-xs font-bold mb-3 block">Lugares para ir</span>
-              <h2 className="text-4xl md:text-5xl font-heading font-bold text-stone-900 dark:text-white mb-6">Un destino perfecto</h2>
-              <p className="text-stone-500 dark:text-stone-400 text-lg max-w-2xl mx-auto leading-relaxed">¡Descubre el mundo a tu manera! Te invitamos a embarcarte en una emocionante aventura a través de nuestras rutas turísticas.</p>
+              <span className="text-moma-green uppercase tracking-widest text-xs font-bold mb-3 block">{t.destinations.subtitle}</span>
+              <h2 className="text-4xl md:text-5xl font-heading font-bold text-stone-900 dark:text-white mb-6">{t.destinations.title}</h2>
+              <p className="text-stone-500 dark:text-stone-400 text-lg max-w-2xl mx-auto leading-relaxed">{t.destinations.description}</p>
             </div>
           </ScrollReveal>
 
@@ -203,24 +205,23 @@ export default function Home() {
         </ScrollReveal>
 
         <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-4 gap-8">
-          {[
-            { title: 'Autenticidad y Cultura', icon: Leaf },
-            { title: 'Conservación', icon: Sprout },
-            { title: 'Experiencias Únicas', icon: Tent },
-            { title: 'Apoyo Local', icon: Users }
-          ].map((item, i) => (
-            <ScrollReveal key={i} delay={i * 0.1} variant="scale-up">
-              <div className="text-center group p-8 rounded-3xl bg-white/50 dark:bg-stone-900/50 backdrop-blur-sm border border-stone-100 dark:border-stone-800 hover:shadow-2xl hover:bg-white dark:hover:bg-stone-900 hover:-translate-y-2 transition-all duration-300 h-full">
-                <div className="w-20 h-20 bg-stone-50 dark:bg-stone-800 shadow-sm rounded-2xl flex items-center justify-center mx-auto mb-6 text-3xl group-hover:scale-110 group-hover:bg-moma-green group-hover:text-white transition-all duration-300 text-moma-green">
-                  <item.icon className="w-8 h-8" />
+          {t.whyChooseUs.features.map((item: any, i: number) => {
+            const icons = [Leaf, Sprout, Tent, Users];
+            const Icon = icons[i];
+            return (
+              <ScrollReveal key={i} delay={i * 0.1} variant="scale-up">
+                <div className="text-center group p-8 rounded-3xl bg-white/50 dark:bg-stone-900/50 backdrop-blur-sm border border-stone-100 dark:border-stone-800 hover:shadow-2xl hover:bg-white dark:hover:bg-stone-900 hover:-translate-y-2 transition-all duration-300 h-full">
+                  <div className="w-20 h-20 bg-stone-50 dark:bg-stone-800 shadow-sm rounded-2xl flex items-center justify-center mx-auto mb-6 text-3xl group-hover:scale-110 group-hover:bg-moma-green group-hover:text-white transition-all duration-300 text-moma-green">
+                    <Icon className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-xl font-heading font-bold mb-3 text-stone-900 dark:text-white group-hover:translate-x-1 transition-transform">{item.title}</h3>
+                  <p className="text-stone-500 dark:text-stone-400 text-sm leading-relaxed">
+                    {item.desc}
+                  </p>
                 </div>
-                <h3 className="text-xl font-heading font-bold mb-3 text-stone-900 dark:text-white group-hover:translate-x-1 transition-transform">{item.title}</h3>
-                <p className="text-stone-500 dark:text-stone-400 text-sm leading-relaxed">
-                  Compromiso con el turismo sostenible y el desarrollo de comunidades locales.
-                </p>
-              </div>
-            </ScrollReveal>
-          ))}
+              </ScrollReveal>
+            );
+          })}
         </div>
 
       </section>

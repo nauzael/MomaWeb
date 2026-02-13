@@ -10,10 +10,11 @@ interface DestinationCardProps extends React.HTMLAttributes<HTMLDivElement> {
     stats: string;
     href: string;
     themeColor: string; // e.g., "150 50% 25%" for a deep green
+    buttonText?: string;
 }
 
 const DestinationCard = React.forwardRef<HTMLDivElement, DestinationCardProps>(
-    ({ className, imageUrl, location, flag, stats, href, themeColor, ...props }, ref) => {
+    ({ className, imageUrl, location, flag, stats, href, themeColor, buttonText = "Leer Historia", ...props }, ref) => {
         return (
             // The 'group' class enables hover effects on child elements
             <div
@@ -62,7 +63,7 @@ const DestinationCard = React.forwardRef<HTMLDivElement, DestinationCardProps>(
                            rounded-full px-6 py-3 
                            transition-all duration-300 
                            group-hover:bg-white group-hover:border-white group-hover:text-moma-green group-hover:shadow-lg">
-                            <span className="text-[10px] font-sans font-black uppercase tracking-[0.2em]">Leer Historia</span>
+                            <span className="text-[10px] font-sans font-black uppercase tracking-[0.2em]">{buttonText}</span>
                             <ArrowRight className="h-4 w-4 transform transition-transform duration-300 group-hover:translate-x-1" />
                         </div>
                     </div>
