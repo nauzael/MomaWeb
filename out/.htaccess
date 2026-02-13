@@ -63,7 +63,21 @@ ServerSignature Off
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
-    # Redirigir miniaturas inexistentes de la galería al generador
+
+    # 1. Redirigir miniaturas inexistentes de la galería al generador
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^uploads/gallery/thumbs/(.*)$ api/utils/thumb.php?src=uploads/gallery/$1 [L,QSA]
+
+    # 2. Next.js Routing: Manejar URLs limpias
+    # Si termina en / y existe el archivo .html correspondiente, cargarlo
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI}/index.html -f
+    RewriteRule ^(.*)/$ $1/index.html [L]
+
+    # Si no termina en / y existe el archivo .html correspondiente
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI}.html -f
+    RewriteRule ^(.*)$ $1.html [L]
 </IfModule>

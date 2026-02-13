@@ -16,23 +16,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
-// Soporte para sesión vía header o query string
-$sessionId = $_SERVER['HTTP_X_SESSION_ID'] ?? $_GET['php_session_id'] ?? null;
-
-// Intentar obtener de todos los headers si los de arriba fallan
-if (!$sessionId && function_exists('getallheaders')) {
-    $allHeaders = getallheaders();
-    foreach ($allHeaders as $name => $value) {
-        if (strtolower($name) === 'x-session-id') {
-            $sessionId = $value;
-            break;
-        }
-    }
+// Hardening session cookies
+if (PHP_VERSION_ID < 70300) {
+    session_set_cookie_params(0, '/; HttpOnly; SameSite=Lax');
+} else {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'domain' => '',
+        'secure' => isset($_SERVER['HTTPS']),
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
 }
 
-if ($sessionId && preg_match('/^[a-zA-Z0-9,-]{1,128}$/', $sessionId)) {
-    session_id($sessionId);
-}
+// Soporte para sesión vía header únicamente (seguridad: eliminar $_GET['php_session_id'])
+$sessionId = $_SERVER['HTTP_X_SESSION_ID'] ?? null;
 
 session_start();
 
