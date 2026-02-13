@@ -81,6 +81,8 @@ try {
         
         $possiblePaths = [
             realpath(__DIR__ . '/../../../out'),
+            realpath(__DIR__ . '/../../out_deploy'),
+            realpath('/home/momaexcu/out_deploy'),
             realpath('/home/momaexcu/repositories/MomaWeb/out'),
             realpath('/home/momaexcu/out')
         ];

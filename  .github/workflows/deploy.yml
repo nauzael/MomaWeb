@@ -1,0 +1,25 @@
+name: Moma Fast Deploy
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: 🚀 Upload to Staging
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp.momaexcursiones.co
+          username: deploy@momaexcursiones.co
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./out/
+          # Subimos a una carpeta fuera de la vista del público para seguridad
+          server-dir: /out_deploy/
+          exclude: |
+            **/.git*
+            node_modules/**
