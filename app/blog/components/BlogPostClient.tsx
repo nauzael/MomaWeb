@@ -107,7 +107,7 @@ export default function BlogPostClient({ post, relatedPosts }: { post: any, rela
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {relatedPosts.map(rp => (
-                            <Link key={rp.id} href={`/blog/${rp.slug}`} className="group block">
+                            <Link key={rp.id} href={`/blog/post?slug=${rp.slug}`} className="group block">
                                 <div className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden mb-6 shadow-sm group-hover:shadow-2xl transition-all duration-700">
                                     <Image
                                         src={getImageUrl(rp.cover_image)}

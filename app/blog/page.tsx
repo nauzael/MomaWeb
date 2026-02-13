@@ -115,7 +115,7 @@ export default function BlogListingPage() {
             {/* Featured Post */}
             {featuredPost && selectedCategory === 'all' && (
                 <section className="max-w-7xl mx-auto px-6 mb-24">
-                    <Link href={`/blog/${featuredPost.slug}`} className="group relative block aspect-[21/9] rounded-[3rem] overflow-hidden shadow-2xl">
+                    <Link href={`/blog/post?slug=${featuredPost.slug}`} className="group relative block aspect-[21/9] rounded-[3rem] overflow-hidden shadow-2xl">
                         <Image
                             src={getImageUrl(featuredPost.cover_image)}
                             alt={featuredPost.title}
@@ -161,7 +161,7 @@ export default function BlogListingPage() {
                                 viewport={{ once: true }}
                                 transition={{ delay: idx * 0.1 }}
                             >
-                                <Link href={`/blog/${post.slug}`} className="group block">
+                                <Link href={`/blog/post?slug=${post.slug}`} className="group block">
                                     <div className="relative aspect-[4/5] rounded-[3rem] overflow-hidden mb-8 shadow-sm group-hover:shadow-2xl transition-all duration-700">
                                         <Image
                                             src={getImageUrl(post.cover_image)}

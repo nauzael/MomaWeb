@@ -163,7 +163,7 @@ export default function BlogAdminPage() {
                                             <Trash2 className="w-5 h-5" />
                                         </button>
                                     </div>
-                                    <Link href={`/blog/${post.slug}`} target="_blank">
+                                    <Link href={`/blog/post?slug=${post.slug}`} target="_blank">
                                         <button className="flex items-center gap-2 text-[10px] font-black uppercase text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all">
                                             Ver <ExternalLink className="w-4 h-4" />
                                         </button>

@@ -80,4 +80,11 @@ ServerSignature Off
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI}.html -f
     RewriteRule ^(.*)$ $1.html [L]
+
+    # 3. Blog Routing: Manejar URLs limpias de posts
+    # Redirige /blog/slug-del-post a /blog/post/index.html?slug=slug-del-post
+    # Evitamos redirigir si es un archivo real o la página de listado/post base
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^blog/(?!post|index\.html|components)([^/]+)$ blog/post/index.html?slug=$1 [L,QSA]
 </IfModule>

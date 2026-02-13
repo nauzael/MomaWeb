@@ -1,9 +1,9 @@
 {
-  "hash": "3f012e69c22dc120194bc891bee2fafe3921d1a5",
+  "hash": "8f9d632268c8a855f9d831b15afe9317d7ebaa44",
   "author": "Tu Nombre",
-  "date_relative": "6 minutes ago",
-  "date_full": "Fri Feb 13 12:08:59 2026 -0500",
-  "subject": "feat: Add new admin panel including dashboard, bookings, experiences, gallery, customers, reports, and settings management.",
-  "build_time": "13/02/2026, 12:14:44 p. m.",
-  "timestamp": 1771002884503
+  "date_relative": "27 minutes ago",
+  "date_full": "Fri Feb 13 12:35:05 2026 -0500",
+  "subject": "feat: implement full blog functionality with admin management and Tiptap editor integration.",
+  "build_time": "13/02/2026, 01:02:09 p. m.",
+  "timestamp": 1771005729447
 }
