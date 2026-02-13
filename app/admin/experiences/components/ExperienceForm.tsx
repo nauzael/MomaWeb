@@ -710,22 +710,6 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                                 accept="image/*,.heic,.heif"
                             />
 
-                            <div className="flex gap-4 mb-4">
-                                <button
-                                    type="button"
-                                    onClick={handleFileClick}
-                                    className="flex-1 bg-[#f5fbf9] hover:bg-moma-green/10 text-stone-600 font-bold py-3 px-4 rounded-xl border border-dashed border-stone-200 hover:border-moma-green transition-all flex items-center justify-center gap-2 text-sm"
-                                >
-                                    <Upload className="w-4 h-4" /> Subir Nueva
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsCoverSelectorOpen(true)}
-                                    className="flex-1 bg-[#f5fbf9] hover:bg-stone-100 text-stone-600 font-bold py-3 px-4 rounded-xl border border-stone-200 transition-all flex items-center justify-center gap-2 text-sm"
-                                >
-                                    <ImageIcon className="w-4 h-4" /> De la Galería
-                                </button>
-                            </div>
 
                             <div
                                 onClick={() => setMediaSourceModal({ isOpen: true, target: 'cover' })}
@@ -769,22 +753,6 @@ export default function ExperienceForm({ initialData }: ExperienceFormProps) {
                                 accept="image/*,.heic,.heif"
                             />
 
-                            <div className="flex gap-4 mb-4">
-                                <button
-                                    type="button"
-                                    onClick={() => galleryFileInputRef.current?.click()}
-                                    className="flex-1 bg-[#f5fbf9] hover:bg-moma-green/10 text-stone-600 font-bold py-3 px-4 rounded-xl border border-dashed border-stone-200 hover:border-moma-green transition-all flex items-center justify-center gap-2 text-sm"
-                                >
-                                    <Upload className="w-4 h-4" /> Subir Fotos
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsGallerySelectorOpen(true)}
-                                    className="flex-1 bg-[#f5fbf9] hover:bg-stone-100 text-stone-600 font-bold py-3 px-4 rounded-xl border border-stone-200 transition-all flex items-center justify-center gap-2 text-sm"
-                                >
-                                    <ImageIcon className="w-4 h-4" /> Galería Infinita
-                                </button>
-                            </div>
 
                             <div className="bg-[#fcfdfd] border border-stone-100 rounded-[2rem] p-6 min-h-[400px]">
                                 {optimizationProgress.total > 0 && optimizationProgress.current < optimizationProgress.total && (
