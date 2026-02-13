@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Save, ToggleLeft, ToggleRight, Shield, Clock, Activity, GitBranch, RefreshCw, Server, X } from 'lucide-react';
+import { Save, ToggleLeft, ToggleRight, Shield, Clock, Activity, GitBranch, RefreshCw, Server, X, CheckCircle, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { fetchApi } from '@/lib/api-client';
 
@@ -12,6 +12,7 @@ export default function SettingsPage() {
     const [statusError, setStatusError] = useState<string | null>(null);
     const [showDeployModal, setShowDeployModal] = useState(false);
     const [isDeploying, setIsDeploying] = useState(false);
+    const [deployResult, setDeployResult] = useState<{ success: boolean; message: string } | null>(null);
 
     const fetchStatus = async () => {
         setIsLoadingStatus(true);
@@ -33,18 +34,20 @@ export default function SettingsPage() {
 
     const handleDeploy = async () => {
         setIsDeploying(true);
+        setDeployResult(null);
         try {
             const res = await fetch('/api/admin/system_info.php?action=deploy-head', { cache: 'no-store' });
             const data = await res.json();
-            if (data.success) {
-                setShowDeployModal(false);
-                alert(data.message);
-                fetchStatus();
-            } else {
-                alert('Error: ' + (data.message || 'Error desconocido'));
-            }
+            setDeployResult({
+                success: data.success,
+                message: data.message || (data.success ? 'Despliegue completado con éxito' : 'Error en el despliegue')
+            });
+            if (data.success) fetchStatus();
         } catch (e: any) {
-            alert('Error al intentar desplegar: ' + e.message);
+            setDeployResult({
+                success: false,
+                message: 'Error de conexión: ' + e.message
+            });
         } finally {
             setIsDeploying(false);
         }
@@ -176,23 +179,39 @@ export default function SettingsPage() {
 
                         <div className="bg-white dark:bg-stone-900 w-full max-w-md rounded-3xl shadow-2xl border border-stone-100 dark:border-stone-800 overflow-hidden relative animate-in fade-in zoom-in duration-300">
                             <div className="p-6 space-y-6">
+                                {/* Header Logic */}
                                 <div className="flex justify-between items-start">
-                                    <div className="w-12 h-12 bg-moma-green/10 rounded-2xl flex items-center justify-center">
-                                        <GitBranch className="w-6 h-6 text-moma-green" />
+                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isDeploying ? 'bg-moma-green/10 text-moma-green' :
+                                            deployResult ? (deployResult.success ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600') :
+                                                'bg-moma-green/10 text-moma-green'
+                                        }`}>
+                                        {isDeploying ? <RefreshCw className="w-6 h-6 animate-spin" /> :
+                                            deployResult ? (deployResult.success ? <CheckCircle className="w-6 h-6" /> : <AlertTriangle className="w-6 h-6" />) :
+                                                <GitBranch className="w-6 h-6" />}
                                     </div>
                                     {!isDeploying && (
-                                        <button onClick={() => setShowDeployModal(false)} className="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full transition-colors text-stone-400">
+                                        <button onClick={() => { setShowDeployModal(false); setDeployResult(null); }} className="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full transition-colors text-stone-400">
                                             <X className="w-5 h-5" />
                                         </button>
                                     )}
                                 </div>
 
+                                {/* Content Logic */}
                                 <div className="space-y-2">
-                                    <h3 className="text-xl font-black text-stone-900 dark:text-white">Confirmar Despliegue</h3>
-                                    <p className="text-sm text-stone-500">¿Estás seguro de poner en vivo el último commit del repositorio?</p>
+                                    <h3 className="text-xl font-black text-stone-900 dark:text-white">
+                                        {isDeploying ? 'Procesando Despliegue...' :
+                                            deployResult ? (deployResult.success ? '¡Despliegue Exitoso!' : 'Error en el Despliegue') :
+                                                'Confirmar Despliegue'}
+                                    </h3>
+                                    <p className="text-sm text-stone-500">
+                                        {isDeploying ? 'Estamos sincronizando tus archivos con el servidor público. Esto tardará solo unos segundos.' :
+                                            deployResult ? deployResult.message :
+                                                '¿Estás seguro de poner en vivo el último commit del repositorio?'}
+                                    </p>
                                 </div>
 
-                                {systemInfo?.git && (
+                                {/* Commit Info (Only on confirmation) */}
+                                {!deployResult && !isDeploying && systemInfo?.git && (
                                     <div className="p-4 bg-stone-50 dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-800 space-y-3">
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full bg-moma-green animate-pulse" />
@@ -210,31 +229,33 @@ export default function SettingsPage() {
                                     </div>
                                 )}
 
-                                <div className="grid grid-cols-2 gap-3 pt-2">
-                                    <button
-                                        disabled={isDeploying}
-                                        onClick={() => setShowDeployModal(false)}
-                                        className="py-3 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 rounded-2xl text-xs font-bold hover:bg-stone-200 transition-all"
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        disabled={isDeploying}
-                                        onClick={handleDeploy}
-                                        className="py-3 bg-moma-green text-stone-900 rounded-2xl text-xs font-black hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-moma-green/20"
-                                    >
-                                        {isDeploying ? (
-                                            <>
-                                                <RefreshCw className="w-4 h-4 animate-spin" />
-                                                PROCESANDO...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Server className="w-4 h-4" />
-                                                ¡DESPLEGAR AHORA!
-                                            </>
-                                        )}
-                                    </button>
+                                {/* Buttons Logic */}
+                                <div className="grid grid-cols-1 gap-3 pt-2">
+                                    {deployResult ? (
+                                        <button
+                                            onClick={() => { setShowDeployModal(false); setDeployResult(null); }}
+                                            className="py-4 bg-stone-900 dark:bg-white dark:text-stone-900 text-white rounded-2xl text-xs font-black hover:bg-opacity-90 transition-all shadow-lg"
+                                        >
+                                            ENTENDIDO
+                                        </button>
+                                    ) : (
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button
+                                                disabled={isDeploying}
+                                                onClick={() => setShowDeployModal(false)}
+                                                className="py-3 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 rounded-2xl text-xs font-bold hover:bg-stone-200 transition-all font-outfit"
+                                            >
+                                                Cancelar
+                                            </button>
+                                            <button
+                                                disabled={isDeploying}
+                                                onClick={handleDeploy}
+                                                className="py-3 bg-moma-green text-stone-900 rounded-2xl text-xs font-black hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-moma-green/20"
+                                            >
+                                                {isDeploying ? 'CONECTANDO...' : '¡DESPLEGAR AHORA!'}
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
