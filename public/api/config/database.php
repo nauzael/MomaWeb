@@ -22,11 +22,10 @@ class Database {
             $this->conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
             
         } catch(PDOException $exception) {
-            // Return detailed error for debugging
+            // Security: Return generic error for production, avoid leaking details
             http_response_code(500);
             echo json_encode([
-                "error" => "Database connection error: " . $exception->getMessage(),
-                "details" => $exception->getTraceAsString()
+                "error" => "Error de conexión con la base de datos."
             ]);
             exit;
         }
