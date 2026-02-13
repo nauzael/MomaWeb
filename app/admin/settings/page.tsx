@@ -8,17 +8,35 @@ export default function SettingsPage() {
     const [wompiEnabled, setWompiEnabled] = useState(true);
     const [systemInfo, setSystemInfo] = useState<any>(null);
     const [isLoadingStatus, setIsLoadingStatus] = useState(false);
+    const [statusError, setStatusError] = useState<string | null>(null);
 
     const fetchStatus = async () => {
         setIsLoadingStatus(true);
+        setStatusError(null);
         try {
-            const res = await fetch('/api/admin/system_info.php');
-            const data = await res.json();
-            if (data.success) {
-                setSystemInfo(data);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+            const res = await fetch('/api/admin/system_info.php', { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            const text = await res.text();
+            try {
+                const data = JSON.parse(text);
+                if (data.success) {
+                    setSystemInfo(data);
+                } else {
+                    setStatusError(data.error || 'Respuesta fallida del servidor');
+                }
+            } catch (jsonErr) {
+                console.error('Invalid JSON response:', text);
+                setStatusError('El servidor no devolvió un JSON válido');
             }
-        } catch (e) {
+        } catch (e: any) {
             console.error('Failed to fetch system info', e);
+            setStatusError(e.name === 'AbortError' ? 'Tiempo de espera agotado' : 'Error de conexión');
         } finally {
             setIsLoadingStatus(false);
         }
@@ -199,7 +217,12 @@ export default function SettingsPage() {
                                 Último Cambio (Git)
                             </div>
 
-                            {systemInfo?.git ? (
+                            {statusError ? (
+                                <div className="p-3 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-900/20">
+                                    <p className="text-[10px] text-red-600 dark:text-red-400 font-bold uppercase mb-1">Error de Carga</p>
+                                    <p className="text-xs text-red-500/70">{statusError}</p>
+                                </div>
+                            ) : systemInfo?.git ? (
                                 <div className="space-y-3">
                                     <p className="text-sm font-bold text-stone-800 dark:text-stone-200 leading-tight">
                                         {systemInfo.git.subject}
