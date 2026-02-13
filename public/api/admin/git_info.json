@@ -1,8 +1,8 @@
 {
-  "hash": "eca2581c33bc023ec6656d753f52d1121ac86b21",
+  "hash": "6e369676f9a8720c974b143345c5d801a95540c4",
   "author": "Tu Nombre",
-  "date_relative": "5 minutes ago",
-  "date_full": "Fri Feb 13 10:32:39 2026 -0500",
-  "subject": "feat: Add admin settings page and export the Next.js project output, including new API information.",
-  "generated_at": "2026-02-13T15:37:18.611Z"
+  "date_relative": "3 minutes ago",
+  "date_full": "Fri Feb 13 10:38:14 2026 -0500",
+  "subject": "build: Generate Next.js static export output for the Moma web project.",
+  "generated_at": "2026-02-13T15:40:50.141Z"
 }

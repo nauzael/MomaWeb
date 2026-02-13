@@ -40,31 +40,52 @@ try {
 
     // 1. Manual Deployment Action
     if ($action === 'deploy') {
-        // Detect paths relative to this script (public_html/api/admin/system_info.php)
-        // We want to copy from ~/moma-web/out to ~/public_html
-        // Or if everything is in public_html, adjust accordingly.
-        // For CPanel deployment, typically the build lives next to public_html or inside a subfolder.
-        
-        $baseDir = realpath(__DIR__ . '/../../..'); // Should be the root of the project
-        $srcStatic = $baseDir . '/out';
-        $srcApi = $baseDir . '/public/api';
-        
         $filesCopied = 0;
         
-        if (file_exists($srcStatic)) {
-            $filesCopied += phpRecursiveCopy($srcStatic, $deployPath);
+        // Potential roots:
+        // 1. One level above public_html (typical for private folder uploads)
+        // 2. Same level as public_html
+        $currentPath = realpath(__DIR__);
+        $possiblePaths = [
+            realpath(__DIR__ . '/../../../out'),          // Assumes project root is parent of public/api
+            realpath(__DIR__ . '/../../../../out'),       // Assumes project is sibling of public_html
+            realpath('/home/momaexcu/moma-web/out'),      // Fixed path if known
+            realpath('/home/momaexcu/out')                // Another common spot
+        ];
+
+        $srcStatic = null;
+        foreach ($possiblePaths as $p) {
+            if ($p && is_dir($p) && file_exists($p . '/index.html')) {
+                $srcStatic = $p;
+                break;
+            }
         }
+
+        $debug = [
+            'tried_paths' => $possiblePaths,
+            'found_src' => $srcStatic,
+            'current_script_dir' => __DIR__
+        ];
         
-        if (file_exists($srcApi)) {
-            $filesCopied += phpRecursiveCopy($srcApi, $deployPath . '/api');
+        if ($srcStatic) {
+            $filesCopied += phpRecursiveCopy($srcStatic, $deployPath);
+            
+            // Also copy API folder if found nearby
+            $srcApi = $srcStatic . '/../public/api';
+            if (is_dir($srcApi)) {
+                $filesCopied += phpRecursiveCopy($srcApi, $deployPath . '/api');
+            }
         }
 
         echo json_encode([
             'success' => $filesCopied > 0,
-            'message' => "Despliegue completado. $filesCopied archivos sincronizados.",
+            'message' => $filesCopied > 0 
+                ? "Sincronización exitosa: $filesCopied archivos actualizados." 
+                : "No se encontraron archivos para sincronizar. Asegúrate de que la carpeta 'out' (del build) esté subida al servidor.",
             'details' => [
                 'files_count' => $filesCopied,
-                'target' => $deployPath
+                'target' => $deployPath,
+                'debug_info' => $debug
             ]
         ]);
         exit;
