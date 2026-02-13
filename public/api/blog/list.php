@@ -1,6 +1,6 @@
 <?php
 // public/api/blog/list.php
-header("Content-Type: application/json; charset=UTF-8");
+require_once '../config/cors.php';
 require_once '../config/database.php';
 
 $database = new Database();
