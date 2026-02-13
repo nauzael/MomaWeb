@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Calendar, Map, Users, ImageIcon, BarChart3, Settings, Loader2 } from "lucide-react";
+import { LayoutDashboard, Calendar, Map, Users, ImageIcon, BarChart3, Settings, PenTool, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-client";
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
     { key: 'dashboard', label: "Panel Principal", href: "/admin/dashboard", icon: LayoutDashboard },
     { key: 'bookings', label: "Reservas", href: "/admin/bookings", icon: Calendar },
     { key: 'experiences', label: "Experiencias", href: "/admin/experiences", icon: Map },
+    { key: 'blog', label: "Blog", href: "/admin/blog", icon: PenTool },
     { key: 'customers', label: "Clientes", href: "/admin/customers", icon: Users },
     { key: 'gallery', label: "Galería", href: "/admin/gallery", icon: ImageIcon },
     { key: 'reports', label: "Reportes", href: "/admin/reports", icon: BarChart3 },
