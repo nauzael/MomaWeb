@@ -62,6 +62,8 @@ export default function SettingsPage() {
 
     useEffect(() => {
         fetchStatus();
+        const interval = setInterval(fetchStatus, 5000); // Refresco cada 5 segundos
+        return () => clearInterval(interval);
     }, []);
 
     return (

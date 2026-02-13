@@ -1,5 +1,5 @@
 <?php
-// Moma Nature - System Info & Deployment Engine PRO
+// Moma Nature - Ultra Fast Deployment Engine
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
@@ -11,23 +11,25 @@ $deployPath = '/home/momaexcu/public_html';
 try {
     $action = $_GET['action'] ?? 'info';
 
-    function phpRecursiveCopy($src, $dst) {
-        if (!is_dir($src)) return false;
+    // Función de copia optimizada (Sync incremental)
+    function fastSync($src, $dst) {
+        if (!is_dir($src)) return 0;
         if (!is_dir($dst)) @mkdir($dst, 0755, true);
-        $dir = opendir($src);
         $count = 0;
-        while(false !== ( $file = readdir($dir)) ) {
-            if (( $file != '.' ) && ( $file != '..' ) && ( $file != '.git' )) {
-                if ( is_dir($src . '/' . $file) ) {
-                    $count += phpRecursiveCopy($src . '/' . $file, $dst . '/' . $file);
-                } else {
-                    if (@copy($src . '/' . $file, $dst . '/' . $file)) {
-                        $count++;
-                    }
+        $files = scandir($src);
+        foreach ($files as $file) {
+            if ($file === '.' || $file === '..' || $file === '.git') continue;
+            $s = $src . '/' . $file;
+            $d = $dst . '/' . $file;
+            if (is_dir($s)) {
+                $count += fastSync($s, $d);
+            } else {
+                // Solo copia si el archivo es diferente o más nuevo
+                if (!file_exists($d) || filemtime($s) > filemtime($d) || filesize($s) !== filesize($d)) {
+                    if (@copy($s, $d)) $count++;
                 }
             }
         }
-        closedir($dir);
         return $count;
     }
 
@@ -35,53 +37,54 @@ try {
         clearstatcache();
         $filesCopied = 0;
         
-        // Buscador de rutas inteligente (Orden de prioridad)
+        // Prioridad máxima a la ruta de cPanel
         $possiblePaths = [
-            '/home/momaexcu/repositories/MomaWeb/out', // Tu ruta de cPanel
-            '/home/momaexcu/moma-web/out',
-            '/home/momaexcu/out_deploy', 
-            '/home/momaexcu/out',
+            '/home/momaexcu/repositories/MomaWeb/out',
+            '/home/momaexcu/out_deploy',
             realpath(__DIR__ . '/../../../out')
         ];
 
         $srcStatic = null;
         foreach ($possiblePaths as $p) {
-            if ($p && is_dir($p) && file_exists($p . '/index.html')) {
+            if ($p && is_dir($p)) {
                 $srcStatic = $p;
                 break;
             }
         }
 
         if ($srcStatic) {
-            $filesCopied += phpRecursiveCopy($srcStatic, $deployPath);
+            $filesCopied = fastSync($srcStatic, $deployPath);
+            
+            // Sincronizar API también
             $srcApi = realpath($srcStatic . '/../public/api');
-            if ($srcApi && is_dir($srcApi)) phpRecursiveCopy($srcApi, $deployPath . '/api');
+            if ($srcApi && is_dir($srcApi)) fastSync($srcApi, $deployPath . '/api');
 
-            @file_put_contents(__DIR__ . '/deploy_log.json', json_encode([
+            $log = [
                 'time' => date('d/m/Y H:i:s'),
                 'count' => $filesCopied,
                 'source' => basename($srcStatic)
-            ]));
+            ];
+            @file_put_contents(__DIR__ . '/deploy_log.json', json_encode($log));
 
             echo json_encode([
                 'success' => true,
-                'message' => "¡ÉXITO! $filesCopied archivos actualizados desde: " . basename($srcStatic),
+                'message' => "¡Sincronización Rayo! $filesCopied archivos actualizados.",
+                'details' => $log
             ]);
         } else {
             echo json_encode([
                 'success' => false,
-                'message' => 'ERROR: No se encontró la carpeta de construcción (out). Por favor, asegúrate de que GitHub o el cPanel Git hayan descargado los archivos en el servidor.',
-                'debug_paths' => $possiblePaths
+                'message' => 'No se encontraron archivos para desplegar.',
+                'paths' => $possiblePaths
             ]);
         }
         exit;
     }
 
-    // Información del Git (Monitor)
+    // Monitor en Tiempo Real
     $git_info = ['hash' => 'N/A', 'author' => 'System', 'date_full' => date('d/m/Y H:i:s'), 'subject' => 'Monitor Activo'];
-    $staticInfoPath = __DIR__ . '/git_info.json';
-    if (file_exists($staticInfoPath)) {
-        $data = json_decode(file_get_contents($staticInfoPath), true);
+    if (file_exists(__DIR__ . '/git_info.json')) {
+        $data = json_decode(file_get_contents(__DIR__ . '/git_info.json'), true);
         if ($data) $git_info = array_merge($git_info, $data);
     }
 
@@ -95,8 +98,8 @@ try {
         'git' => $git_info,
         'server' => [
             'last_deploy' => $last_log['time'],
-            'php_version' => PHP_VERSION,
-            'status' => 'Conectado'
+            'refresh_rate' => '5s',
+            'status' => 'ONLINE'
         ]
     ]);
 
