@@ -61,7 +61,7 @@ const DestinationCard = React.forwardRef<HTMLDivElement, DestinationCardProps>(
                         <div className="mt-8 flex items-center justify-between bg-white/10 backdrop-blur-md border border-white/20 
                            rounded-full px-6 py-3 
                            transition-all duration-300 
-                           group-hover:bg-moma-green group-hover:border-moma-green group-hover:text-stone-900 group-hover:shadow-lg">
+                           group-hover:bg-white group-hover:border-white group-hover:text-moma-green group-hover:shadow-lg">
                             <span className="text-[10px] font-sans font-black uppercase tracking-[0.2em]">Leer Historia</span>
                             <ArrowRight className="h-4 w-4 transform transition-transform duration-300 group-hover:translate-x-1" />
                         </div>
