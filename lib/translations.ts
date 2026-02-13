@@ -13,7 +13,20 @@ export const translations = {
             openMenu: 'Abrir menú principal',
             closeMenu: 'Cerrar menú principal',
             englishLabel: 'English (EN)',
-            spanishLabel: 'Español (ES)'
+            spanishLabel: 'Español (ES)',
+            allExperiences: 'Todas las Experiencias',
+            allExperiencesDesc: 'Explora nuestra colección completa de aventuras y conexiones con la naturaleza.',
+            discoverBadge: 'Descubre',
+            blogRelatos: 'Expediciones en Blanco y Negro',
+            blogSubtitle: 'Relatos y Aventuras',
+            blogDesc: 'Explora los tesoros escondidos de Sucre y más allá. Historias de viaje, guías locales y la magia de lo desconocido.',
+            blogAll: 'Todos',
+            blogFeatured: 'Destacado',
+            blogStoryNotWritten: 'Esta historia aún no ha sido escrita...',
+            blogBack: 'Volver al Blog',
+            blogMetaShare: 'Compartir:',
+            blogMetaNext: 'Siguiente lectura',
+            blogMetaRelated: 'Historias relacionadas'
         },
         hero: {
             title: 'Expediciones en Blanco y Negro',
@@ -294,7 +307,20 @@ export const translations = {
             terms: 'Terms of Service',
             sustainability: 'Sustainability',
             certified: 'Certified Experience',
-            allRightsReserved: 'All rights reserved.'
+            allRightsReserved: 'All rights reserved.',
+            allExperiences: 'All Experiences',
+            allExperiencesDesc: 'Explore our complete collection of adventures and connections with nature.',
+            discoverBadge: 'Discover',
+            blogRelatos: 'Expeditions in Black and White',
+            blogSubtitle: 'Stories and Adventures',
+            blogDesc: 'Explore the hidden treasures of Sucre and beyond. Travel stories, local guides, and the magic of the unknown.',
+            blogAll: 'All',
+            blogFeatured: 'Featured',
+            blogStoryNotWritten: 'This story has not been written yet...',
+            blogBack: 'Back to Blog',
+            blogMetaShare: 'Share:',
+            blogMetaNext: 'Next reading',
+            blogMetaRelated: 'Related Stories'
         }
     }
 };

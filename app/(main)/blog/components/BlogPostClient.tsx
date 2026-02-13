@@ -5,10 +5,12 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Calendar, User, ChevronLeft, Share2, Tag, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { getImageUrl } from '@/lib/api-client';
+import { useLanguage } from '@/context/LanguageContext';
+import { es, enUS } from 'date-fns/locale';
 
 export default function BlogPostClient({ post, relatedPosts }: { post: any, relatedPosts: any[] }) {
+    const { t, language } = useLanguage();
     return (
         <div className="min-h-screen bg-stone-50 dark:bg-stone-950 pb-32">
             {/* Header / Cover */}
@@ -31,13 +33,13 @@ export default function BlogPostClient({ post, relatedPosts }: { post: any, rela
                         className="space-y-6"
                     >
                         <Link href="/blog" className="inline-flex items-center gap-2 text-white/70 hover:text-white font-black uppercase text-[10px] tracking-[0.4em] transition-all mb-8">
-                            <ChevronLeft className="w-4 h-4" /> Volver al Blog
+                            <ChevronLeft className="w-4 h-4" /> {t.nav.blogBack}
                         </Link>
 
                         <div className="flex items-center justify-center gap-4 text-moma-green text-[10px] font-black uppercase tracking-widest">
                             <span className="px-3 py-1 bg-moma-green/10 backdrop-blur-md border border-moma-green/20 rounded-full">{post.category_name || 'General'}</span>
                             <div className="w-1.5 h-1.5 rounded-full bg-moma-green" />
-                            <span>{format(new Date(post.created_at), 'dd MMMM, yyyy', { locale: es })}</span>
+                            <span>{format(new Date(post.created_at), 'dd MMMM, yyyy', { locale: language === 'es' ? es : enUS })}</span>
                         </div>
 
                         <h1 className="text-5xl md:text-8xl font-black text-white leading-[0.9] italic group">
@@ -50,7 +52,7 @@ export default function BlogPostClient({ post, relatedPosts }: { post: any, rela
                             </div>
                             <div className="text-left">
                                 <p className="text-white font-black text-sm">{post.author_name}</p>
-                                <p className="text-white/50 text-[10px] uppercase font-black tracking-widest">Autor Moma</p>
+                                <p className="text-white/50 text-[10px] uppercase font-black tracking-widest">{language === 'es' ? 'Autor Moma' : 'Moma Author'}</p>
                             </div>
                         </div>
                     </motion.div>
@@ -74,7 +76,7 @@ export default function BlogPostClient({ post, relatedPosts }: { post: any, rela
                     {/* Footer / Meta */}
                     <div className="mt-20 pt-10 border-t border-stone-100 dark:border-stone-800 flex flex-col md:flex-row items-center justify-between gap-8">
                         <div className="flex items-center gap-4">
-                            <span className="text-[10px] font-black uppercase text-stone-400 tracking-widest">Compartir:</span>
+                            <span className="text-[10px] font-black uppercase text-stone-400 tracking-widest">{t.nav.blogMetaShare}</span>
                             <div className="flex gap-2">
                                 {[1, 2, 3].map(i => (
                                     <button key={i} className="p-3 bg-stone-50 dark:bg-stone-800 rounded-2xl hover:bg-moma-green hover:text-stone-900 transition-all">
@@ -97,11 +99,11 @@ export default function BlogPostClient({ post, relatedPosts }: { post: any, rela
                 <section className="max-w-7xl mx-auto px-6 mt-32">
                     <div className="flex justify-between items-end mb-12">
                         <div>
-                            <span className="text-[10px] font-black uppercase text-moma-green tracking-[0.3em] mb-2 block">Siguiente lectura</span>
-                            <h2 className="text-4xl md:text-5xl font-black text-stone-900 dark:text-white leading-[0.9] italic">Historias relacionadas</h2>
+                            <span className="text-[10px] font-black uppercase text-moma-green tracking-[0.3em] mb-2 block">{t.nav.blogMetaNext}</span>
+                            <h2 className="text-4xl md:text-5xl font-black text-stone-900 dark:text-white leading-[0.9] italic">{t.nav.blogMetaRelated}</h2>
                         </div>
                         <Link href="/blog" className="text-[10px] font-black uppercase text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all flex items-center gap-2 group tracking-widest">
-                            Ver todas <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+                            {t.blog.viewAll} <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
                         </Link>
                     </div>
 

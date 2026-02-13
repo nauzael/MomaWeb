@@ -6,8 +6,10 @@ import { MOCK_EXPERIENCES } from '@/lib/mock-data';
 import ExperienceCardStack from '@/components/experiences/ExperienceCardStack';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import SectionDivider from '@/components/ui/SectionDivider';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function ExperiencesPage() {
+    const { t } = useLanguage();
     const [experiences, setExperiences] = useState<Experience[]>(MOCK_EXPERIENCES as unknown as Experience[]);
     const [loading, setLoading] = useState(true);
 
@@ -35,10 +37,10 @@ export default function ExperiencesPage() {
             <div className="max-w-7xl mx-auto px-4">
                 <ScrollReveal>
                     <div className="text-center mb-16">
-                        <span className="text-moma-green uppercase tracking-widest text-xs font-bold mb-3 block">Descubre</span>
-                        <h1 className="text-4xl md:text-5xl font-heading font-bold text-stone-900 dark:text-white mb-6">Todas las Experiencias</h1>
+                        <span className="text-moma-green uppercase tracking-widest text-xs font-bold mb-3 block">{t.nav.discoverBadge}</span>
+                        <h1 className="text-4xl md:text-5xl font-heading font-bold text-stone-900 dark:text-white mb-6">{t.nav.allExperiences}</h1>
                         <p className="text-stone-500 dark:text-stone-400 text-lg max-w-2xl mx-auto leading-relaxed">
-                            Explora nuestra colección completa de aventuras y conexiones con la naturaleza.
+                            {t.nav.allExperiencesDesc}
                         </p>
                     </div>
                 </ScrollReveal>

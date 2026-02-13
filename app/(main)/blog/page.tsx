@@ -6,12 +6,14 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Calendar, User, ArrowRight, ChevronRight, Search } from 'lucide-react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { es, enUS } from 'date-fns/locale';
 import { fetchApi, getImageUrl } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { DestinationCard } from '@/components/ui/card-21';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function BlogListingPage() {
+    const { t, language } = useLanguage();
     const [posts, setPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [categories, setCategories] = useState<any[]>([]);
@@ -59,7 +61,7 @@ export default function BlogListingPage() {
                         animate={{ opacity: 1, y: 0 }}
                         className="text-[10px] md:text-[11px] font-sans font-bold uppercase tracking-[0.4em] text-moma-green mb-6 block"
                     >
-                        Relatos y Aventuras
+                        {t.nav.blogSubtitle}
                     </motion.span>
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}
@@ -67,8 +69,7 @@ export default function BlogListingPage() {
                         transition={{ delay: 0.1 }}
                         className="text-6xl md:text-9xl font-heading font-black text-stone-900 dark:text-white leading-[1.1]"
                     >
-                        Expediciones en <br />
-                        Blanco y Negro
+                        {t.nav.blogRelatos}
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0 }}
@@ -76,8 +77,7 @@ export default function BlogListingPage() {
                         transition={{ delay: 0.3 }}
                         className="mt-8 text-stone-500 max-w-2xl mx-auto text-lg font-medium leading-relaxed"
                     >
-                        Explora los tesoros escondidos de Sucre y más allá. Historias de viaje,
-                        guías locales y la magia de lo desconocido.
+                        {t.nav.blogDesc}
                     </motion.p>
                 </div>
             </section>
@@ -94,7 +94,7 @@ export default function BlogListingPage() {
                                 : "bg-transparent text-stone-400 border-stone-200 dark:border-stone-800 hover:text-stone-900 dark:hover:text-white"
                         )}
                     >
-                        Todos
+                        {t.nav.blogAll}
                     </button>
                     {categories.map(cat => (
                         <button
@@ -121,7 +121,7 @@ export default function BlogListingPage() {
                             imageUrl={getImageUrl(featuredPost.cover_image)}
                             location={featuredPost.title}
                             flag="✨"
-                            stats={`Destacado • ${featuredPost.category_name || 'Expedición'} • ${format(new Date(featuredPost.created_at), 'dd MMM', { locale: es })}`}
+                            stats={`${t.nav.blogFeatured} • ${featuredPost.category_name || 'Expedición'} • ${format(new Date(featuredPost.created_at), 'dd MMM', { locale: language === 'es' ? es : enUS })}`}
                             href={`/blog/post?slug=${featuredPost.slug}`}
                             themeColor="170 100% 25%"
                         />
@@ -152,7 +152,7 @@ export default function BlogListingPage() {
                                     imageUrl={getImageUrl(post.cover_image)}
                                     location={post.title}
                                     flag="🍃"
-                                    stats={`${post.category_name || 'Expedición'} • ${format(new Date(post.created_at), 'dd MMM', { locale: es })}`}
+                                    stats={`${post.category_name || 'Expedición'} • ${format(new Date(post.created_at), 'dd MMM', { locale: language === 'es' ? es : enUS })}`}
                                     href={`/blog/post?slug=${post.slug}`}
                                     themeColor={idx % 3 === 0 ? "170 100% 25%" : idx % 3 === 1 ? "150 50% 25%" : "190 60% 30%"}
                                 />
@@ -161,7 +161,7 @@ export default function BlogListingPage() {
                     </div>
                 ) : (
                     <div className="text-center py-40 border-t border-stone-200 dark:border-stone-800">
-                        <h3 className="text-3xl font-black italic text-stone-300">No hay entradas para esta categoría... por ahora.</h3>
+                        <h3 className="text-3xl font-black italic text-stone-300">{t.blog.noPosts}</h3>
                     </div>
                 )}
             </section>

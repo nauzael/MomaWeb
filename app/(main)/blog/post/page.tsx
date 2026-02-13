@@ -5,8 +5,10 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { fetchApi } from '@/lib/api-client';
 import BlogPostClient from '../components/BlogPostClient';
+import { useLanguage } from '@/context/LanguageContext';
 
 function BlogPostContent() {
+    const { t } = useLanguage();
     const searchParams = useSearchParams();
     const slug = searchParams.get('slug');
     const [post, setPost] = useState<any>(null);
@@ -48,9 +50,9 @@ function BlogPostContent() {
     if (!post) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-stone-50 dark:bg-stone-950 text-center px-6">
-                <h1 className="text-4xl font-black italic mb-4 text-stone-900 dark:text-white">Esta historia aún no ha sido escrita...</h1>
+                <h1 className="text-4xl font-black italic mb-4 text-stone-900 dark:text-white">{t.nav.blogStoryNotWritten}</h1>
                 <a href="/blog" className="flex items-center gap-2 text-stone-900 dark:text-white font-black uppercase text-xs tracking-widest hover:gap-4 transition-all">
-                    Volver al Blog
+                    {t.nav.blogBack}
                 </a>
             </div>
         );
