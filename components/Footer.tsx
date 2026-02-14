@@ -83,6 +83,7 @@ export default function Footer() {
                         <span className="font-medium text-stone-300">{t.footer.certified}</span>
                     </div>
                 </div>
+            </div>
         </footer>
     )
 }

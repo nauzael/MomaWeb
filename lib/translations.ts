@@ -320,7 +320,6 @@ export const translations = {
             terms: 'Terms of Service',
             sustainability: 'Sustainability',
             certified: 'Certified Experience',
-            certified: 'Certified Experience',
             allRightsReserved: 'All rights reserved.'
         }
     }
