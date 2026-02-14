@@ -1,0 +1,37 @@
+﻿
+> moma-web@0.1.0 build
+> next build
+
+Ôû▓ Next.js 16.1.1 (Turbopack)
+- Environments: .env.local, .env
+
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 5.6s
+  Running TypeScript ...
+node.exe : Failed to compile.
+En línea: 1 Carácter: 1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo          : NotSpecified: (Failed to compile. 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+./lib/experience-service-server.ts:1:52
+Type error: Cannot find module '@/utils/supabase/server' or its 
+corresponding type declarations.
+
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m { 
+createClient [36mas[39m createServerClient } [36mfrom[39m 
+[32m'@/utils/supabase/server'[39m
+ [90m   |[39m                                                 
+   [31m[1m^[22m[39m
+ [90m 2 |[39m [36mimport[39m { [33mExperience[39m } 
+[36mfrom[39m [32m'./experience-service'[39m
+ [90m 3 |[39m [36mimport[39m { mapSupabaseRowToExperience } 
+[36mfrom[39m [32m'./experience-mapper'[39m
+ [90m 4 |[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+
