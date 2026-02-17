@@ -78,6 +78,9 @@ export default function RootLayout({
         )}
         suppressHydrationWarning
       >
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-background focus:text-foreground">
+          Saltar al contenido principal
+        </a>
         <VersionCheck />
         <script
           type="application/ld+json"

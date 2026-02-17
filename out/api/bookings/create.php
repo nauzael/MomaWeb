@@ -58,7 +58,10 @@ try {
         // If we have a userId and the column exists, we could try to update it separately
         if ($userId) {
             try {
-                $db->exec("UPDATE bookings SET user_id = '$userId' WHERE id = '$id'");
+                // Fix SQL Injection: Use prepared statement
+                $updateQuery = "UPDATE bookings SET user_id = :user_id WHERE id = :id";
+                $updateStmt = $db->prepare($updateQuery);
+                $updateStmt->execute([':user_id' => $userId, ':id' => $id]);
             } catch (Exception $e) {
                 // Ignore if column doesn't exist
             }

@@ -2,11 +2,18 @@
 // public/api/config/database.php
 
 class Database {
-    private $host = "localhost";
-    private $db_name = "momaexcu_web";
-    private $username = "momaexcu_admin";
-    private $password = "u%!(IE[n8^AzMdYZ";
+    private $host;
+    private $db_name;
+    private $username;
+    private $password;
     public $conn;
+
+    public function __construct() {
+        $this->host = getenv('DB_HOST') ?: 'localhost';
+        $this->db_name = getenv('DB_NAME') ?: 'momaexcu_web';
+        $this->username = getenv('DB_USER') ?: 'momaexcu_admin';
+        $this->password = getenv('DB_PASSWORD') ?: 'u%!(IE[n8^AzMdYZ';
+    }
 
     public function getConnection() {
         $this->conn = null;
