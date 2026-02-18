@@ -1,1 +1,15 @@
-{}
+{
+    "css.lint.unknownAtRules": "ignore",
+    "tailwindCSS.experimental.classRegex": [
+        [
+            "cva\\(([^)]*)\\)",
+            "[\"'`]([^\"'`]*)\"']"
+        ]
+    ],
+    "tailwindCSS.includeLanguages": {
+        "plaintext": "javascript"
+    },
+    "files.associations": {
+        "*.css": "tailwindcss"
+    }
+}

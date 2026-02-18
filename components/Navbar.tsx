@@ -49,6 +49,26 @@ export default function Navbar() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Handle scroll to hash when navigating from other pages
+    useEffect(() => {
+        if (pathname === '/' && window.location.hash) {
+            const id = window.location.hash.replace('#', '');
+            const element = document.getElementById(id);
+            if (element) {
+                setTimeout(() => {
+                    const offset = 100;
+                    const elementRect = element.getBoundingClientRect().top;
+                    const bodyRect = document.body.getBoundingClientRect().top;
+                    const offsetPosition = elementRect - bodyRect - offset;
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                }, 100);
+            }
+        }
+    }, [pathname]);
+
     // Close mobile menu when route changes
     useEffect(() => {
         if (mobileMenuOpen) setMobileMenuOpen(false);
@@ -102,7 +122,11 @@ export default function Navbar() {
                             >
                                 {t.nav.about}
                             </Link>
-                            <Link href="/blog" className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isSpecialPage) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}>
+                            <Link
+                                href="/#blog"
+                                onClick={(e) => handleNavClick(e, '/#blog')}
+                                className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isSpecialPage) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}
+                            >
                                 {t.nav.blog}
                             </Link>
                             <Link
@@ -190,7 +214,11 @@ export default function Navbar() {
                                     >
                                         {t.nav.about}
                                     </Link>
-                                    <Link href="/blog" className="text-lg font-bold text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-900 transition-all py-4 px-4 rounded-xl border-b border-stone-200 dark:border-stone-800 min-h-[56px] flex items-center">
+                                    <Link
+                                        href="/#blog"
+                                        onClick={(e) => handleNavClick(e, '/#blog')}
+                                        className="text-lg font-bold text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-900 transition-all py-4 px-4 rounded-xl border-b border-stone-200 dark:border-stone-800 min-h-[56px] flex items-center"
+                                    >
                                         {t.nav.blog}
                                     </Link>
                                     <Link

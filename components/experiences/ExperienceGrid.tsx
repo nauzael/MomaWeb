@@ -1,5 +1,5 @@
 import { type Experience } from '@/lib/experience-service';
-import ExperienceCard from './ExperienceCard';
+import { ExperienceLayoutGrid } from '@/components/ui/ExperienceLayoutGrid';
 
 interface ExperienceGridProps {
     experiences: Experience[];
@@ -15,10 +15,8 @@ export default function ExperienceGrid({ experiences }: ExperienceGridProps) {
     }
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {experiences.map((exp) => (
-                <ExperienceCard key={exp.id} experience={exp} />
-            ))}
+        <div className="w-full">
+            <ExperienceLayoutGrid experiences={experiences} />
         </div>
     );
 }
