@@ -11,58 +11,51 @@ interface ExperienceCarouselProps {
 }
 
 export default function ExperienceCarousel({ experiences }: ExperienceCarouselProps) {
-    const [contentWidth, setContentWidth] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
-    const innerContainerRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
 
     const x = useMotionValue(0);
     const controls = useAnimation();
     const [isPaused, setIsPaused] = useState(false);
-    const [slideWidth, setSlideWidth] = useState(0);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [isMobile, setIsMobile] = useState(false);
+    const [cardWidth, setCardWidth] = useState<number | null>(null);
 
-    // Duplicate experiences to enable infinite loop
-    // Ensure we have enough items to loop smoothly even with few items
     const displayExperiences = [...experiences, ...experiences, ...experiences, ...experiences];
 
+    // Check mobile on mount and resize
     useEffect(() => {
-        const updateWidths = () => {
-            if (innerContainerRef.current) {
-                // Use the inner container width (without padding) for calculations
-                const width = innerContainerRef.current.offsetWidth;
-                const isMobile = window.innerWidth < 768;
-                const isTablet = window.innerWidth < 1280;
-
-                // Show more items on larger screens, ensuring uniform distribution
-                // Always keep 3 cards visible on desktop for better centering and focus
-                let show = 1;
-                if (isMobile) show = 1;
-                else if (isTablet) show = 2;
-                else show = 3; // Fixed to 3 for desktop centering
-
-                const gap = 32; // gap-8 matches the className
-
-                // Calculate card width based on visible items
-                // This formula ensures cards are evenly distributed across the available width
-                const calculatedCardWidth = (width - (gap * (show - 1))) / show;
-                const calculatedSlideWidth = calculatedCardWidth + gap;
-
-                setSlideWidth(calculatedSlideWidth);
-                // Adjust content width based on the actual number of displayed items
-                setContentWidth(displayExperiences.length * calculatedSlideWidth);
-
-                // Reset position to aligned state
-                x.set(0);
-                setCurrentIndex(0);
+        const checkMobile = () => {
+            const mobile = window.innerWidth < 768;
+            setIsMobile(mobile);
+            
+            // Calculate card width
+            const container = containerRef.current;
+            if (container) {
+                const containerWidth = container.offsetWidth;
+                const gap = mobile ? 16 : 32;
+                const padding = mobile ? 32 : 64; // px-4 = 16px each side
+                
+                // For mobile: 1 card at 85% width
+                // For desktop: 3 cards evenly distributed
+                let newCardWidth;
+                if (mobile) {
+                    newCardWidth = (containerWidth - padding) * 0.85;
+                } else {
+                    // 3 cards + 2 gaps
+                    newCardWidth = (containerWidth - padding - (gap * 2)) / 3;
+                }
+                
+                setCardWidth(newCardWidth);
             }
         };
+        
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
-        updateWidths();
-        window.addEventListener('resize', updateWidths);
-        return () => window.removeEventListener('resize', updateWidths);
-    }, [experiences, x]);
-
+    const slideWidth = (cardWidth ?? 0) + (isMobile ? 16 : 32);
 
     const handleNext = useCallback(async () => {
         if (slideWidth === 0) return;
@@ -75,7 +68,6 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
             transition: { duration: 0.8, ease: [0.32, 0.72, 0, 1] }
         });
 
-        // If we've scrolled past the first set, reset to the beginning seamlessly
         if (newIndex >= experiences.length) {
             x.set(0);
             setCurrentIndex(0);
@@ -89,7 +81,6 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
 
         let newIndex = currentIndex - 1;
 
-        // If at the beginning, jump to the end of the first set
         if (newIndex < 0) {
             newIndex = experiences.length - 1;
             x.set(-experiences.length * slideWidth);
@@ -105,7 +96,6 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
         setCurrentIndex(newIndex);
     }, [currentIndex, experiences.length, slideWidth, controls, x]);
 
-    // Auto-play effect
     useEffect(() => {
         if (isPaused || slideWidth === 0) return;
         const timer = setInterval(() => {
@@ -116,76 +106,97 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
 
     if (experiences.length === 0) return null;
 
+    // Show placeholder while calculating dimensions
+    if (cardWidth === null) {
+        return (
+            <div className="w-full max-w-[1400px] mx-auto overflow-hidden">
+                <div className={`flex ${isMobile ? 'gap-4' : 'gap-8'} py-8 md:py-12 px-4 md:px-8`}>
+                    {[1, 2, 3].map((i) => (
+                        <div
+                            key={i}
+                            className="shrink-0 bg-stone-100 dark:bg-stone-800 rounded-3xl animate-pulse"
+                            style={{ width: isMobile ? '85%' : 'calc(33% - 20px)' }}
+                        >
+                            <div className="h-56 bg-stone-200 dark:bg-stone-700 rounded-t-3xl" />
+                            <div className="p-6 space-y-3">
+                                <div className="h-6 bg-stone-200 dark:bg-stone-700 rounded w-3/4" />
+                                <div className="h-4 bg-stone-200 dark:bg-stone-700 rounded w-full" />
+                                <div className="h-4 bg-stone-200 dark:bg-stone-700 rounded w-2/3" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div
-            className="relative group/carousel py-2 overflow-visible"
+            className="relative group/carousel py-2 overflow-hidden"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
         >
-            {/* Container with overflow-hidden and padding for shadows */}
+            {/* Container */}
             <div
                 ref={containerRef}
-                className="w-[90%] lg:w-[85%] max-w-[1400px] mx-auto overflow-hidden relative px-4"
+                className="w-full max-w-[1400px] mx-auto overflow-hidden"
             >
-                {/* Inner container for width measurement (without padding) */}
-                <div ref={innerContainerRef} className="w-full mx-auto">
-                    <motion.div
-                        ref={contentRef}
-                        animate={controls}
-                        style={{ x }}
-                        drag="x"
-                        dragConstraints={{
-                            left: -(contentWidth / 2),
-                            right: 0
-                        }}
-                        onDragStart={() => setIsPaused(true)}
-                        onDragEnd={() => {
-                            if (slideWidth === 0) return;
+                <motion.div
+                    ref={contentRef}
+                    animate={controls}
+                    style={{ x }}
+                    drag="x"
+                    dragConstraints={{
+                        left: -((experiences.length) * slideWidth),
+                        right: 0
+                    }}
+                    onDragStart={() => setIsPaused(true)}
+                    onDragEnd={() => {
+                        if (slideWidth === 0) return;
 
-                            const currentX = x.get();
+                        const currentX = x.get();
+                        const nearestIndex = Math.round(-currentX / slideWidth);
+                        const clampedIndex = Math.max(0, Math.min(nearestIndex, experiences.length - 1));
+                        const snappedX = -clampedIndex * slideWidth;
 
-                            // Calculate nearest slide index
-                            const nearestIndex = Math.round(-currentX / slideWidth);
-                            const clampedIndex = Math.max(0, Math.min(nearestIndex, experiences.length - 1));
-                            const snappedX = -clampedIndex * slideWidth;
-
-                            controls.start({
-                                x: snappedX,
-                                transition: { type: 'spring', stiffness: 300, damping: 30 }
-                            });
-                            setCurrentIndex(clampedIndex);
-                        }}
-                        className="flex gap-8 py-12"
-                    >
-                        {displayExperiences.map((exp, index) => (
-                            <div
-                                key={`${exp.id}-${index}`}
-                                style={{ width: slideWidth > 0 ? slideWidth - 32 : 400 }}
-                                className="shrink-0"
-                            >
-                                <ExperienceCard
-                                    experience={exp}
-                                    priority={index < 4} // Prioritize loading for the first visible items
-                                />
-                            </div>
-                        ))}
-                    </motion.div>
-                </div>
+                        controls.start({
+                            x: snappedX,
+                            transition: { type: 'spring', stiffness: 300, damping: 30 }
+                        });
+                        setCurrentIndex(clampedIndex);
+                    }}
+                    className={`flex ${isMobile ? 'gap-4' : 'gap-8'} py-8 md:py-12 px-4 md:px-8`}
+                >
+                    {displayExperiences.map((exp, index) => (
+                        <div
+                            key={`${exp.id}-${index}`}
+                            style={{ width: cardWidth ?? '100%' }}
+                            className="shrink-0"
+                        >
+                            <ExperienceCard
+                                experience={exp}
+                                priority={index < (isMobile ? 1 : 3)}
+                            />
+                        </div>
+                    ))}
+                </motion.div>
             </div>
 
-            {/* Navigation Arrows - Positioned relative to the content area */}
-            <div className="absolute inset-y-0 left-0 right-0 w-[94%] lg:w-[89%] max-w-[1480px] mx-auto flex items-center justify-between pointer-events-none z-20">
+            {/* Navigation Arrows */}
+            <div className="absolute inset-y-0 left-0 right-0 w-full max-w-[1400px] mx-auto flex items-center justify-between pointer-events-none px-2 md:px-4 z-20">
                 <button
                     onClick={handlePrev}
-                    className="p-3 md:p-4 rounded-full bg-white/80 dark:bg-stone-900/80 backdrop-blur-md shadow-xl text-stone-900 dark:text-white pointer-events-auto opacity-0 group-hover/carousel:opacity-100 transition-all transform hover:scale-110 hover:bg-moma-green hover:text-white"
+                    className={`rounded-full bg-white/90 dark:bg-stone-900/90 backdrop-blur-md shadow-xl text-stone-900 dark:text-white pointer-events-auto opacity-0 group-hover/carousel:opacity-100 transition-all transform hover:scale-110 hover:bg-moma-green hover:text-white ${isMobile ? 'p-2' : 'p-3 md:p-4'}`}
+                    aria-label="Previous"
                 >
-                    <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+                    <ChevronLeft className={isMobile ? "w-5 h-5" : "w-5 h-5 md:w-6 md:h-6"} />
                 </button>
                 <button
                     onClick={handleNext}
-                    className="p-3 md:p-4 rounded-full bg-white/80 dark:bg-stone-900/80 backdrop-blur-md shadow-xl text-stone-900 dark:text-white pointer-events-auto opacity-0 group-hover/carousel:opacity-100 transition-all transform hover:scale-110 hover:bg-moma-green hover:text-white"
+                    className={`rounded-full bg-white/90 dark:bg-stone-900/90 backdrop-blur-md shadow-xl text-stone-900 dark:text-white pointer-events-auto opacity-0 group-hover/carousel:opacity-100 transition-all transform hover:scale-110 hover:bg-moma-green hover:text-white ${isMobile ? 'p-2' : 'p-3 md:p-4'}`}
+                    aria-label="Next"
                 >
-                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+                    <ChevronRight className={isMobile ? "w-5 h-5" : "w-5 h-5 md:w-6 md:h-6"} />
                 </button>
             </div>
         </div>

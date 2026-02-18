@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView, useAnimation, Variant } from "framer-motion";
+import { motion, useInView, useAnimation, Variant, useReducedMotion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +27,7 @@ export const ScrollReveal = ({
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-50px" });
     const controls = useAnimation();
+    const shouldReduceMotion = useReducedMotion();
 
     useEffect(() => {
         if (isInView) {
@@ -34,13 +35,15 @@ export const ScrollReveal = ({
         }
     }, [isInView, controls]);
 
+    const reducedDuration = shouldReduceMotion ? 0.1 : duration;
+
     const variants = {
         "cinematic": {
-            hidden: { opacity: 0, scale: 0.95, filter: "blur(4px)" },
+            hidden: { opacity: 0, scale: shouldReduceMotion ? 1 : 0.95, filter: shouldReduceMotion ? "blur(0px)" : "blur(4px)" },
             visible: { opacity: 1, scale: 1, filter: "blur(0px)" },
         },
         "fade-up": {
-            hidden: { opacity: 0, y: 30 },
+            hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 30 },
             visible: { opacity: 1, y: 0 },
         },
         "fade-in": {
@@ -48,15 +51,15 @@ export const ScrollReveal = ({
             visible: { opacity: 1 },
         },
         "scale-up": {
-            hidden: { opacity: 0, scale: 0.95 },
+            hidden: { opacity: 0, scale: shouldReduceMotion ? 1 : 0.95 },
             visible: { opacity: 1, scale: 1 },
         },
         "slide-right": {
-            hidden: { opacity: 0, x: -30 },
+            hidden: { opacity: 0, x: shouldReduceMotion ? 0 : -30 },
             visible: { opacity: 1, x: 0 },
         },
         "slide-left": {
-            hidden: { opacity: 0, x: 30 },
+            hidden: { opacity: 0, x: shouldReduceMotion ? 0 : 30 },
             visible: { opacity: 1, x: 0 },
         }
     };
@@ -71,7 +74,7 @@ export const ScrollReveal = ({
                 visible: {
                     ...selectedVariant.visible,
                     transition: {
-                        duration: duration,
+                        duration: reducedDuration,
                         ease: [0.25, 0.4, 0.25, 1], // Smoother cinematic ease
                         delay: delay,
                         staggerChildren: staggerChildren

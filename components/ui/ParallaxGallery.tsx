@@ -1,4 +1,4 @@
-import { useScroll, useTransform, motion, AnimatePresence } from 'framer-motion';
+import { useScroll, useTransform, motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,18 @@ const defaultImages: string[] = [];
 export default function ParallaxGallery() {
     const { t } = useLanguage();
     const containerRef = useRef<HTMLDivElement>(null);
+    const [isMobile, setIsMobile] = useState(false);
+    const shouldReduceMotion = useReducedMotion();
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    const parallaxEnabled = !shouldReduceMotion && !isMobile;
+
     const { scrollYProgress } = useScroll({
         target: containerRef,
         offset: ['start end', 'end start']
@@ -52,11 +64,11 @@ export default function ParallaxGallery() {
         fetchImages();
     }, []);
 
-    const y = useTransform(scrollYProgress, [0, 1], [0, -200]);
-    const y2 = useTransform(scrollYProgress, [0, 1], [0, 400]);
-    const y3 = useTransform(scrollYProgress, [0, 1], [0, -100]);
-    const y4 = useTransform(scrollYProgress, [0, 1], [0, 300]);
-    const y5 = useTransform(scrollYProgress, [0, 1], [0, -250]);
+    const y = useTransform(scrollYProgress, [0, 1], parallaxEnabled ? [0, -200] : [0, 0]);
+    const y2 = useTransform(scrollYProgress, [0, 1], parallaxEnabled ? [0, 400] : [0, 0]);
+    const y3 = useTransform(scrollYProgress, [0, 1], parallaxEnabled ? [0, -100] : [0, 0]);
+    const y4 = useTransform(scrollYProgress, [0, 1], parallaxEnabled ? [0, 300] : [0, 0]);
+    const y5 = useTransform(scrollYProgress, [0, 1], parallaxEnabled ? [0, -250] : [0, 0]);
 
     // Distribute images among columns
     const col1: string[] = [];
@@ -91,9 +103,12 @@ export default function ParallaxGallery() {
             <div className="absolute top-0 left-0 right-0 h-40 bg-linear-to-b from-stone-50 dark:from-stone-950 to-transparent pointer-events-none z-10" />
 
             <div className="max-w-[1600px] mx-auto px-4">
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-8 h-[160vh] md:h-[120vh]">
-                    <Column images={col1} y={y} className="mt-0" onImageClick={setSelectedImage} />
-                    <Column images={col2} y={y2} className="-mt-32 md:-mt-64" onImageClick={setSelectedImage} />
+                <div className={cn(
+                    "grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-8",
+                    isMobile ? "h-auto" : "h-[160vh] md:h-[120vh]"
+                )}>
+                    <Column images={col1} y={y} className={isMobile ? "mt-0" : "mt-0"} onImageClick={setSelectedImage} />
+                    <Column images={col2} y={y2} className={isMobile ? "mt-0" : "-mt-32 md:-mt-64"} onImageClick={setSelectedImage} />
                     <Column images={col3} y={y3} className="hidden md:flex mt-12" onImageClick={setSelectedImage} />
                     <Column images={col4} y={y4} className="hidden md:flex -mt-48" onImageClick={setSelectedImage} />
                     <Column images={col5} y={y5} className="hidden md:flex mt-24" onImageClick={setSelectedImage} />

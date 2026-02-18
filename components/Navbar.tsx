@@ -3,12 +3,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, MapPin, Compass, BookOpen, MessageCircle, Globe, ChevronRight, Phone, Instagram, Facebook, ArrowRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
-import { Globe } from 'lucide-react';
 
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
@@ -17,6 +16,15 @@ export default function Navbar() {
     const pathname = usePathname();
     const isSpecialPage = pathname !== '/';
 
+    // Scroll detection
+    const { scrollY } = useScroll();
+    useMotionValueEvent(scrollY, "change", (latest) => {
+        const isScrolled = latest > 50;
+        if (isScrolled !== scrolled) {
+            setScrolled(isScrolled);
+        }
+    });
+
     const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, target: string) => {
         if (target.startsWith('/#')) {
             if (pathname === '/') {
@@ -24,7 +32,8 @@ export default function Navbar() {
                 const id = target.split('#')[1];
                 const element = document.getElementById(id);
                 if (element) {
-                    const offset = 100;
+                    // Offset calculation to account for the floating header
+                    const offset = 120;
                     const bodyRect = document.body.getBoundingClientRect().top;
                     const elementRect = element.getBoundingClientRect().top;
                     const elementPosition = elementRect - bodyRect;
@@ -40,22 +49,19 @@ export default function Navbar() {
         }
     };
 
+    // Close mobile menu on path change
     useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 20);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+        setMobileMenuOpen(false);
+    }, [pathname]);
 
-    // Handle scroll to hash when navigating from other pages
+    // Handle hash on initial load
     useEffect(() => {
         if (pathname === '/' && window.location.hash) {
             const id = window.location.hash.replace('#', '');
             const element = document.getElementById(id);
             if (element) {
                 setTimeout(() => {
-                    const offset = 100;
+                    const offset = 120;
                     const elementRect = element.getBoundingClientRect().top;
                     const bodyRect = document.body.getBoundingClientRect().top;
                     const offsetPosition = elementRect - bodyRect - offset;
@@ -63,180 +69,228 @@ export default function Navbar() {
                         top: offsetPosition,
                         behavior: 'smooth'
                     });
-                }, 100);
+                }, 500);
             }
         }
     }, [pathname]);
 
-    // Close mobile menu when route changes
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    useEffect(() => {
-        if (mobileMenuOpen) setMobileMenuOpen(false);
-    }, [pathname, mobileMenuOpen]);
+    // Nav Item Component for consistent animation
+    const NavItem = ({ href, label }: { href: string; label: string }) => {
+        const isHovered = false; // We could use state, but CSS group-hover is cleaner here
+        return (
+            <Link
+                href={href}
+                onClick={(e) => handleNavClick(e, href)}
+                className="relative group px-4 py-2"
+            >
+                <span className={cn(
+                    "relative z-10 text-sm font-bold tracking-wide transition-colors duration-300",
+                    scrolled ? "text-stone-800 dark:text-stone-100" : "text-white group-hover:text-white"
+                )}>
+                    {label}
+                </span>
+                <span className={cn(
+                    "absolute inset-x-0 bottom-0 h-0.5 transform scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-75 origin-center",
+                    scrolled ? "bg-moma-green" : "bg-white"
+                )} />
+            </Link>
+        );
+    };
 
     return (
-        <nav
-            className={cn(
-                "fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out",
-                (scrolled || isSpecialPage)
-                    ? "bg-background/60 backdrop-blur-xl shadow-sm py-3"
-                    : "bg-transparent py-8"
-            )}
-        >
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between">
-                    <div className="shrink-0 flex items-center">
-                        <Link
-                            href="/"
-                            className={cn(
-                                "relative transition-all duration-500 ease-in-out block",
-                                scrolled || isSpecialPage
-                                    ? "h-10 w-32"
-                                    : "h-20 w-64"
-                            )}
-                            aria-label={t.nav.logoAria}
-                        >
-                            <Image
-                                src={(scrolled || isSpecialPage) ? "/images/logo.png" : "/images/logo-white.png"}
-                                alt={t.nav.logoAlt}
-                                fill
-                                className="object-contain object-left"
-                                priority
-                            />
-                        </Link>
+        <>
+            <motion.nav
+                initial={{ y: -100, opacity: 0 }}
+                animate={{
+                    y: 0,
+                    opacity: 1,
+                    width: scrolled ? '95%' : '100%',
+                    top: scrolled ? 20 : 0,
+                    borderRadius: scrolled ? 9999 : 0
+                }}
+                transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                className={cn(
+                    "fixed left-0 right-0 z-50 mx-auto transition-all duration-500 ease-in-out px-6 flex items-center justify-between",
+                    scrolled
+                        ? "bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl shadow-lg shadow-stone-900/5 max-w-5xl py-3"
+                        : cn(
+                            "py-6 bg-transparent",
+                            isSpecialPage ? "bg-stone-900/90 backdrop-blur-md" : ""
+                        )
+                )}
+                style={{
+                    left: scrolled ? '50%' : 0,
+                    x: scrolled ? '-50%' : 0,
+                    maxWidth: scrolled ? '64rem' : '100%',
+                }}
+            >
+                {/* Logo */}
+                <Link
+                    href="/"
+                    className="relative shrink-0 transition-transform hover:scale-105 active:scale-95"
+                    aria-label={t.nav.logoAria}
+                >
+                    <div className={cn("relative transition-all duration-300", scrolled ? "h-10 w-32" : "h-12 w-40")}>
+                        <Image
+                            src={scrolled ? "/images/logo.png" : "/images/logo-white.png"}
+                            alt={t.nav.logoAlt}
+                            fill
+                            className="object-contain object-left"
+                            priority
+                            sizes="(max-width: 768px) 150px, 200px"
+                        />
                     </div>
+                </Link>
 
-                    <div className="hidden md:block">
-                        <div className="ml-10 flex items-baseline space-x-6">
-                            <Link
-                                href="/#experiencias"
-                                onClick={(e) => handleNavClick(e, '/#experiencias')}
-                                className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isSpecialPage) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}
-                            >
-                                {t.nav.experiences}
-                            </Link>
-                            <Link
-                                href="/#nosotros"
-                                onClick={(e) => handleNavClick(e, '/#nosotros')}
-                                className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isSpecialPage) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}
-                            >
-                                {t.nav.about}
-                            </Link>
-                            <Link
-                                href="/#blog"
-                                onClick={(e) => handleNavClick(e, '/#blog')}
-                                className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isSpecialPage) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}
-                            >
-                                {t.nav.blog}
-                            </Link>
-                            <Link
-                                href="/#contacto"
-                                onClick={(e) => handleNavClick(e, '/#contacto')}
-                                className={cn("transition-all px-3 py-2 rounded-full text-base font-bold font-sans hover:bg-white/10", (scrolled || isSpecialPage) ? "text-foreground hover:text-primary" : "text-stone-100 hover:text-white")}
-                            >
-                                {t.nav.contact}
-                            </Link>
-                        </div>
-                    </div>
-
-                    <div className="hidden md:flex items-center gap-4">
-                        <button
-                            onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-                            className={cn(
-                                "flex items-center gap-2 px-3 py-2 rounded-full text-sm font-bold uppercase tracking-wider transition-all",
-                                (scrolled || isSpecialPage) ? "text-stone-600 hover:bg-stone-100" : "text-white/80 hover:bg-white/10"
-                            )}
-                        >
-                            <Globe className="w-4 h-4" />
-                            {language === 'es' ? 'EN' : 'ES'}
-                        </button>
-                        <Link href="/admin/dashboard" className="bg-moma-green text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-opacity-90 transition-all">
-                            {t.nav.agency}
-                        </Link>
-                    </div>
-
-                    <div className="md:hidden flex items-center gap-2">
-                        <button
-                            onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-                            className={cn(
-                                "flex items-center gap-2 px-4 py-3 rounded-full text-xs font-bold uppercase tracking-wider transition-all min-h-[44px]",
-                                (scrolled || isSpecialPage) ? "text-stone-600 hover:bg-stone-100" : "text-white/80 hover:bg-white/10"
-                            )}
-                        >
-                            <Globe className="w-4 h-4" />
-                            {language === 'es' ? 'EN' : 'ES'}
-                        </button>
-                        <button
-                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className={cn("p-3 rounded-md transition-all min-w-[48px] min-h-[48px] flex items-center justify-center", (scrolled || isSpecialPage) ? "text-foreground hover:bg-stone-100" : "text-white hover:bg-white/10")}
-                            aria-label={mobileMenuOpen ? t.nav.closeMenu : t.nav.openMenu}
-                        >
-                            {mobileMenuOpen ? <X className="h-6 w-6" aria-hidden="true" /> : <Menu className="h-6 w-6" aria-hidden="true" />}
-                        </button>
-                    </div>
+                {/* Desktop Navigation */}
+                <div className="hidden md:flex items-center gap-1">
+                    <NavItem href="/#experiencias" label={t.nav.experiences} />
+                    <NavItem href="/#nosotros" label={t.nav.about} />
+                    <NavItem href="/#blog" label={t.nav.blog} />
+                    <NavItem href="/#contacto" label={t.nav.contact} />
                 </div>
-            </div>
 
-            {/* Mobile Menu */}
+                {/* Actions */}
+                <div className="hidden md:flex items-center gap-3 pl-4 border-l border-stone-200/20 ml-2">
+                    <button
+                        onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
+                        className={cn(
+                            "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border border-transparent",
+                            scrolled
+                                ? "text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 hover:border-stone-200"
+                                : "text-white/90 hover:bg-white/10 hover:border-white/20"
+                        )}
+                    >
+                        <Globe className="w-3.5 h-3.5" />
+                        {language === 'es' ? 'EN' : 'ES'}
+                    </button>
+
+                    <Link
+                        href="/admin/dashboard"
+                        className={cn(
+                            "px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5",
+                            scrolled
+                                ? "bg-moma-green text-white hover:bg-[#00796b]"
+                                : "bg-white text-stone-900 hover:bg-stone-100"
+                        )}
+                    >
+                        {t.nav.agency}
+                    </Link>
+                </div>
+
+                {/* Mobile Toggle */}
+                <div className="md:hidden flex items-center gap-3">
+                    <button
+                        onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
+                        className={cn(
+                            "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider transition-all",
+                            scrolled ? "text-stone-600 dark:text-stone-300" : "text-white/90"
+                        )}
+                    >
+                        {language === 'es' ? 'EN' : 'ES'}
+                    </button>
+                    <button
+                        onClick={() => setMobileMenuOpen(true)}
+                        className={cn(
+                            "p-2.5 rounded-full transition-all active:scale-90",
+                            scrolled
+                                ? "text-stone-800 dark:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800"
+                                : "text-white hover:bg-white/10"
+                        )}
+                        aria-label={t.nav.openMenu}
+                    >
+                        <Menu className="w-6 h-6" />
+                    </button>
+                </div>
+            </motion.nav>
+
+            {/* Mobile Menu - Glassmorphism Design */}
             <AnimatePresence>
                 {mobileMenuOpen && (
                     <>
-                        {/* Backdrop */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="fixed inset-0 z-40 bg-black/50 md:hidden backdrop-blur-sm"
+                            className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm md:hidden"
+                            style={{ zIndex: 999 }}
                             onClick={() => setMobileMenuOpen(false)}
                         />
-                        {/* Menu Panel */}
                         <motion.div
-                            initial={{ opacity: 0, x: '100%' }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: '100%' }}
+                            initial={{ x: '100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '100%' }}
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            className="fixed inset-y-0 right-0 z-50 w-[85vw] max-w-sm md:hidden bg-stone-50 dark:bg-stone-950 shadow-2xl"
+                            className="fixed inset-y-0 right-0 w-full max-w-[320px] bg-white dark:bg-stone-950 shadow-2xl md:hidden flex flex-col"
+                            style={{ zIndex: 1000 }}
                         >
-                            <div className="flex flex-col h-full pt-24 px-6 pb-6 overflow-y-auto">
-                                <nav className="flex flex-col space-y-2">
+                            {/* Mobile Header */}
+                            <div className="flex items-center justify-between p-6 border-b border-stone-100 dark:border-stone-800/50">
+                                <span className="text-xl font-heading font-black text-stone-900 dark:text-white tracking-tight">
+                                    Moma<span className="text-moma-green">.</span>
+                                </span>
+                                <button
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-500 transition-colors"
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+
+                            {/* Mobile Links */}
+                            <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
+                                {[
+                                    { href: '/#experiencias', label: t.nav.experiences, icon: Compass },
+                                    { href: '/#nosotros', label: t.nav.about, icon: MapPin },
+                                    { href: '/#blog', label: t.nav.blog, icon: BookOpen },
+                                    { href: '/#contacto', label: t.nav.contact, icon: MessageCircle },
+                                ].map((item) => (
                                     <Link
-                                        href="/#experiencias"
-                                        onClick={(e) => handleNavClick(e, '/#experiencias')}
-                                        className="text-lg font-bold text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-900 transition-all py-4 px-4 rounded-xl border-b border-stone-200 dark:border-stone-800 min-h-[56px] flex items-center"
+                                        key={item.href}
+                                        href={item.href}
+                                        onClick={(e) => handleNavClick(e, item.href)}
+                                        className="group flex items-center justify-between p-4 rounded-2xl hover:bg-stone-50 dark:hover:bg-stone-900 active:scale-[0.98] transition-all border border-transparent hover:border-stone-100 dark:hover:border-stone-800"
                                     >
-                                        {t.nav.experiences}
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-moma-green/10 flex items-center justify-center text-moma-green group-hover:bg-moma-green group-hover:text-white transition-colors">
+                                                <item.icon className="w-5 h-5" />
+                                            </div>
+                                            <span className="font-bold text-lg text-stone-700 dark:text-stone-200">
+                                                {item.label}
+                                            </span>
+                                        </div>
+                                        <ChevronRight className="w-5 h-5 text-stone-300 group-hover:text-moma-green group-hover:translate-x-1 transition-all" />
                                     </Link>
-                                    <Link
-                                        href="/#nosotros"
-                                        onClick={(e) => handleNavClick(e, '/#nosotros')}
-                                        className="text-lg font-bold text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-900 transition-all py-4 px-4 rounded-xl border-b border-stone-200 dark:border-stone-800 min-h-[56px] flex items-center"
-                                    >
-                                        {t.nav.about}
-                                    </Link>
-                                    <Link
-                                        href="/#blog"
-                                        onClick={(e) => handleNavClick(e, '/#blog')}
-                                        className="text-lg font-bold text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-900 transition-all py-4 px-4 rounded-xl border-b border-stone-200 dark:border-stone-800 min-h-[56px] flex items-center"
-                                    >
-                                        {t.nav.blog}
-                                    </Link>
-                                    <Link
-                                        href="/#contacto"
-                                        onClick={(e) => handleNavClick(e, '/#contacto')}
-                                        className="text-lg font-bold text-foreground hover:text-primary hover:bg-stone-100 dark:hover:bg-stone-900 transition-all py-4 px-4 rounded-xl border-b border-stone-200 dark:border-stone-800 min-h-[56px] flex items-center"
-                                    >
-                                        {t.nav.contact}
-                                    </Link>
-                                    <Link href="/admin/dashboard" className="bg-moma-green text-white px-6 py-4 rounded-full text-base font-bold hover:bg-opacity-90 transition-all text-center mt-6 min-h-[56px] flex items-center justify-center">
-                                        {t.nav.agency}
-                                    </Link>
-                                </nav>
+                                ))}
+                            </div>
+
+                            {/* Mobile Footer */}
+                            <div className="p-6 bg-stone-50 dark:bg-stone-900 space-y-4">
+                                <Link
+                                    href="/admin/dashboard"
+                                    className="flex items-center justify-center w-full bg-stone-900 dark:bg-white text-white dark:text-stone-900 px-6 py-4 rounded-xl font-bold shadow-lg shadow-stone-900/10 active:scale-[0.98] transition-all"
+                                >
+                                    {t.nav.agency}
+                                </Link>
+
+                                <div className="flex justify-between items-center pt-2">
+                                    <a href="tel:+573016566932" className="p-3 bg-white dark:bg-stone-800 rounded-full text-stone-600 dark:text-stone-400 hover:text-moma-green hover:shadow-md transition-all">
+                                        <Phone className="w-5 h-5" />
+                                    </a>
+                                    <div className="flex gap-2">
+                                        <a href="https://instagram.com/momanature" target="_blank" rel="noreferrer" className="p-3 bg-white dark:bg-stone-800 rounded-full text-stone-600 dark:text-stone-400 hover:text-pink-600 hover:shadow-md transition-all">
+                                            <Instagram className="w-5 h-5" />
+                                        </a>
+                                        <a href="https://facebook.com/momanature" target="_blank" rel="noreferrer" className="p-3 bg-white dark:bg-stone-800 rounded-full text-stone-600 dark:text-stone-400 hover:text-blue-600 hover:shadow-md transition-all">
+                                            <Facebook className="w-5 h-5" />
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </motion.div>
                     </>
                 )}
             </AnimatePresence>
-        </nav>
+        </>
     );
 }

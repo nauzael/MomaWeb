@@ -5,7 +5,7 @@ import ExperienceCardStack from '@/components/experiences/ExperienceCardStack';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Phone, Mail, MapPin, ArrowRight, ChevronLeft, ChevronRight, Leaf, Sprout, Tent, Users } from 'lucide-react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { getAllExperiencesPersisted, type Experience } from '@/lib/experience-service';
 import { MOCK_EXPERIENCES } from '@/lib/mock-data';
 import SectionDivider from '@/components/ui/SectionDivider';
@@ -20,8 +20,17 @@ const CTA_IMAGE_URL = "/images/montes-m-frame.webp";
 export default function Home() {
   const [experiences, setExperiences] = useState<Experience[]>(MOCK_EXPERIENCES as unknown as Experience[]);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [direction, setDirection] = useState(1); // 1 for next, -1 for prev
+  const [direction, setDirection] = useState(1);
+  const [isMobile, setIsMobile] = useState(false);
   const { t } = useLanguage();
+  const shouldReduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -86,25 +95,34 @@ export default function Home() {
     target: heroRef,
     offset: ["start start", "end start"]
   });
-  const heroY = useTransform(heroScrollY, [0, 1], ["0%", "20%"]); // Reduced range to prevent top gap
-  const heroScale = useTransform(heroScrollY, [0, 1], [1, 1.15]); // Subtle scale
+  const heroY = useTransform(heroScrollY, [0, 1], ["0%", "20%"]);
+  const heroScale = useTransform(heroScrollY, [0, 1], [1, 1.15]);
   const heroOpacity = useTransform(heroScrollY, [0, 0.8], [1, 0.2]);
+
+  const animationDuration = shouldReduceMotion ? 0.3 : (isMobile ? 1.5 : 3);
+  const parallaxEnabled = !shouldReduceMotion && !isMobile;
 
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section / Carousel */}
       <section ref={heroRef} className="relative h-screen flex items-center overflow-hidden bg-stone-900 pb-0 border-b-0" style={{ clipPath: 'inset(0 0 0 0)', WebkitMask: 'none', mask: 'none' }}>
-        {/* Background Images with Framer Motion - Extended height to handle parallax without gaps */}
-        <motion.div style={{ y: heroY, opacity: heroOpacity, scale: heroScale }} className="absolute inset-0 z-0 h-[130vh] -top-[30vh] w-full">
+        {/* Background Images - Simplified for mobile */}
+        <motion.div 
+          style={{ 
+            y: parallaxEnabled ? heroY : 0, 
+            opacity: parallaxEnabled ? heroOpacity : 1, 
+            scale: parallaxEnabled ? heroScale : 1 
+          }} 
+          className={`absolute inset-0 z-0 ${isMobile ? 'h-full' : 'h-[130vh] -top-[30vh]'}`}
+        >
           <AnimatePresence>
             <motion.div
               key={currentSlide}
-              initial={{ opacity: 0, scale: 1.1 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{
-                opacity: { duration: 1.5, ease: "easeInOut" },
-                scale: { duration: 7, ease: "easeOut" }
+                opacity: { duration: animationDuration * 0.5, ease: "easeInOut" }
               }}
               className="absolute inset-0"
             >
@@ -115,7 +133,7 @@ export default function Home() {
                 priority
                 className="object-cover"
                 sizes="100vw"
-                quality={90}
+                quality={isMobile ? 75 : 90}
               />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(12,10,9,0.4)_50%,rgba(12,10,9,0.95)_100%)] mix-blend-multiply"></div>
               <div className="absolute inset-0 bg-linear-to-t from-stone-950/90 via-transparent to-transparent"></div>
@@ -242,13 +260,18 @@ export default function Home() {
       </section>
 
       {/* Dynamic Parallax Gallery Section */}
-      <ParallaxGallery />
+      <div className="relative">
+        <ParallaxGallery />
+      </div>
 
       {/* CTA Section */}
       <section ref={parallaxRef} className="relative py-24 bg-stone-900 overflow-hidden min-h-[700px] flex items-center" >
         {/* Background with color but dark overlay for contrast + Improved Parallax */}
         <motion.div
-          style={{ y: yParallax, scale: scaleParallax, backgroundImage: `url(${CTA_IMAGE_URL})` }}
+          style={{ 
+            y: parallaxEnabled ? yParallax : 0, 
+            scale: parallaxEnabled ? scaleParallax : 1 
+          }}
           className="absolute inset-0 h-[140%] -top-[20%] w-full bg-cover bg-center"
         />
         <div className="absolute inset-0 bg-stone-900/60 mix-blend-multiply"></div>
