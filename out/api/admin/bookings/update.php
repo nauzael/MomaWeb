@@ -5,9 +5,13 @@ require_once '../../config/cors.php';
 require_once '../../config/database.php';
 require_once '../../utils/response.php';
 require_once '../../utils/auth_check.php';
+require_once '../../utils/csrf.php';
 
 // Verify Admin headers
 checkAuth('admin');
+
+// CSRF check
+csrf_check();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonError('Método no permitido', 405);

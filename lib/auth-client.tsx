@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { fetchApi } from './api-client';
+import { fetchApi, setAuthenticated } from './api-client';
 import { useRouter } from 'next/navigation';
 
 export interface User {
@@ -40,9 +40,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             const data = await fetchApi<{ user: User | null }>(url);
             setUser(data.user);
+            setAuthenticated(!!data.user);
         } catch (error) {
             console.error('Auth check failed', error);
             setUser(null);
+            setAuthenticated(false);
         } finally {
             setLoading(false);
         }
@@ -58,12 +60,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             body: JSON.stringify(credentials)
         });
         setUser(data.user);
+        setAuthenticated(true);
         router.refresh();
     };
 
     const logout = async () => {
         await fetchApi('auth/logout.php', { method: 'POST' });
         setUser(null);
+        setAuthenticated(false);
         router.push('/');
         router.refresh();
     };

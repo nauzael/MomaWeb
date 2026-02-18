@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import BookingActions from './BookingActions';
 import BookingRowActions from './BookingRowActions';
+import { BookingsTableSkeleton } from '@/components/ui/Skeleton';
 
 export default function BookingsPage() {
     const { user, loading: authLoading } = useAuth();
@@ -52,7 +53,17 @@ export default function BookingsPage() {
     );
 
     if (authLoading || loading) {
-        return <div className="p-12 text-center text-stone-500">Cargando reservas...</div>;
+        return (
+            <div className="space-y-6 md:space-y-8 max-w-[1600px] mx-auto pb-12">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl md:text-3xl font-black text-[#1a1a1a]">Reservas y Calendario</h1>
+                        <p className="text-stone-400 font-medium text-sm md:text-base">Gestiona las reservas y salidas de tus clientes.</p>
+                    </div>
+                </div>
+                <BookingsTableSkeleton />
+            </div>
+        );
     }
 
     if (!user) return null;

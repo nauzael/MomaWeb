@@ -1,7 +1,34 @@
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
+let csrfToken: string | null = null;
+let isAuthenticated = false;
+
+export function setAuthenticated(auth: boolean): void {
+    isAuthenticated = auth;
+    if (!auth) {
+        csrfToken = null;
+    }
+}
+
+async function getCsrfToken(): Promise<string> {
+    if (csrfToken) return csrfToken;
+    
+    // Only fetch CSRF token if we have an authenticated session
+    if (!isAuthenticated) return '';
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/csrf_token.php`, {
+            credentials: 'include'
+        });
+        const data = await response.json();
+        csrfToken = data.csrf_token;
+        return csrfToken || '';
+    } catch {
+        return '';
+    }
+}
+
 export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    // Evitar duplicar el prefijo /api si ya viene en el endpoint
     const cleanEndpoint = endpoint.startsWith(API_BASE_URL)
         ? endpoint.substring(API_BASE_URL.length)
         : endpoint;
@@ -10,11 +37,11 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
         ? cleanEndpoint
         : `${API_BASE_URL}${cleanEndpoint.startsWith('/') ? cleanEndpoint : '/' + cleanEndpoint}`;
 
-    // Añadir timeout de 60 segundos
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), 60000);
 
     const isFormData = options.body instanceof FormData;
+    const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method || '');
 
     const headers: Record<string, string> = {
         ...((options.headers as Record<string, string>) || {}),
@@ -24,10 +51,17 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
         headers['Content-Type'] = 'application/json';
     }
 
+    // Agregar token CSRF solo en mutaciones autenticadas
+    if (isMutation && !endpoint.includes('/auth/login') && isAuthenticated) {
+        const token = await getCsrfToken();
+        if (token) {
+            headers['X-CSRF-Token'] = token;
+        }
+    }
+
     const config: RequestInit = {
         ...options,
         headers,
-        // credentials: 'include' envía las cookies automáticamente (incluyendo PHP session cookie)
         credentials: 'include',
         signal: controller.signal,
         cache: 'no-store'
@@ -79,9 +113,6 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
     }
 }
 
-/**
- * Convierte una URL relativa del backend en una URL absoluta funcional.
- */
 export function getImageUrl(url: string | null | undefined): string {
     if (!url) return '';
     if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url;
@@ -102,4 +133,8 @@ export function getImageUrl(url: string | null | undefined): string {
     }
 
     return url;
+}
+
+export function clearCsrfToken(): void {
+    csrfToken = null;
 }
