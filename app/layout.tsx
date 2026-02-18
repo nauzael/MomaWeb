@@ -85,30 +85,61 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'Organization',
-              name: 'Moma Nature',
-              url: 'https://momanature.com',
-              logo: 'https://momanature.com/images/logo.png',
-              sameAs: [
-                'https://facebook.com/momanature',
-                'https://instagram.com/momanature',
-                'https://twitter.com/momanature'
-              ],
-              contactPoint: {
-                '@type': 'ContactPoint',
-                telephone: '+57 301 6566932',
-                contactType: 'customer service',
-                areaServed: 'CO',
-                availableLanguage: 'es'
+            __html: JSON.stringify([
+              {
+                '@context': 'https://schema.org',
+                '@type': 'WebSite',
+                name: 'Moma Nature',
+                url: 'https://momanature.com',
+                potentialAction: {
+                  '@type': 'SearchAction',
+                  target: {
+                    '@type': 'EntryPoint',
+                    urlTemplate: 'https://momanature.com/experiencias?q={search_term_string}'
+                  },
+                  'query-input': 'required name=search_term_string'
+                }
               },
-              address: {
-                '@type': 'PostalAddress',
-                addressLocality: 'Sucre',
-                addressCountry: 'CO'
+              {
+                '@context': 'https://schema.org',
+                '@type': 'Organization',
+                name: 'Moma Nature',
+                url: 'https://momanature.com',
+                logo: 'https://momanature.com/images/logo.png',
+                sameAs: [
+                  'https://facebook.com/momanature',
+                  'https://instagram.com/momanature',
+                  'https://twitter.com/momanature'
+                ],
+                contactPoint: {
+                  '@type': 'ContactPoint',
+                  telephone: '+57 301 6566932',
+                  contactType: 'customer service',
+                  areaServed: 'CO',
+                  availableLanguage: 'es'
+                },
+                address: {
+                  '@type': 'PostalAddress',
+                  addressLocality: 'Sucre',
+                  addressCountry: 'CO'
+                }
+              },
+              {
+                '@context': 'https://schema.org',
+                '@type': 'TourismService',
+                name: 'Moma Nature',
+                description: 'Turismo de naturaleza y aventura en Colombia',
+                url: 'https://momanature.com',
+                areaServed: {
+                  '@type': 'Country',
+                  name: 'Colombia'
+                },
+                provider: {
+                  '@type': 'Organization',
+                  name: 'Moma Nature'
+                }
               }
-            })
+            ])
           }}
         />
         <ThemeProvider

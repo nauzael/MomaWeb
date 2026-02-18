@@ -1,7 +1,12 @@
 User-agent: *
 Allow: /
 Disallow: /admin/
+Disallow: /login
 Disallow: /api/
 Disallow: /_next/
 
+# Sitemap
 Sitemap: https://momanature.com/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1

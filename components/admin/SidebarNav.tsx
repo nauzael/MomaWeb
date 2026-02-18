@@ -24,6 +24,7 @@ export default function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }
     const [permissions, setPermissions] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => {
         if (!authLoading) {
             if (user) {

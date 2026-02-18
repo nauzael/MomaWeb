@@ -77,6 +77,6 @@ try {
     }
 } catch (PDOException $e) {
     error_log("Booking Create Error: " . $e->getMessage());
-    jsonError('Error de base de datos: ' . $e->getMessage(), 500);
+    jsonError('Error al procesar la solicitud', 500);
 }
 ?>

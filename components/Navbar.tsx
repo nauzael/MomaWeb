@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
 import { Globe } from 'lucide-react';
@@ -15,7 +15,6 @@ export default function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { language, setLanguage, t } = useLanguage();
     const pathname = usePathname();
-    const router = useRouter();
     const isSpecialPage = pathname !== '/';
 
     const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, target: string) => {
@@ -70,9 +69,10 @@ export default function Navbar() {
     }, [pathname]);
 
     // Close mobile menu when route changes
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => {
         if (mobileMenuOpen) setMobileMenuOpen(false);
-    }, [pathname]);
+    }, [pathname, mobileMenuOpen]);
 
     return (
         <nav
