@@ -49,9 +49,13 @@ try {
             $_SESSION['name'] = $row['name'];
             $_SESSION['email'] = $row['email'];
             
+            // Generate CSRF token
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            
             jsonData([
                 'message' => 'Login exitoso',
                 'session_id' => $session_id,
+                'csrf_token' => $_SESSION['csrf_token'],
                 'user' => [
                     'id' => $row['id'],
                     'name' => $row['name'],

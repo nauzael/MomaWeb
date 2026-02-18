@@ -10,6 +10,14 @@ export function setAuthenticated(auth: boolean): void {
     }
 }
 
+export function setCsrfToken(token: string): void {
+    csrfToken = token;
+}
+
+export function clearCsrfToken(): void {
+    csrfToken = null;
+}
+
 async function getCsrfToken(): Promise<string> {
     if (csrfToken) return csrfToken;
     
@@ -133,8 +141,4 @@ export function getImageUrl(url: string | null | undefined): string {
     }
 
     return url;
-}
-
-export function clearCsrfToken(): void {
-    csrfToken = null;
 }

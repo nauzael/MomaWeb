@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { fetchApi, setAuthenticated } from './api-client';
+import { fetchApi, setAuthenticated, setCsrfToken, clearCsrfToken } from './api-client';
 import { useRouter } from 'next/navigation';
 
 export interface User {
@@ -45,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             console.error('Auth check failed', error);
             setUser(null);
             setAuthenticated(false);
+            clearCsrfToken();
         } finally {
             setLoading(false);
         }
@@ -55,12 +56,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const login = async (credentials: { email: string; password: string }) => {
-        const data = await fetchApi<{ user: User }>('auth/login.php', {
+        const data = await fetchApi<{ user: User; csrf_token?: string }>('auth/login.php', {
             method: 'POST',
             body: JSON.stringify(credentials)
         });
         setUser(data.user);
         setAuthenticated(true);
+        if (data.csrf_token) {
+            setCsrfToken(data.csrf_token);
+        }
         router.refresh();
     };
 
@@ -68,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await fetchApi('auth/logout.php', { method: 'POST' });
         setUser(null);
         setAuthenticated(false);
+        clearCsrfToken();
         router.push('/');
         router.refresh();
     };
