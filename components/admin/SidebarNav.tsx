@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Calendar, Map, Users, ImageIcon, BarChart3, Settings, PenTool, Loader2 } from "lucide-react";
+import { LayoutDashboard, Calendar, Map, Users, ImageIcon, BarChart3, Settings, PenTool, Loader2, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-client";
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
     { key: 'blog', label: "Blog", href: "/admin/blog", icon: PenTool },
     { key: 'customers', label: "Clientes", href: "/admin/customers", icon: Users },
     { key: 'gallery', label: "Galería", href: "/admin/gallery", icon: ImageIcon },
+    { key: 'social', label: "Redes Sociales", href: "/admin/social", icon: Share2 },
     { key: 'reports', label: "Reportes", href: "/admin/reports", icon: BarChart3 },
     { key: 'settings', label: "Configuración", href: "/admin/settings", icon: Settings },
 ];
