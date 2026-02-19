@@ -237,7 +237,7 @@ export default function SocialMediaPage() {
                                 {result.success ? <CheckCircle2 className="w-5 h-5 mt-0.5" /> : <AlertCircle className="w-5 h-5 mt-0.5" />}
                                 <div>
                                     <p className="font-bold">{result.message}</p>
-                                    {result.details && <pre className="text-xs mt-2 opacity-80">{JSON.stringify(result.details, null, 2)}</pre>}
+                                    {/* {result.details && <pre className="text-xs mt-2 opacity-80">{JSON.stringify(result.details, null, 2)}</pre>} */}
                                 </div>
                             </div>
                         )}
