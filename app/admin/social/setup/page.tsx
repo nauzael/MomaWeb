@@ -111,7 +111,7 @@ export default function SetupPage() {
             });
             // if (!res.ok) throw new Error(data.error || 'Failed to exchange token');
 
-            setPages(data.pages.data);
+            setPages(data.pages || []);
             setStep(3);
         } catch (e: any) {
             setError(e.message);
