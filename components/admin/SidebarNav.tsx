@@ -29,11 +29,17 @@ export default function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }
     useEffect(() => {
         if (!authLoading) {
             if (user) {
+                // Normalize for robust comparison
+                const email = user.email?.toLowerCase().trim() || '';
+                const role = user.role?.toLowerCase().trim() || '';
+
+                console.log('SidebarNav Auth Check:', { email, role });
+
                 const isAdmin =
-                    user.email === 'admin@momaturismo.com' ||
-                    user.email === 'admin@moma.com' ||
-                    user.role?.toLowerCase() === 'admin' ||
-                    user.role?.toLowerCase() === 'superadmin';
+                    email === 'admin@momaturismo.com' ||
+                    email === 'admin@moma.com' ||
+                    role === 'admin' ||
+                    role === 'superadmin';
 
                 setPermissions(isAdmin ? ['all'] : ['dashboard']);
             }
