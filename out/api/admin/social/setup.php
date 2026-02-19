@@ -58,6 +58,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 jsonError('App credentials not found', 400);
             }
             
+            // Helper para Graph API GET
+            if (!function_exists('graphApiGet')) {
+                function graphApiGet($url) {
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $url);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    $response = curl_exec($ch);
+                    curl_close($ch);
+                    return $response;
+                }
+            }
+
             // 1. Exchange for Long-Lived User Token
             $url = "https://graph.facebook.com/v19.0/oauth/access_token?" . http_build_query([
                 'grant_type' => 'fb_exchange_token',
@@ -66,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'fb_exchange_token' => $shortLivedToken
             ]);
             
-            $res = file_get_contents($url);
+            $res = graphApiGet($url);
             $data = json_decode($res, true);
             
             if (isset($data['error'])) throw new Exception($data['error']['message']);
@@ -75,14 +87,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             // 2. Fetch Pages to let user select
             $pagesUrl = "https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token,instagram_business_account&access_token=" . $userLongLivedToken;
-            $pagesRes = file_get_contents($pagesUrl);
+            $pagesRes = graphApiGet($pagesUrl);
             $pagesData = json_decode($pagesRes, true);
             
             if (isset($pagesData['error'])) throw new Exception($pagesData['error']['message']);
             
             // 3. (Debug) Check what permissions were actually granted
             $permsUrl = "https://graph.facebook.com/v19.0/me/permissions?access_token=" . $userLongLivedToken;
-            $permsRes = @file_get_contents($permsUrl);
+            $permsRes = graphApiGet($permsUrl);
             $permsData = $permsRes ? json_decode($permsRes, true) : null;
             
             jsonData([
