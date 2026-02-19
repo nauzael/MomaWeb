@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-client';
 import { Share2, Instagram, Facebook, Send, Loader2, CheckCircle2, AlertCircle, Image as ImageIcon, Settings, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -22,7 +22,7 @@ export default function SocialMediaPage() {
     useEffect(() => {
         async function checkConfig() {
             try {
-                const res = await fetch('/api/admin/social/setup');
+                const res = await fetch('/api/admin/social/setup.php');
                 const data = await res.json();
                 if (!data.isConfigured) {
                     setIsConfigured(false);
@@ -61,7 +61,7 @@ export default function SocialMediaPage() {
         }
 
         try {
-            const response = await fetch('/api/admin/social/publish', {
+            const response = await fetch('/api/admin/social/publish.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message, imageUrl, link, platforms }),

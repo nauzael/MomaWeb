@@ -30,7 +30,7 @@ export default function SetupPage() {
     useEffect(() => {
         async function loadSettings() {
             try {
-                const res = await fetch('/api/admin/social/setup');
+                const res = await fetch('/api/admin/social/setup.php');
                 const data = await res.json();
                 if (data.appId) setAppId(data.appId);
                 // We won't get secret for security, but we know it's set if isConfigured is true
@@ -70,7 +70,7 @@ export default function SetupPage() {
         setIsLoading(true);
         setError(null);
         try {
-            const res = await fetch('/api/admin/social/setup', {
+            const res = await fetch('/api/admin/social/setup.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'save_credentials', appId, appSecret })
@@ -107,7 +107,7 @@ export default function SetupPage() {
     const exchangeToken = async (shortToken: string) => {
         setIsLoading(true);
         try {
-            const res = await fetch('/api/admin/social/setup', {
+            const res = await fetch('/api/admin/social/setup.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'exchange_token', shortLivedToken: shortToken })
@@ -131,7 +131,7 @@ export default function SetupPage() {
             const page = pages.find(p => p.id === selectedPageId);
             const instagramId = page.instagram_business_account?.id;
 
-            const res = await fetch('/api/admin/social/setup', {
+            const res = await fetch('/api/admin/social/setup.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
