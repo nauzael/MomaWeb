@@ -157,3 +157,29 @@ model SystemSetting {
 
   @@map("system_settings")
 }
+
+model BlogCategory {
+  id        Int        @id @default(autoincrement())
+  name      String
+  slug      String     @unique @map("slug")
+  posts     BlogPost[]
+
+  @@map("blog_categories")
+}
+
+model BlogPost {
+  id          Int           @id @default(autoincrement())
+  title       String
+  slug        String        @unique @map("slug")
+  content     String        @db.LongText
+  excerpt     String?       @db.Text
+  coverImage  String?       @map("cover_image")
+  categoryId  Int?          @map("category_id")
+  authorName  String?       @default("Moma Excursiones") @map("author_name")
+  status      String        @default("draft") 
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  category    BlogCategory? @relation(fields: [categoryId], references: [id])
+
+  @@map("blog_posts")
+}
