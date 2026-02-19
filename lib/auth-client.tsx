@@ -69,12 +69,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const logout = async () => {
-        await fetchApi('auth/logout.php', { method: 'POST' });
-        setUser(null);
-        setAuthenticated(false);
-        clearCsrfToken();
-        router.push('/');
-        router.refresh();
+        try {
+            await fetchApi('auth/logout.php', { method: 'POST' });
+        } catch (error) {
+            console.error("Logout error (server side)", error);
+        } finally {
+            setUser(null);
+            setAuthenticated(false);
+            clearCsrfToken();
+            router.push('/');
+            router.refresh();
+        }
     };
 
     const contextValue = { user, loading, login, logout, refresh };
