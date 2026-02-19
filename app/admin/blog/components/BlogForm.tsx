@@ -139,6 +139,21 @@ export default function BlogForm({ post, isEditing = false }: BlogFormProps) {
         }
 
         setLoading(true);
+        
+        if (openShareModal) {
+            setSavedPost({
+                id: post?.id || crypto.randomUUID(),
+                title: formData.title,
+                slug: formData.slug,
+                content: editor?.getHTML() || '',
+                excerpt: formData.excerpt,
+                coverImage: formData.cover_image
+            });
+            setShowSocialShare(true);
+            setLoading(false);
+            return;
+        }
+
         try {
             const payload = {
                 ...formData,
@@ -160,23 +175,7 @@ export default function BlogForm({ post, isEditing = false }: BlogFormProps) {
                 console.warn('Error guardando post:', saveError);
             }
 
-            if (openShareModal) {
-                const postData = response?.post || post || {
-                    id: post?.id || crypto.randomUUID(),
-                    title: formData.title,
-                    slug: formData.slug
-                };
-                setSavedPost({
-                    ...postData,
-                    content: editor?.getHTML() || '',
-                    excerpt: formData.excerpt,
-                    coverImage: formData.cover_image
-                });
-                setShowSocialShare(true);
-                if (saveError) {
-                    console.warn('El post no se guardó en la BD pero puedes compartir en redes');
-                }
-            } else if (response) {
+            if (response) {
                 router.push('/admin/blog');
                 router.refresh();
             } else if (saveError) {
