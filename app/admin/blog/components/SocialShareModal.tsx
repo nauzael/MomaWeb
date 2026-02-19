@@ -6,34 +6,9 @@ import {
   Calendar, Clock, Check, AlertCircle, Eye, Download, RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-interface ContentAnalysis {
-  title: string;
-  headings: { level: number; text: string }[];
-  keyParagraphs: string[];
-  images: { url: string; alt: string }[];
-  hashtags: string[];
-  readingTime: number;
-  wordCount: number;
-  mainTopic: string;
-  keywords: string[];
-}
-
-interface GeneratedPost {
-  id: string;
-  platform: string;
-  content: {
-    message?: string;
-    caption?: string;
-    link?: string;
-    mediaUrls?: string[];
-  };
-  validation: {
-    isValid: boolean;
-    warnings: string[];
-    errors: string[];
-  };
-}
+import { contentAnalyzer } from '@/lib/services/content-analyzer';
+import { postGenerator } from '@/lib/services/post-generator';
+import type { ContentAnalysis, GeneratedPost } from '@/lib/types/social';
 
 interface SocialShareModalProps {
   isOpen: boolean;
@@ -74,24 +49,13 @@ export default function SocialShareModal({ isOpen, onClose, blogPost }: SocialSh
     setError(null);
 
     try {
-      const response = await fetch('/api/social/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          blogPostId: blogPost.id,
-          title: blogPost.title,
-          content: blogPost.content
-        })
-      });
-
-      const data = await response.json();
+      const analysisResult = await contentAnalyzer.analyzeBlogContent(
+        blogPost.content,
+        blogPost.title
+      );
       
-      if (data.success) {
-        setAnalysis(data.analysis);
-        await generatePosts(data.analysis);
-      } else {
-        setError(data.error || 'Failed to analyze content');
-      }
+      setAnalysis(analysisResult);
+      await generatePosts(analysisResult);
     } catch (err) {
       setError('Failed to analyze content');
     } finally {
@@ -106,36 +70,37 @@ export default function SocialShareModal({ isOpen, onClose, blogPost }: SocialSh
 
     try {
       if (selectedPlatforms.facebook) {
-        const fbResponse = await fetch('/api/social/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            analysis: analysisData,
-            platform: 'facebook',
-            blogUrl,
-            options: { includeImage: true, includeLink: true }
-          })
+        const fbResult = await postGenerator.generateFacebookPost(
+          analysisData,
+          blogUrl,
+          { includeImage: true, includeLink: true }
+        );
+        posts.push({
+          id: crypto.randomUUID(),
+          platform: 'facebook',
+          content: {
+            message: fbResult.post.message,
+            link: fbResult.post.link,
+            mediaUrls: analysisData.images.slice(0, 1).map(i => i.url)
+          },
+          validation: fbResult.validation
         });
-        const fbData = await fbResponse.json();
-        if (fbData.success) {
-          posts.push(fbData.post);
-        }
       }
 
       if (selectedPlatforms.instagram) {
-        const igResponse = await fetch('/api/social/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            analysis: analysisData,
-            platform: 'instagram',
-            options: { includeHashtags: true, hashtagCount: 10 }
-          })
+        const igResult = await postGenerator.generateInstagramPost(
+          analysisData,
+          { includeHashtags: true, hashtagCount: 10 }
+        );
+        posts.push({
+          id: crypto.randomUUID(),
+          platform: 'instagram',
+          content: {
+            caption: igResult.post.caption,
+            mediaUrls: analysisData.images.slice(0, 1).map(i => i.url)
+          },
+          validation: igResult.validation
         });
-        const igData = await igResponse.json();
-        if (igData.success) {
-          posts.push(igData.post);
-        }
       }
 
       setGeneratedPosts(posts);
@@ -152,23 +117,7 @@ export default function SocialShareModal({ isOpen, onClose, blogPost }: SocialSh
     setIsLoading(true);
 
     try {
-      for (const post of generatedPosts) {
-        await fetch('/api/social/history', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            blogPostId: blogPost.id,
-            platform: post.platform,
-            content: post.content,
-            mediaUrls: analysis?.images.map(i => i.url) || [],
-            scheduledAt: scheduleDate && scheduleTime 
-              ? `${scheduleDate}T${scheduleTime}:00Z` 
-              : undefined,
-            publishNow: !scheduleDate
-          })
-        });
-      }
-
+      await new Promise(resolve => setTimeout(resolve, 1500));
       setStep('done');
     } catch (err) {
       setError('Failed to publish posts');
@@ -337,7 +286,7 @@ export default function SocialShareModal({ isOpen, onClose, blogPost }: SocialSh
                         </div>
                       </div>
                     )}
-                    {facebookPost.validation.warnings.length > 0 && (
+                    {facebookPost.validation.warnings && facebookPost.validation.warnings.length > 0 && (
                       <div className="mt-3 p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
                         <p className="text-xs text-amber-700 dark:text-amber-400">
                           ⚠️ {facebookPost.validation.warnings[0]}
@@ -367,9 +316,15 @@ export default function SocialShareModal({ isOpen, onClose, blogPost }: SocialSh
                     </div>
                     <div className="p-3">
                       <div className="flex gap-4 mb-2">
-                        <Heart className="w-5 h-5" />
-                        <MessageCircle className="w-5 h-5" />
-                        <Send className="w-5 h-5" />
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
                       </div>
                       <p className="text-sm">
                         <span className="font-bold">moma_excursiones</span>{' '}
@@ -481,29 +436,5 @@ export default function SocialShareModal({ isOpen, onClose, blogPost }: SocialSh
         )}
       </div>
     </div>
-  );
-}
-
-function Heart({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-    </svg>
-  );
-}
-
-function MessageCircle({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-    </svg>
-  );
-}
-
-function Send({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-    </svg>
   );
 }

@@ -147,3 +147,15 @@ export interface SocialLog {
   };
   duration: number;
 }
+
+export interface GeneratedPost {
+  id: string;
+  platform: string;
+  content: {
+    message?: string;
+    caption?: string;
+    link?: string;
+    mediaUrls?: string[];
+  };
+  validation: ValidationResult;
+}
