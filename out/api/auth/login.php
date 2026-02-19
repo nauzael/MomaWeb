@@ -25,7 +25,7 @@ $db = $database->getConnection();
 
 try {
     // Check if user exists
-    $query = "SELECT id, name, email, password, role FROM users WHERE email = :email LIMIT 1";
+    $query = "SELECT id, name, email, password, role FROM User WHERE email = :email LIMIT 1";
     $stmt = $db->prepare($query);
     $stmt->bindParam(":email", $email);
     $stmt->execute();
