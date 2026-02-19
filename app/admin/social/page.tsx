@@ -3,9 +3,10 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-client';
-import { Share2, Instagram, Facebook, Send, Loader2, CheckCircle2, AlertCircle, Image as ImageIcon, Settings, ArrowRight } from 'lucide-react';
+import { Share2, Instagram, Facebook, Send, Loader2, CheckCircle2, AlertCircle, Image as ImageIcon, Settings, ArrowRight, UploadCloud } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { fetchApi } from '@/lib/api-client';
+import { fetchApi, getImageUrl } from '@/lib/api-client';
+import MediaSelector from '@/components/admin/MediaSelector';
 
 export default function SocialMediaPage() {
     const { user, loading: authLoading } = useAuth();
@@ -18,6 +19,7 @@ export default function SocialMediaPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [result, setResult] = useState<{ success: boolean; message: string; details?: any } | null>(null);
     const [isConfigured, setIsConfigured] = useState(true); // Assume configured until checked
+    const [isMediaSelectorOpen, setIsMediaSelectorOpen] = useState(false);
 
     // Check configuration on load
     useEffect(() => {
@@ -170,17 +172,28 @@ export default function SocialMediaPage() {
                                 <span>URL de la Imagen</span>
                                 <span className="text-xs text-stone-400 font-normal normal-case">(Requerido para Instagram)</span>
                             </label>
-                            <div className="relative">
-                                <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
-                                <input
-                                    type="url"
-                                    value={imageUrl}
-                                    onChange={(e) => setImageUrl(e.target.value)}
-                                    placeholder="https://ejemplo.com/imagen.jpg"
-                                    className="w-full bg-[#f5f7f9] border border-[#eef1f4] rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-moma-green/50 text-[#1a1a1a]"
-                                />
+
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsMediaSelectorOpen(true)}
+                                    className="shrink-0 bg-stone-100 hover:bg-stone-200 text-stone-700 px-4 py-4 rounded-2xl flex items-center justify-center transition-all border border-stone-200"
+                                    title="Elegir desde Galería local"
+                                >
+                                    <UploadCloud className="w-5 h-5" />
+                                </button>
+                                <div className="relative flex-1">
+                                    <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
+                                    <input
+                                        type="url"
+                                        value={imageUrl}
+                                        onChange={(e) => setImageUrl(e.target.value)}
+                                        placeholder="https://ejemplo.com/imagen.jpg"
+                                        className="w-full bg-[#f5f7f9] border border-[#eef1f4] rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-moma-green/50 text-[#1a1a1a]"
+                                    />
+                                </div>
                             </div>
-                            <p className="text-xs text-stone-400">Por ahora solo se admiten URLs públicas de imágenes.</p>
+                            <p className="text-xs text-stone-400">Pega un link o toca el botón para subir/elegir una imagen de tu web (se enviará con tu dominio público).</p>
                         </div>
 
                         {/* Link Input (Facebook Only) */}
@@ -305,6 +318,13 @@ export default function SocialMediaPage() {
                     </div>
                 </div>
             </div>
+
+            <MediaSelector
+                isOpen={isMediaSelectorOpen}
+                onClose={() => setIsMediaSelectorOpen(false)}
+                onSelect={(url) => setImageUrl(getImageUrl(url))}
+                title="Elegir Imagen para Publicar"
+            />
         </div>
     );
 }
