@@ -99,7 +99,7 @@ export default function SetupPage() {
                 console.log('User cancelled login or did not fully authorize.');
                 setError("Login cancelled or failed.");
             }
-        }, { scope: 'pages_show_list,pages_read_engagement,pages_manage_posts,instagram_basic,instagram_content_publish' });
+        }, { scope: 'business_management,pages_show_list,pages_read_engagement,pages_manage_posts,instagram_basic,instagram_content_publish' });
     };
 
     const exchangeToken = async (shortToken: string) => {
