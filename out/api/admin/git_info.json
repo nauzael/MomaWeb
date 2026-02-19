@@ -1,9 +1,9 @@
 {
-  "hash": "c3b8b5afaf99d30f39377c9e0b1ae2d9b0b77d50",
+  "hash": "9704ed3be40fbd9d47a9f65a0ec0a6d4677edad9",
   "author": "Tu Nombre",
   "date_relative": "5 minutes ago",
-  "date_full": "Thu Feb 19 12:01:30 2026 -0500",
-  "subject": "feat: Add Meta social media integration setup page for configuring app credentials and connecting Facebook/Instagram accounts.",
-  "build_time": "19/02/2026, 12:06:49 p. m.",
-  "timestamp": 1771520809234
+  "date_full": "Thu Feb 19 12:07:36 2026 -0500",
+  "subject": "feat: Generate Next.js static export output and add a new admin logout button component.",
+  "build_time": "19/02/2026, 12:12:25 p. m.",
+  "timestamp": 1771521145189
 }
