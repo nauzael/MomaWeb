@@ -250,21 +250,34 @@ export default function SetupPage() {
                         </p>
 
                         <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
-                            {pages.map(page => (
-                                <div
-                                    key={page.id}
-                                    onClick={() => setSelectedPageId(page.id)}
-                                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedPageId === page.id ? 'border-moma-green bg-moma-green/5' : 'border-[#eef1f4] hover:border-stone-300'}`}
-                                >
-                                    <div className="font-bold text-[#1a1a1a]">{page.name}</div>
-                                    <div className="text-xs text-stone-500 mt-1 flex gap-2">
-                                        <span>ID: {page.id}</span>
-                                        {page.instagram_business_account && (
-                                            <span className="text-pink-600 bg-pink-50 px-2 rounded-full font-bold">Instagram Conectado</span>
-                                        )}
-                                    </div>
+                            {pages.length === 0 ? (
+                                <div className="p-6 bg-stone-50 border border-stone-200 rounded-xl text-center space-y-4">
+                                    <p className="text-stone-600 font-medium">No encontramos ninguna página de Facebook asociada a tu cuenta o no le diste permiso a la aplicación para verlas.</p>
+                                    <p className="text-sm text-stone-500">Asegúrate de tener una Página de Negocio creada y seleccionar "Todas las páginas" al iniciar sesión.</p>
+                                    <button
+                                        onClick={() => setStep(2)}
+                                        className="text-moma-green font-bold hover:underline text-sm"
+                                    >
+                                        &larr; Volver a intentar iniciar sesión
+                                    </button>
                                 </div>
-                            ))}
+                            ) : (
+                                pages.map(page => (
+                                    <div
+                                        key={page.id}
+                                        onClick={() => setSelectedPageId(page.id)}
+                                        className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedPageId === page.id ? 'border-moma-green bg-moma-green/5' : 'border-[#eef1f4] hover:border-stone-300'}`}
+                                    >
+                                        <div className="font-bold text-[#1a1a1a]">{page.name}</div>
+                                        <div className="text-xs text-stone-500 mt-1 flex gap-2">
+                                            <span>ID: {page.id}</span>
+                                            {page.instagram_business_account && (
+                                                <span className="text-pink-600 bg-pink-50 px-2 rounded-full font-bold">Instagram Conectado</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
 
                         <button
