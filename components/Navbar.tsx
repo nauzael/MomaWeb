@@ -14,7 +14,7 @@ export default function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { language, setLanguage, t } = useLanguage();
     const pathname = usePathname();
-    const isSpecialPage = pathname !== '/';
+    const isSpecialPage = pathname !== '/' && !pathname.startsWith('/admin');
 
     // Scroll detection
     const { scrollY } = useScroll();
@@ -85,13 +85,13 @@ export default function Navbar() {
             >
                 <span className={cn(
                     "relative z-10 text-sm font-bold tracking-wide transition-colors duration-300",
-                    scrolled ? "text-stone-800 dark:text-stone-100" : "text-white group-hover:text-white"
+                    scrolled || isSpecialPage ? "text-stone-800 dark:text-stone-100" : "text-white group-hover:text-white"
                 )}>
                     {label}
                 </span>
                 <span className={cn(
                     "absolute inset-x-0 bottom-0 h-0.5 transform scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-75 origin-center",
-                    scrolled ? "bg-moma-green" : "bg-white"
+                    scrolled || isSpecialPage ? "bg-moma-green" : "bg-white"
                 )} />
             </Link>
         );
@@ -110,13 +110,12 @@ export default function Navbar() {
                 }}
                 transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
                 className={cn(
-                    "fixed left-0 right-0 z-50 mx-auto transition-all duration-500 ease-in-out px-6 flex items-center justify-between",
+                    "fixed left-4 right-4 md:left-8 md:right-8 lg:left-16 lg:right-16 z-50 mx-auto transition-all duration-500 ease-in-out px-6 flex items-center justify-between",
                     scrolled
                         ? "bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl shadow-lg shadow-stone-900/5 max-w-5xl py-3"
-                        : cn(
-                            "py-6 bg-transparent",
-                            isSpecialPage ? "bg-stone-900/90 backdrop-blur-md" : ""
-                        )
+                        : isSpecialPage
+                            ? "bg-stone-900/90 backdrop-blur-md py-4"
+                            : "py-6 bg-transparent"
                 )}
                 style={{
                     left: scrolled ? '50%' : 0,
@@ -130,9 +129,9 @@ export default function Navbar() {
                     className="relative shrink-0 transition-transform hover:scale-105 active:scale-95"
                     aria-label={t.nav.logoAria}
                 >
-                    <div className={cn("relative transition-all duration-300", scrolled ? "h-10 w-32" : "h-12 w-40")}>
+                    <div className={cn("relative transition-all duration-300", scrolled || isSpecialPage ? "h-10 w-32" : "h-12 w-40")}>
                         <Image
-                            src={scrolled ? "/images/logo.png" : "/images/logo-white.png"}
+                            src={scrolled || isSpecialPage ? "/images/logo.png" : "/images/logo-white.png"}
                             alt={t.nav.logoAlt}
                             fill
                             className="object-contain object-left"
@@ -156,7 +155,7 @@ export default function Navbar() {
                         onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
                         className={cn(
                             "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border border-transparent",
-                            scrolled
+                            scrolled || isSpecialPage
                                 ? "text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 hover:border-stone-200"
                                 : "text-white/90 hover:bg-white/10 hover:border-white/20"
                         )}
@@ -169,7 +168,7 @@ export default function Navbar() {
                         href="/admin/dashboard"
                         className={cn(
                             "px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5",
-                            scrolled
+                            scrolled || isSpecialPage
                                 ? "bg-moma-green text-white hover:bg-[#00796b]"
                                 : "bg-white text-stone-900 hover:bg-stone-100"
                         )}
@@ -184,7 +183,7 @@ export default function Navbar() {
                         onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
                         className={cn(
                             "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider transition-all",
-                            scrolled ? "text-stone-600 dark:text-stone-300" : "text-white/90"
+                            scrolled || isSpecialPage ? "text-stone-600 dark:text-stone-300" : "text-white/90"
                         )}
                     >
                         {language === 'es' ? 'EN' : 'ES'}
@@ -193,7 +192,7 @@ export default function Navbar() {
                         onClick={() => setMobileMenuOpen(true)}
                         className={cn(
                             "p-2.5 rounded-full transition-all active:scale-90",
-                            scrolled
+                            scrolled || isSpecialPage
                                 ? "text-stone-800 dark:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800"
                                 : "text-white hover:bg-white/10"
                         )}

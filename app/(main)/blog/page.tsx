@@ -90,8 +90,8 @@ export default function BlogListingPage() {
                         className={cn(
                             "px-6 py-2.5 rounded-full text-sm font-black uppercase tracking-wider transition-all border",
                             selectedCategory === 'all'
-                                ? "bg-stone-900 text-white border-stone-900 shadow-xl"
-                                : "bg-transparent text-stone-400 border-stone-200 dark:border-stone-800 hover:text-stone-900 dark:hover:text-white"
+                                ? "bg-stone-900 text-white border-stone-900 shadow-lg shadow-stone-900/25 hover:shadow-xl hover:shadow-stone-900/30 hover:-translate-y-0.5"
+                                : "bg-transparent text-stone-400 border-stone-200 dark:border-stone-800 hover:text-stone-900 dark:hover:text-white hover:border-stone-300 dark:hover:border-stone-700 hover:shadow-md hover:-translate-y-0.5"
                         )}
                     >
                         {t.nav.blogAll}
@@ -103,8 +103,8 @@ export default function BlogListingPage() {
                             className={cn(
                                 "px-6 py-2.5 rounded-full text-sm font-black uppercase tracking-wider transition-all border",
                                 selectedCategory === cat.name
-                                    ? "bg-stone-900 text-white border-stone-900 shadow-xl"
-                                    : "bg-transparent text-stone-400 border-stone-200 dark:border-stone-800 hover:text-stone-900 dark:hover:text-white"
+                                    ? "bg-stone-900 text-white border-stone-900 shadow-lg shadow-stone-900/25 hover:shadow-xl hover:shadow-stone-900/30 hover:-translate-y-0.5"
+                                    : "bg-transparent text-stone-400 border-stone-200 dark:border-stone-800 hover:text-stone-900 dark:hover:text-white hover:border-stone-300 dark:hover:border-stone-700 hover:shadow-md hover:-translate-y-0.5"
                             )}
                         >
                             {cat.name}

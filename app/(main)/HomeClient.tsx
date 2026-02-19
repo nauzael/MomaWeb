@@ -137,8 +137,10 @@ export default function HomeClient({ initialExperiences }: HomeClientProps) {
         </div>
       </section>
 
-      <section id="experiencias" className="pt-12 pb-4 px-4 bg-stone-50 dark:bg-stone-950">
-        <div className="max-w-7xl mx-auto">
+      <section id="experiencias" className="pt-12 pb-4 px-4 bg-stone-50 dark:bg-stone-950 relative overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 bg-cover bg-center opacity-30" style={{ backgroundImage: `url(${CTA_IMAGE_URL})` }}></div>
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-10">
             <span className="text-moma-green italic font-serif text-lg mb-2 block">Lugares para ir</span>
             <h2 className="text-4xl font-bold text-stone-900 dark:text-white">Un destino perfecto</h2>
@@ -175,11 +177,18 @@ export default function HomeClient({ initialExperiences }: HomeClientProps) {
         </div>
       </section>
 
-      <section className="py-24 bg-stone-900 relative overflow-hidden">
-        {/* Background with color but dark overlay for contrast */}
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${CTA_IMAGE_URL})` }}></div>
-        <div className="absolute inset-0 bg-stone-900/80 backdrop-blur-[1px]"></div>
-        <div className="max-w-7xl mx-auto px-4 relative z-10 grid md:grid-cols-2 gap-12 items-center">
+      <section className="py-24 relative overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src={CTA_IMAGE_URL} 
+            alt="Montes de María mountain landscape background" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+        {/* Single overlay for contrast */}
+        <div className="absolute inset-0 z-10 bg-stone-900/40"></div>
+        <div className="max-w-7xl mx-auto px-4 relative z-20 grid md:grid-cols-2 gap-12 items-center">
           <div className="bg-moma-green/10 p-8 rounded-3xl border border-moma-green/20 backdrop-blur-sm">
             <div className="h-48 flex items-center justify-center border border-white/20 rounded-xl mb-4">
               <span className="text-white/50 text-xs tracking-widest uppercase">Visual Mountain Safe Rock Work</span>

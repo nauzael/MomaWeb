@@ -270,12 +270,12 @@ export default function Home() {
         <motion.div
           style={{ 
             y: parallaxEnabled ? yParallax : 0, 
-            scale: parallaxEnabled ? scaleParallax : 1 
+            scale: parallaxEnabled ? scaleParallax : 1,
+            backgroundImage: `url(${CTA_IMAGE_URL})`
           }}
           className="absolute inset-0 h-[140%] -top-[20%] w-full bg-cover bg-center"
         />
-        <div className="absolute inset-0 bg-stone-900/60 mix-blend-multiply"></div>
-        <div className="absolute inset-0 bg-green-900/40 mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-stone-900/40 mix-blend-multiply"></div>
 
         <div className="max-w-5xl mx-auto px-4 relative z-10 flex flex-col items-center justify-center text-center pb-32 pt-10">
           <ScrollReveal>

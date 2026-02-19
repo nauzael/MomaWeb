@@ -132,14 +132,14 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
 
     return (
         <div
-            className="relative group/carousel py-2 overflow-hidden"
+            className="relative group/carousel py-8 md:py-16 px-2"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
         >
             {/* Container */}
             <div
                 ref={containerRef}
-                className="w-full max-w-[1400px] mx-auto overflow-hidden"
+                className="w-full max-w-[1400px] mx-auto"
             >
                 <motion.div
                     ref={contentRef}
@@ -165,7 +165,7 @@ export default function ExperienceCarousel({ experiences }: ExperienceCarouselPr
                         });
                         setCurrentIndex(clampedIndex);
                     }}
-                    className={`flex ${isMobile ? 'gap-4' : 'gap-8'} py-8 md:py-12 px-4 md:px-8`}
+                    className={`flex ${isMobile ? 'gap-4' : 'gap-8'} py-8 md:py-12`}
                 >
                     {displayExperiences.map((exp, index) => (
                         <div
