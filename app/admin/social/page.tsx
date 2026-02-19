@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-client';
 import { Share2, Instagram, Facebook, Send, Loader2, CheckCircle2, AlertCircle, Image as ImageIcon, Settings, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { fetchApi } from '@/lib/api-client';
 
 export default function SocialMediaPage() {
     const { user, loading: authLoading } = useAuth();
@@ -22,8 +23,7 @@ export default function SocialMediaPage() {
     useEffect(() => {
         async function checkConfig() {
             try {
-                const res = await fetch('/api/admin/social/setup.php');
-                const data = await res.json();
+                const data = await fetchApi<any>('/admin/social/setup.php');
                 if (!data.isConfigured) {
                     setIsConfigured(false);
                 }
@@ -61,15 +61,12 @@ export default function SocialMediaPage() {
         }
 
         try {
-            const response = await fetch('/api/admin/social/publish.php', {
+            const data = await fetchApi<any>('/admin/social/publish.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message, imageUrl, link, platforms }),
             });
 
-            const data = await response.json();
-
-            if (response.ok && data.success) {
+            if (data.success) {
                 setResult({ success: true, message: 'Publicado exitosamente!', details: data.results });
                 if (!imageUrl && !link) setMessage(''); // Clear message if simple post, keep url/link logic up to user
             } else {

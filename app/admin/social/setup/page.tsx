@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-client';
+import { fetchApi } from '@/lib/api-client';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, AlertCircle, Loader2, ArrowRight, Settings, Facebook } from 'lucide-react';
 
@@ -30,8 +31,7 @@ export default function SetupPage() {
     useEffect(() => {
         async function loadSettings() {
             try {
-                const res = await fetch('/api/admin/social/setup.php');
-                const data = await res.json();
+                const data = await fetchApi<any>('/admin/social/setup.php');
                 if (data.appId) setAppId(data.appId);
                 // We won't get secret for security, but we know it's set if isConfigured is true
             } catch (e) {
@@ -70,13 +70,11 @@ export default function SetupPage() {
         setIsLoading(true);
         setError(null);
         try {
-            const res = await fetch('/api/admin/social/setup.php', {
+            await fetchApi('/admin/social/setup.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'save_credentials', appId, appSecret })
             });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed to save credentials');
+            // if (!res.ok) throw new Error(data.error || 'Failed to save credentials'); // fetchApi throws on error
 
             setStep(2);
         } catch (e: any) {
@@ -107,13 +105,11 @@ export default function SetupPage() {
     const exchangeToken = async (shortToken: string) => {
         setIsLoading(true);
         try {
-            const res = await fetch('/api/admin/social/setup.php', {
+            const data = await fetchApi<any>('/admin/social/setup.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'exchange_token', shortLivedToken: shortToken })
             });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed to exchange token');
+            // if (!res.ok) throw new Error(data.error || 'Failed to exchange token');
 
             setPages(data.pages.data);
             setStep(3);
@@ -131,9 +127,8 @@ export default function SetupPage() {
             const page = pages.find(p => p.id === selectedPageId);
             const instagramId = page.instagram_business_account?.id;
 
-            const res = await fetch('/api/admin/social/setup.php', {
+            await fetchApi('/admin/social/setup.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'save_page_config',
                     pageId: selectedPageId,
@@ -141,8 +136,7 @@ export default function SetupPage() {
                     instagramId
                 })
             });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed to save configuration');
+            // if (!res.ok) throw new Error(data.error || 'Failed to save configuration');
 
             // Done!
             router.push('/admin/social');
