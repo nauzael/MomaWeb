@@ -152,8 +152,18 @@ export default function BlogForm({ post, isEditing = false }: BlogFormProps) {
                 body: JSON.stringify(payload)
             });
 
-            if (openShareModal && response?.post) {
-                setSavedPost(response.post);
+            if (openShareModal) {
+                const postData = response?.post || {
+                    id: post?.id || crypto.randomUUID(),
+                    title: formData.title,
+                    slug: formData.slug
+                };
+                setSavedPost({
+                    ...postData,
+                    content: editor?.getHTML() || '',
+                    excerpt: formData.excerpt,
+                    coverImage: formData.cover_image
+                });
                 setShowSocialShare(true);
             } else {
                 router.push('/admin/blog');
