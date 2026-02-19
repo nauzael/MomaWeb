@@ -147,13 +147,21 @@ export default function BlogForm({ post, isEditing = false }: BlogFormProps) {
             };
 
             const endpoint = isEditing ? 'blog/update.php' : 'blog/create.php';
-            const response: { post?: { id: string; title: string; content: string; slug: string; excerpt?: string; cover_image?: string } } = await fetchApi(endpoint, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
+            let response: { post?: { id: string; title: string; content: string; slug: string; excerpt?: string; cover_image?: string } } | null = null;
+            let saveError: string | null = null;
+
+            try {
+                response = await fetchApi(endpoint, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+            } catch (err: any) {
+                saveError = err.message || 'Error desconocido';
+                console.warn('Error guardando post:', saveError);
+            }
 
             if (openShareModal) {
-                const postData = response?.post || {
+                const postData = response?.post || post || {
                     id: post?.id || crypto.randomUUID(),
                     title: formData.title,
                     slug: formData.slug
@@ -165,9 +173,14 @@ export default function BlogForm({ post, isEditing = false }: BlogFormProps) {
                     coverImage: formData.cover_image
                 });
                 setShowSocialShare(true);
-            } else {
+                if (saveError) {
+                    console.warn('El post no se guardó en la BD pero puedes compartir en redes');
+                }
+            } else if (response) {
                 router.push('/admin/blog');
                 router.refresh();
+            } else if (saveError) {
+                alert('Error guardando: ' + saveError);
             }
         } catch (error: any) {
             alert('Error guardando: ' + (error.message || 'Error desconocido'));
