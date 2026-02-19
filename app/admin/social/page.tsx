@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth-client';
-import { Share2, Instagram, Facebook, Send, Loader2, CheckCircle2, AlertCircle, Image as ImageIcon } from 'lucide-react';
+import { Share2, Instagram, Facebook, Send, Loader2, CheckCircle2, AlertCircle, Image as ImageIcon, Settings, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function SocialMediaPage() {
@@ -16,6 +16,23 @@ export default function SocialMediaPage() {
     const [platforms, setPlatforms] = useState<string[]>(['facebook', 'instagram']);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [result, setResult] = useState<{ success: boolean; message: string; details?: any } | null>(null);
+    const [isConfigured, setIsConfigured] = useState(true); // Assume configured until checked
+
+    // Check configuration on load
+    useEffect(() => {
+        async function checkConfig() {
+            try {
+                const res = await fetch('/api/admin/social/setup');
+                const data = await res.json();
+                if (!data.isConfigured) {
+                    setIsConfigured(false);
+                }
+            } catch (e) {
+                console.error("Failed to check config");
+            }
+        }
+        if (user) checkConfig();
+    }, [user]);
 
     const togglePlatform = (platform: string) => {
         setPlatforms(prev =>
@@ -72,6 +89,28 @@ export default function SocialMediaPage() {
     if (authLoading) return <div className="p-8 text-center text-stone-500">Cargando...</div>;
     if (!user) { router.push('/login'); return null; }
 
+    if (!isConfigured) {
+        return (
+            <div className="max-w-2xl mx-auto py-12 px-4 text-center space-y-6">
+                <div className="bg-white p-12 rounded-[2.5rem] shadow-sm border border-[#eef1f4] flex flex-col items-center">
+                    <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6">
+                        <Settings className="w-8 h-8" />
+                    </div>
+                    <h1 className="text-3xl font-black text-[#1a1a1a] mb-2">Configuración Pendiente</h1>
+                    <p className="text-stone-500 max-w-md mx-auto mb-8">
+                        Para poder publicar en redes sociales, primero necesitas conectar tu cuenta de Facebook e Instagram.
+                    </p>
+                    <button
+                        onClick={() => router.push('/admin/social/setup')}
+                        className="bg-[#061a15] text-white px-8 py-4 rounded-xl font-bold hover:bg-[#0c2a25] transition-all shadow-lg hover:-translate-y-1 flex items-center gap-2"
+                    >
+                        Comenzar Configuración <ArrowRight className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="max-w-4xl mx-auto pb-12 space-y-8">
             <header className="flex justify-between items-center">
@@ -94,8 +133,8 @@ export default function SocialMediaPage() {
                                     type="button"
                                     onClick={() => togglePlatform('facebook')}
                                     className={`flex items-center gap-3 px-6 py-4 rounded-2xl border-2 transition-all w-full md:w-auto justify-center ${platforms.includes('facebook')
-                                            ? 'border-blue-600 bg-blue-50 text-blue-700 font-bold'
-                                            : 'border-stone-200 text-stone-400 hover:border-blue-200'
+                                        ? 'border-blue-600 bg-blue-50 text-blue-700 font-bold'
+                                        : 'border-stone-200 text-stone-400 hover:border-blue-200'
                                         }`}
                                 >
                                     <Facebook className="w-5 h-5" />
@@ -106,8 +145,8 @@ export default function SocialMediaPage() {
                                     type="button"
                                     onClick={() => togglePlatform('instagram')}
                                     className={`flex items-center gap-3 px-6 py-4 rounded-2xl border-2 transition-all w-full md:w-auto justify-center ${platforms.includes('instagram')
-                                            ? 'border-pink-600 bg-pink-50 text-pink-700 font-bold'
-                                            : 'border-stone-200 text-stone-400 hover:border-pink-200'
+                                        ? 'border-pink-600 bg-pink-50 text-pink-700 font-bold'
+                                        : 'border-stone-200 text-stone-400 hover:border-pink-200'
                                         }`}
                                 >
                                     <Instagram className="w-5 h-5" />

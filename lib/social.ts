@@ -1,5 +1,6 @@
 
 import { PrismaClient } from '@prisma/client';
+import { getSetting } from './settings';
 
 const prisma = new PrismaClient();
 
@@ -16,36 +17,56 @@ interface MetaTokens {
 }
 
 export class FacebookService {
-    private appId: string;
-    private appSecret: string;
-    private pageAccessToken: string | null = null;
-    private pageId: string | null = null;
-    private instagramAccountId: string | null = null;
+
 
     constructor() {
-        this.appId = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID || '';
-        this.appSecret = process.env.FACEBOOK_APP_SECRET || '';
-        this.pageAccessToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN || null;
-        this.pageId = process.env.FACEBOOK_PAGE_ID || null;
-        this.instagramAccountId = process.env.INSTAGRAM_ACCOUNT_ID || null;
+        // We now initialize these lazily or check DB in methods
+    }
+
+    /**
+     * Helper to get config value from DB or Env
+     */
+    private async getConfig(key: string, envVar: string): Promise<string | null> {
+        try {
+            const dbValue = await getSetting(key);
+            if (dbValue) return dbValue;
+        } catch (e) {
+            console.warn(`Failed to fetch setting ${key} from DB`, e);
+        }
+        return process.env[envVar] || null;
     }
 
     /**
      * Initialize or refresh the page access token if needed.
-     *Ideally, you should store the long-lived token in the database.
      */
     async getPageAccessToken(): Promise<string> {
-        if (this.pageAccessToken) return this.pageAccessToken;
+        const token = await this.getConfig('fb_page_access_token', 'FACEBOOK_PAGE_ACCESS_TOKEN');
+        if (token) return token;
 
-        // Fallback: If no env var, try to fetch from DB or prompt user to auth (not implemented here entirely without DB schema for settings)
-        throw new Error("FACEBOOK_PAGE_ACCESS_TOKEN not configured in environment variables.");
+        throw new Error("Facebook Page Access Token not configured. Please visit Settings.");
     }
 
-    /**
-     * Exchange a short-lived user access token for a long-lived one.
-     */
+    async getAppId(): Promise<string> {
+        return (await this.getConfig('fb_app_id', 'NEXT_PUBLIC_FACEBOOK_APP_ID')) || '';
+    }
+
+    async getAppSecret(): Promise<string> {
+        return (await this.getConfig('fb_app_secret', 'FACEBOOK_APP_SECRET')) || '';
+    }
+
+    async getPageId(): Promise<string> {
+        return (await this.getConfig('fb_page_id', 'FACEBOOK_PAGE_ID')) || '';
+    }
+
+    async getInstagramId(): Promise<string> {
+        return (await this.getConfig('instagram_account_id', 'INSTAGRAM_ACCOUNT_ID')) || '';
+    }
+
     async exchangeForLongLivedToken(shortLivedToken: string): Promise<any> {
-        const url = `https://graph.facebook.com/v19.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${this.appId}&client_secret=${this.appSecret}&fb_exchange_token=${shortLivedToken}`;
+        const appId = await this.getAppId();
+        const appSecret = await this.getAppSecret();
+
+        const url = `https://graph.facebook.com/v19.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${appId}&client_secret=${appSecret}&fb_exchange_token=${shortLivedToken}`;
 
         try {
             const response = await fetch(url);
@@ -63,9 +84,11 @@ export class FacebookService {
      */
     async publishToFacebook(content: SocialPostContent): Promise<any> {
         const token = await this.getPageAccessToken();
-        if (!this.pageId) throw new Error("FACEBOOK_PAGE_ID not configured.");
+        const pageId = await this.getPageId();
 
-        const url = `https://graph.facebook.com/v19.0/${this.pageId}/feed`;
+        if (!pageId) throw new Error("FACEBOOK_PAGE_ID not configured.");
+
+        const url = `https://graph.facebook.com/v19.0/${pageId}/feed`;
         const body: any = {
             access_token: token,
             message: content.message,
@@ -78,7 +101,7 @@ export class FacebookService {
         try {
             let endpoint = url;
             if (content.imageUrl) {
-                endpoint = `https://graph.facebook.com/v19.0/${this.pageId}/photos`;
+                endpoint = `https://graph.facebook.com/v19.0/${pageId}/photos`;
                 body.url = content.imageUrl;
                 body.caption = content.message; // Facebook photos use 'caption', not 'message' usually for the text
                 delete body.message;
@@ -105,10 +128,12 @@ export class FacebookService {
      */
     async publishToInstagram(imageUrl: string, caption: string): Promise<any> {
         const token = await this.getPageAccessToken(); // Usually the same page token if accounts are linked, or a dedicated one
-        if (!this.instagramAccountId) throw new Error("INSTAGRAM_ACCOUNT_ID not configured.");
+        const instagramAccountId = await this.getInstagramId();
+
+        if (!instagramAccountId) throw new Error("INSTAGRAM_ACCOUNT_ID not configured.");
 
         // Step 1: Create a media container
-        const createMediaUrl = `https://graph.facebook.com/v19.0/${this.instagramAccountId}/media`;
+        const createMediaUrl = `https://graph.facebook.com/v19.0/${instagramAccountId}/media`;
 
         try {
             const containerResponse = await fetch(createMediaUrl, {
@@ -127,7 +152,7 @@ export class FacebookService {
             const creationId = containerData.id;
 
             // Step 2: Publish the media container
-            const publishUrl = `https://graph.facebook.com/v19.0/${this.instagramAccountId}/media_publish`;
+            const publishUrl = `https://graph.facebook.com/v19.0/${instagramAccountId}/media_publish`;
             const publishResponse = await fetch(publishUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

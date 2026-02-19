@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User model for NextAuth.js
 model User {
   id            String    @id @default(uuid())
   name          String?
@@ -15,45 +14,43 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?
-  role          String    @default("user") // admin, editor, user
+  role          String    @default("user")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-
   accounts      Account[]
   sessions      Session[]
   bookings      Booking[]
 }
 
-// NextAuth.js Account model
 model Account {
-  id                 String  @id @default(uuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String? @db.Text
-  access_token       String? @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String? @db.Text
-  session_state      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId], map: "Account_userId_fkey")
 }
 
-// NextAuth.js Session model
 model Session {
   id           String   @id @default(uuid())
   sessionToken String   @unique
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "Session_userId_fkey")
 }
 
-// VerificationToken for passwordless auth
 model VerificationToken {
   identifier String
   token      String   @unique
@@ -62,87 +59,77 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// Experiences (Mapped from existing table)
 model Experience {
-  id             String   @id @default(uuid())
-  title          String
-  slug           String   @unique
-  description    String?  @db.Text
-  image          String?  @default("")
-  gallery        Json?    // Stored as JSON array
-  priceCop       Decimal? @map("price_cop")
-  priceUsd       Decimal? @map("price_usd")
-  locationName   String?  @map("location_name")
-  
-  // Handling Geo: MySQL doesn't store coordinates as a single native type easily without spatial extensions.
-  // We'll store lat/lng separately for simplicity and Prisma compatibility.
-  locationLat    Float?   @map("location_lat")
-  locationLng    Float?   @map("location_lng")
-  
-  includes       Json?    // JSON array
-  excludes       Json?    // JSON array
-  recommendations String? @db.Text
-  maxCapacity    Int?     @map("max_capacity")
-  
-  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at")
-  createdAt      DateTime @default(now()) @map("created_at")
-
-  media          ExperienceMedia[]
-  bookings       Booking[]
+  id              String            @id @default(uuid())
+  title           String
+  slug            String            @unique
+  description     String?           @db.Text
+  image           String?           @default("")
+  gallery         String?           @db.LongText
+  priceCop        Decimal?          @map("price_cop")
+  priceUsd        Decimal?          @map("price_usd")
+  locationName    String?           @map("location_name")
+  locationLat     Float?            @map("location_lat")
+  locationLng     Float?            @map("location_lng")
+  includes        String?           @db.LongText
+  excludes        String?           @db.LongText
+  recommendations String?           @db.Text
+  maxCapacity     Int?              @map("max_capacity")
+  updatedAt       DateTime          @default(now()) @updatedAt @map("updated_at")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  bookings        Booking[]
+  media           ExperienceMedia[]
 
   @@map("experiences")
 }
 
-// Media associated with experiences
 model ExperienceMedia {
   id           String     @id @default(uuid())
   experienceId String     @map("experience_id")
   url          String
-  type         String     // 'image' or 'video'
+  type         String
   order        Int        @default(0)
   createdAt    DateTime   @default(now()) @map("created_at")
-
   experience   Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
 
+  @@index([experienceId], map: "experience_media_experience_id_fkey")
   @@map("experience_media")
 }
 
-// Bookings
 model Booking {
-  id            String   @id @default(uuid())
-  experienceId  String   @map("experience_id")
-  userId        String?  // Optional link to registered user
-  customerName  String   @map("customer_name")
-  customerEmail String   @map("customer_email")
-  travelDate    DateTime @map("travel_date") @db.Date
-  guestsCount   Int      @map("guests_count")
-  totalAmount   Decimal  @map("total_amount")
-  currency      String   @default("COP")
-  status        String   @default("pending") // pending, confirmed, cancelled
-  createdAt     DateTime @default(now()) @map("created_at")
+  id            String     @id @default(uuid())
+  experienceId  String     @map("experience_id")
+  userId        String?
+  customerName  String     @map("customer_name")
+  customerEmail String     @map("customer_email")
+  travelDate    DateTime   @map("travel_date") @db.Date
+  guestsCount   Int        @map("guests_count")
+  totalAmount   Decimal    @map("total_amount")
+  currency      String     @default("COP")
+  status        String     @default("pending")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  experience    Experience @relation(fields: [experienceId], references: [id])
+  user          User?      @relation(fields: [userId], references: [id])
+  payments      Payment[]
 
-  experience   Experience @relation(fields: [experienceId], references: [id])
-  user         User?      @relation(fields: [userId], references: [id])
-  payments     Payment[]
-
+  @@index([experienceId], map: "bookings_experience_id_fkey")
+  @@index([userId], map: "bookings_userId_fkey")
   @@map("bookings")
 }
 
-// Payments
 model Payment {
   id            String   @id @default(uuid())
   bookingId     String   @map("booking_id")
-  gateway       String?  // wompi, stripe
+  gateway       String?
   transactionId String?  @map("transaction_id")
   paymentStatus String?  @map("payment_status")
   createdAt     DateTime @default(now()) @map("created_at")
-
   booking       Booking  @relation(fields: [bookingId], references: [id])
 
+  @@index([bookingId], map: "payments_booking_id_fkey")
   @@map("payments")
 }
 
-// Gallery images (Separate from experiences)
 model GalleryImage {
   id        Int      @id @default(autoincrement())
   url       String
@@ -151,16 +138,22 @@ model GalleryImage {
   @@map("gallery_images")
 }
 
-// Roles and permissions
 model Role {
   id          String   @id @default(uuid())
   name        String   @unique
   description String?  @db.Text
-  permissions Json     // List of strings
+  permissions String   @db.LongText
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("roles")
 }
 
+model SystemSetting {
+  key         String   @id
+  value       String   @db.Text
+  description String?
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
+  @@map("system_settings")
+}
