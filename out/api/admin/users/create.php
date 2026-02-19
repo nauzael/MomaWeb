@@ -26,7 +26,7 @@ $database = new Database();
 $db = $database->getConnection();
 
 try {
-    $checkQuery = "SELECT id FROM User WHERE email = :email LIMIT 1";
+    $checkQuery = "SELECT id FROM users WHERE email = :email LIMIT 1";
     $checkStmt = $db->prepare($checkQuery);
     $checkStmt->bindParam(":email", $email);
     $checkStmt->execute();
@@ -38,7 +38,7 @@ try {
     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
     try {
-        $query = "INSERT INTO User (id, name, email, password, role, created_at) VALUES (:id, :name, :email, :password, :role, NOW())";
+        $query = "INSERT INTO users (id, name, email, password, role, created_at) VALUES (:id, :name, :email, :password, :role, NOW())";
         $stmt = $db->prepare($query);
         
         $userId = bin2hex(random_bytes(16));
@@ -53,10 +53,10 @@ try {
         $stmt->execute();
     } catch (PDOException $e) {
         if ($e->getCode() == '42S22') {
-            $alterQuery = "ALTER TABLE User ADD COLUMN role VARCHAR(50) DEFAULT 'editor'";
+            $alterQuery = "ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'editor'";
             $db->exec($alterQuery);
             
-            $query = "INSERT INTO User (id, name, email, password, role, created_at) VALUES (:id, :name, :email, :password, :role, NOW())";
+            $query = "INSERT INTO users (id, name, email, password, role, created_at) VALUES (:id, :name, :email, :password, :role, NOW())";
             $stmt = $db->prepare($query);
             
             $stmt->bindParam(":id", $userId);

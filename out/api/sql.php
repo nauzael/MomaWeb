@@ -55,7 +55,7 @@ try {
         echo json_encode(['success' => true, 'data' => $results]);
     } else {
         $conn->exec($query);
-        echo json_encode(['success' => true, 'affected_rows' => $conn->rowCount()]);
+        echo json_encode(['success' => true, 'affected_rows' => $conn->exec($query)]);
     }
 } catch (Exception $e) {
     http_response_code(500);
