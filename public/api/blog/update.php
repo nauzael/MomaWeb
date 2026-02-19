@@ -58,7 +58,7 @@ try {
 
     if (isset($data->category_id)) {
         $fields[] = "category_id = ?";
-        $values[] = $data->category_id;
+        $values[] = !empty($data->category_id) ? $data->category_id : null;
     }
 
     if (isset($data->status)) {

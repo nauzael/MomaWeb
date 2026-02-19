@@ -1,9 +1,9 @@
 {
-  "hash": "b6c66edf42276f26802de864d82ba2f54a88df03",
+  "hash": "10179c6cbc089547263938a60c1a0fd7fc4428ee",
   "author": "Tu Nombre",
-  "date_relative": "3 minutes ago",
-  "date_full": "Thu Feb 19 12:19:06 2026 -0500",
-  "subject": "build: Generate static export of the Next.js application to the `out` directory.",
-  "build_time": "19/02/2026, 12:22:09 p. m.",
-  "timestamp": 1771521729335
+  "date_relative": "28 minutes ago",
+  "date_full": "Thu Feb 19 12:23:36 2026 -0500",
+  "subject": "feat: Initial project export of the Moma web application, including admin, public pages, API, and database schema.",
+  "build_time": "19/02/2026, 12:51:28 p. m.",
+  "timestamp": 1771523488301
 }

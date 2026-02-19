@@ -37,7 +37,7 @@ try {
         $data->content,
         isset($data->excerpt) ? $data->excerpt : null,
         isset($data->cover_image) ? $data->cover_image : null,
-        isset($data->category_id) ? $data->category_id : null,
+        (isset($data->category_id) && !empty($data->category_id)) ? $data->category_id : null,
         isset($data->status) ? $data->status : 'draft',
         isset($data->author_name) ? $data->author_name : 'Moma Excursiones'
     ]);
