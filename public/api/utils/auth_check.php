@@ -18,15 +18,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 // Hardening session cookies
 if (PHP_VERSION_ID < 70300) {
-    session_set_cookie_params(0, '/; HttpOnly; SameSite=Lax');
+    session_set_cookie_params(0, '/; HttpOnly; SameSite=None; Secure');
 } else {
     session_set_cookie_params([
         'lifetime' => 0,
         'path' => '/',
         'domain' => '',
-        'secure' => isset($_SERVER['HTTPS']),
+        'secure' => true, // Must be true for SameSite=None
         'httponly' => true,
-        'samesite' => 'Lax'
+        'samesite' => 'None'
     ]);
 }
 
