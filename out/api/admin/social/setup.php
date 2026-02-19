@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userLongLivedToken = $data['access_token'];
             
             // 2. Fetch Pages to let user select
-            $pagesUrl = "https://graph.facebook.com/v19.0/me/accounts?access_token=" . $userLongLivedToken;
+            $pagesUrl = "https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token,instagram_business_account&access_token=" . $userLongLivedToken;
             $pagesRes = file_get_contents($pagesUrl);
             $pagesData = json_decode($pagesRes, true);
             
