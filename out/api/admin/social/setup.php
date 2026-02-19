@@ -80,10 +80,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             if (isset($pagesData['error'])) throw new Exception($pagesData['error']['message']);
             
+            // 3. (Debug) Check what permissions were actually granted
+            $permsUrl = "https://graph.facebook.com/v19.0/me/permissions?access_token=" . $userLongLivedToken;
+            $permsRes = @file_get_contents($permsUrl);
+            $permsData = $permsRes ? json_decode($permsRes, true) : null;
+            
             jsonData([
                 'success' => true,
                 'pages' => $pagesData['data'],
-                'userAccessToken' => $userLongLivedToken
+                'userAccessToken' => $userLongLivedToken,
+                'debug' => [
+                    'rawPagesResponse' => $pagesData,
+                    'permissions' => $permsData
+                ]
             ]);
             
         } catch (Exception $e) {

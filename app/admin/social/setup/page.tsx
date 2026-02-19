@@ -111,7 +111,12 @@ export default function SetupPage() {
             });
             // if (!res.ok) throw new Error(data.error || 'Failed to exchange token');
 
+            const debugData = data.debug;
             setPages(data.pages || []);
+            // Temporalmente guardamos debug si no hay páginas
+            if ((!data.pages || data.pages.length === 0) && debugData) {
+                setError("Debug Info: " + JSON.stringify(debugData));
+            }
             setStep(3);
         } catch (e: any) {
             setError(e.message);
