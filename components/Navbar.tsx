@@ -104,29 +104,23 @@ export default function Navbar() {
                 animate={{
                     y: 0,
                     opacity: 1,
-                    width: scrolled ? '95%' : '100%',
-                    top: scrolled ? 20 : 0,
-                    borderRadius: scrolled ? 9999 : 0
+                    top: scrolled ? 16 : 0,
+                    borderRadius: 9999
                 }}
-                transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
                 className={cn(
-                    "fixed left-4 right-4 md:left-8 md:right-8 lg:left-16 lg:right-16 z-50 mx-auto transition-all duration-500 ease-in-out px-6 flex items-center justify-between",
+                    "fixed z-50 px-6 flex items-center justify-between transition-all duration-500 ease-in-out",
                     scrolled
-                        ? "bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl shadow-lg shadow-stone-900/5 max-w-5xl py-3"
+                        ? "left-4 right-4 md:left-8 md:right-8 mx-auto bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl shadow-lg shadow-stone-900/5 max-w-5xl py-3"
                         : isSpecialPage
-                            ? "bg-stone-900/90 backdrop-blur-md py-4"
-                            : "py-6 bg-transparent"
+                            ? "left-[10%] right-[10%] bg-stone-900/90 backdrop-blur-md py-4"
+                            : "left-4 right-4 md:left-8 md:right-8 mx-auto max-w-5xl py-6 bg-transparent"
                 )}
-                style={{
-                    left: scrolled ? '50%' : 0,
-                    x: scrolled ? '-50%' : 0,
-                    maxWidth: scrolled ? '64rem' : '100%',
-                }}
             >
                 {/* Logo */}
                 <Link
                     href="/"
-                    className="relative shrink-0 transition-transform hover:scale-105 active:scale-95"
+                    className="relative shrink-0 transition-transform hover:scale-105 active:scale-95 ml-2"
                     aria-label={t.nav.logoAria}
                 >
                     <div className={cn("relative transition-all duration-300", scrolled || isSpecialPage ? "h-10 w-32" : "h-12 w-40")}>
@@ -150,7 +144,7 @@ export default function Navbar() {
                 </div>
 
                 {/* Actions */}
-                <div className="hidden md:flex items-center gap-3 pl-4 border-l border-stone-200/20 ml-2">
+                <div className="hidden md:flex items-center gap-3 pl-4 border-l border-stone-200/20 ml-2 mr-2">
                     <button
                         onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
                         className={cn(

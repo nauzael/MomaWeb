@@ -6,7 +6,7 @@ import {
     X, Save, Loader2, ImageIcon, Type, Link as LinkIcon,
     Bold, Italic, List, ListOrdered, Quote, Code, Heading1, Heading2,
     AlignLeft, AlignCenter, AlignRight, Underline as UnderlineIcon,
-    Highlighter, ChevronDown, Check, Globe, Trash2, Plus
+    Highlighter, ChevronDown, Check, Globe, Trash2, Plus, Share2
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -23,6 +23,7 @@ import { fetchApi, getImageUrl } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import MediaSelector from '@/components/admin/MediaSelector';
+import SocialShareModal from './SocialShareModal';
 
 interface BlogFormProps {
     post?: any;
@@ -34,6 +35,8 @@ export default function BlogForm({ post, isEditing = false }: BlogFormProps) {
     const [loading, setLoading] = useState(false);
     const [categories, setCategories] = useState<any[]>([]);
     const [isMediaSelectorOpen, setIsMediaSelectorOpen] = useState(false);
+    const [showSocialShare, setShowSocialShare] = useState(false);
+    const [savedPost, setSavedPost] = useState<any>(null);
     const [formData, setFormData] = useState({
         title: post?.title || '',
         slug: post?.slug || '',
@@ -126,8 +129,10 @@ export default function BlogForm({ post, isEditing = false }: BlogFormProps) {
         input.click();
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (e?: React.FormEvent, openShareModal = false) => {
+        if (e) {
+            e.preventDefault();
+        }
         if (!formData.title) {
             alert('El título es requerido');
             return;
@@ -142,18 +147,27 @@ export default function BlogForm({ post, isEditing = false }: BlogFormProps) {
             };
 
             const endpoint = isEditing ? 'blog/update.php' : 'blog/create.php';
-            await fetchApi(endpoint, {
+            const response: { post?: { id: string; title: string; content: string; slug: string; excerpt?: string; cover_image?: string } } = await fetchApi(endpoint, {
                 method: 'POST',
                 body: JSON.stringify(payload)
             });
 
-            router.push('/admin/blog');
-            router.refresh();
+            if (openShareModal && response?.post) {
+                setSavedPost(response.post);
+                setShowSocialShare(true);
+            } else {
+                router.push('/admin/blog');
+                router.refresh();
+            }
         } catch (error: any) {
             alert('Error guardando: ' + (error.message || 'Error desconocido'));
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleSaveAndShare = async () => {
+        await handleSubmit(undefined, true);
     };
 
     const MenuBar = () => {
@@ -326,6 +340,17 @@ export default function BlogForm({ post, isEditing = false }: BlogFormProps) {
                     >
                         Cancelar
                     </Button>
+                    {isEditing && (
+                        <Button
+                            type="button"
+                            onClick={handleSaveAndShare}
+                            disabled={loading}
+                            className="flex-1 md:flex-none px-6 py-6 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg transition-all flex items-center gap-2"
+                        >
+                            <Share2 className="w-5 h-5" />
+                            Guardar y Compartir
+                        </Button>
+                    )}
                     <Button
                         type="submit"
                         disabled={loading}
@@ -457,6 +482,23 @@ export default function BlogForm({ post, isEditing = false }: BlogFormProps) {
                 onClose={() => setIsMediaSelectorOpen(false)}
                 onSelect={(url) => setFormData({ ...formData, cover_image: url })}
                 title="Elegir Foto de Portada"
+            />
+
+            <SocialShareModal
+                isOpen={showSocialShare}
+                onClose={() => {
+                    setShowSocialShare(false);
+                    router.push('/admin/blog');
+                    router.refresh();
+                }}
+                blogPost={savedPost || post || {
+                    id: '',
+                    title: formData.title,
+                    content: editor?.getHTML() || '',
+                    excerpt: formData.excerpt,
+                    coverImage: formData.cover_image,
+                    slug: formData.slug
+                }}
             />
         </form>
     );
