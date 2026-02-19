@@ -75,6 +75,7 @@ model Experience {
   excludes        String?           @db.LongText
   recommendations String?           @db.Text
   maxCapacity     Int?              @map("max_capacity")
+  itinerary       Json?             @map("itinerary")
   updatedAt       DateTime          @default(now()) @updatedAt @map("updated_at")
   createdAt       DateTime          @default(now()) @map("created_at")
   bookings        Booking[]
@@ -133,6 +134,7 @@ model Payment {
 model GalleryImage {
   id        Int      @id @default(autoincrement())
   url       String
+  altText   String?  @map("alt_text")
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("gallery_images")

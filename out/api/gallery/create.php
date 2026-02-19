@@ -75,9 +75,10 @@ try {
                 mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
             );
 
-            $stmt = $db->prepare("INSERT INTO gallery_images (id, url) VALUES (:id, :url)");
+            $stmt = $db->prepare("INSERT INTO gallery_images (id, url, alt_text) VALUES (:id, :url, :alt_text)");
             $stmt->bindParam(':id', $id);
             $stmt->bindParam(':url', $url);
+            $stmt->bindParam(':alt_text', $name);
 
             if ($stmt->execute()) {
                 $uploadedImages[] = [
@@ -100,9 +101,10 @@ try {
                 $url = $publicUrlBase . $filename;
                 // Add to DB... (repeat insert logic or refactor out)
                 $id = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
-                $stmt = $db->prepare("INSERT INTO gallery_images (id, url) VALUES (:id, :url)");
+                $stmt = $db->prepare("INSERT INTO gallery_images (id, url, alt_text) VALUES (:id, :url, :alt_text)");
                 $stmt->bindParam(':id', $id); 
                 $stmt->bindParam(':url', $url);
+                $stmt->bindParam(':alt_text', $name);
                 if ($stmt->execute()) {
                     $uploadedImages[] = ['id' => $id, 'url' => $url, 'alt_text' => $name, 'status' => 'success'];
                 } else { 

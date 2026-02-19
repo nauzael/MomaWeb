@@ -69,7 +69,100 @@ try {
             gallery = :gallery, 
             price_cop = :price_cop, 
             price_usd = :price_usd, 
+            location_name = :location_name, 
+            location_lat = :lat, 
+            location_lng = :lng, 
+            includes = :includes, 
+            excludes = :excludes, 
+            recommendations = :recommendations, 
+            max_capacity = :max_capacity,
+            itinerary = :itinerary,
+            updated_at = NOW()
+            WHERE id = :id";
+    } else {
+        $query = "INSERT INTO experiences (
+            id, title, slug, description, image, gallery, 
+            price_cop, price_usd, location_name, location_lat, location_lng, 
+            includes, excludes, recommendations, max_capacity, itinerary, created_at, updated_at
+        ) VALUES (
+            :id, :title, :slug, :description, :image, :gallery, 
+            :price_cop, :price_usd, :location_name, :lat, :lng, 
+            :includes, :excludes, :recommendations, :max_capacity, :itinerary, NOW(), NOW()
+        )";
+    }
+
+    // Prepare JSON fields carefully
+    // Force array if null
+    $galleryArr = is_array($data['gallery']) ? $data['gallery'] : [];
+    $includesArr = is_array($data['includes']) ? $data['includes'] : [];
+    $excludesArr = is_array($data['excludes']) ? $data['excludes'] : [];
+
+    // JSON options to handle unicode and avoid escaping slashes unnecessarily usually
+    $gallery = json_encode($galleryArr, JSON_UNESCAPED_UNICODE);
+    $includes = json_encode($includesArr, JSON_UNESCAPED_UNICODE);
+    $excludes = json_encode($excludesArr, JSON_UNESCAPED_UNICODE);
+    $itinerary = json_encode($data['itinerary'] ?? [], JSON_UNESCAPED_UNICODE);
+    
+    // Check for JSON errors
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        jsonError('Error al procesar JSON: ' . json_last_error_msg(), 400);
+    }
+
+    $stmt = $db->prepare($query);
+    $params = [
+        ':id' => $id,
+        ':title' => $title,
+        ':slug' => $slug,
+        ':description' => $description,
+        ':image' => $image,
+        ':gallery' => $gallery,
+        ':price_cop' => (float)$price_cop,
+        ':price_usd' => (float)$price_usd,
+        ':location_name' => $location_name,
+        ':lat' => (float)$lat,
+        ':lng' => (float)$lng,
+        ':includes' => $includes,
+        ':excludes' => $excludes,
+        ':recommendations' => $recommendations,
+        ':max_capacity' => (int)$max_capacity,
+        ':itinerary' => $itinerary
+    ];
+
+    // Simplified debug logging
+    error_log("UPSERT Params: " . print_r($params, true));
+    if ($stmt->execute($params)) {
+        // Fetch the updated/created record to return
+        $fetchQuery = "SELECT * FROM experiences WHERE id = :id";
+        $fetchStmt = $db->prepare($fetchQuery);
+        $fetchStmt->execute([':id' => $id]);
+        $row = $fetchStmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Map back to JSON
+         $item = [
+            'id' => $row['id'],
+            'title' => $row['title'],
+            'slug' => $row['slug'],
+            'description' => $row['description'],
+            'image' => $row['image'],
+            'gallery' => json_decode($row['gallery'] ?? '[]'),
+            'price_cop' => (float)$row['price_cop'],
+            'price_usd' => (float)$row['price_usd'],
+            'location_name' => $row['location_name'],
+            'location_coords' => [
+                'lat' => (float)$row['location_lat'],
+                'lng' => (float)$row['location_lng']
+            ],
+            'includes' => json_decode($row['includes'] ?? '[]'),
+            'excludes' => json_decode($row['excludes'] ?? '[]'),
+            'itinerary' => json_decode($row['itinerary'] ?? '[]'),
+            'recommendations' => $row['recommendations'],
+            'max_capacity' => (int)$row['max_capacity'],
+            'created_at' => $row['created_at'],
+            'updated_at' => $row['updated_at']
+        ];
+        
         jsonData(['experience' => $item]);
+
     } else {
         jsonError('Error al guardar en base de datos', 500);
     }
