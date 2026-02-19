@@ -4,22 +4,10 @@ require_once '../../config/cors.php';
 require_once '../../config/database.php';
 require_once '../../utils/response.php';
 require_once '../../utils/settings.php';
+require_once '../../utils/auth_check.php';
 
-session_start();
-
-// Validar Permisos
-$role = $_SESSION['role'] ?? '';
-$email = $_SESSION['email'] ?? '';
-
-// Normalizar rol
-$isAdmin = strtolower($role) === 'admin' || 
-           strtolower($role) === 'superadmin' || 
-           $email === 'admin@momaturismo.com' || 
-           $email === 'admin@moma.com';
-
-if (!$isAdmin) {
-    jsonError('Unauthorized', 401);
-}
+// Check Auth (handles session_start and validation)
+checkAuth('admin');
 
 // METHOD: GET
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
