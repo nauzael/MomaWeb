@@ -6,11 +6,11 @@
  * 
  * @param string $sourcePath Ruta temporal del archivo subido.
  * @param string $targetPath Ruta final donde se guardará.
- * @param int $maxWidth Ancho máximo permitido (opcional).
- * @param int $quality Calidad de compresión WebP (0-100).
+ * @param int $maxDimension Dimensión máxima permitida (ancho o alto, predeterminado 1920 para FullHD).
+ * @param int $quality Calidad de compresión WebP (0-100, óptimo 80 para web).
  * @return bool
  */
-function processImageToWebP($sourcePath, $targetPath, $maxWidth = 2560, $quality = 85) {
+function processImageToWebP($sourcePath, $targetPath, $maxDimension = 1920, $quality = 80) {
     // Verificar si GD está instalado
     if (!extension_loaded('gd')) {
         error_log("Image Processor: GD extension not loaded.");
@@ -61,10 +61,11 @@ function processImageToWebP($sourcePath, $targetPath, $maxWidth = 2560, $quality
         return false;
     }
 
-    // Redimensionar si es más ancha que el máximo definido (ej: 1920px para pantallas 1080p)
-    if ($width > $maxWidth) {
-        $newWidth = $maxWidth;
-        $newHeight = floor($height * ($maxWidth / $width));
+    // Redimensionar si excede la dimensión máxima permitida en cualquier eje
+    if ($width > $maxDimension || $height > $maxDimension) {
+        $ratio = min($maxDimension / $width, $maxDimension / $height);
+        $newWidth = floor($width * $ratio);
+        $newHeight = floor($height * $ratio);
         
         $resizedImage = imagecreatetruecolor($newWidth, $newHeight);
         
@@ -74,6 +75,7 @@ function processImageToWebP($sourcePath, $targetPath, $maxWidth = 2560, $quality
         $transparent = imagecolorallocatealpha($resizedImage, 255, 255, 255, 127);
         imagefilledrectangle($resizedImage, 0, 0, $newWidth, $newHeight, $transparent);
         
+        // Resample con la mejor calidad interpolada
         imagecopyresampled($resizedImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
         imagedestroy($image);
         $image = $resizedImage;

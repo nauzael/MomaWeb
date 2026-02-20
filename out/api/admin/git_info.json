@@ -1,9 +1,9 @@
 {
-  "hash": "e6b9c99f076e212e746d1521645242707a4267ff",
+  "hash": "af87a5b280cf3d3d383099d84466bda222c5cd3e",
   "author": "Tu Nombre",
-  "date_relative": "4 minutes ago",
-  "date_full": "Fri Feb 20 09:03:36 2026 -0500",
-  "subject": "feat: add new Navbar component with responsive design and language switching, alongside new ExperienceLayoutGrid and BlogPostClient components.",
-  "build_time": "20/02/2026, 09:07:54 a. m.",
-  "timestamp": 1771596474698
+  "date_relative": "19 minutes ago",
+  "date_full": "Fri Feb 20 09:10:33 2026 -0500",
+  "subject": "feat: Generate complete static export for the Moma web project, encompassing all public and administrative pages.",
+  "build_time": "20/02/2026, 09:29:44 a. m.",
+  "timestamp": 1771597784210
 }
