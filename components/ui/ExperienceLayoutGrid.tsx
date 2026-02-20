@@ -16,7 +16,6 @@ type Card = {
 };
 
 export const ExperienceLayoutGrid = ({ experiences }: { experiences: Experience[] }) => {
-  const [selected, setSelected] = useState<Card | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>("all");
 
   // Obtener ubicaciones únicas para el filtro
@@ -54,14 +53,6 @@ export const ExperienceLayoutGrid = ({ experiences }: { experiences: Experience[
       default:
         return "col-span-1 row-span-1";
     }
-  };
-
-  const handleCardClick = (card: Card) => {
-    setSelected(card);
-  };
-
-  const handleClose = () => {
-    setSelected(null);
   };
 
   return (
@@ -123,11 +114,12 @@ export const ExperienceLayoutGrid = ({ experiences }: { experiences: Experience[
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3 }}
                 className={cn(
-                  "relative group cursor-pointer overflow-hidden rounded-2xl",
+                  "relative group overflow-hidden rounded-2xl block",
                   getGridClass(index)
                 )}
-                onClick={() => handleCardClick(card)}
               >
+                <Link href={`/experiencia?slug=${card.experience.slug}`} className="absolute inset-0 z-30" />
+
                 <div className="absolute inset-0">
                   <Image
                     src={card.thumbnail || "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=800"}
@@ -136,7 +128,7 @@ export const ExperienceLayoutGrid = ({ experiences }: { experiences: Experience[
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
-                  
+
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                 </div>
@@ -210,110 +202,6 @@ export const ExperienceLayoutGrid = ({ experiences }: { experiences: Experience[
           </button>
         </div>
       )}
-
-      {/* Modal Overlay */}
-      <AnimatePresence>
-        {selected && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-            onClick={handleClose}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", duration: 0.5 }}
-              className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Close Button */}
-              <button
-                onClick={handleClose}
-                className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="flex flex-col md:flex-row h-full max-h-[90vh]">
-                {/* Image */}
-                <div className="relative w-full md:w-1/2 h-64 md:h-auto">
-                  <Image
-                    src={selected.thumbnail || "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1200"}
-                    alt={selected.experience.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden" />
-                </div>
-
-                {/* Content */}
-                <div className="w-full md:w-1/2 bg-white dark:bg-stone-900 p-6 md:p-8 overflow-y-auto">
-                  {/* Price */}
-                  <div className="inline-block bg-moma-green px-4 py-1.5 rounded-full mb-4">
-                    <span className="text-xl font-bold text-white">
-                      ${Number(selected.experience.price_cop).toLocaleString("es-CO")}
-                    </span>
-                  </div>
-
-                  {/* Location */}
-                  {selected.experience.location_name && (
-                    <div className="flex items-center gap-2 mb-3">
-                      <MapPin className="w-5 h-5 text-moma-green" />
-                      <span className="text-stone-600 dark:text-stone-300">
-                        {selected.experience.location_name}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Title */}
-                  <h2 className="text-2xl md:text-3xl font-heading font-bold text-stone-900 dark:text-white mb-4">
-                    {selected.experience.title}
-                  </h2>
-
-                  {/* Description */}
-                  <p className="text-stone-600 dark:text-stone-300 leading-relaxed mb-6">
-                    {selected.experience.description}
-                  </p>
-
-                  {/* Meta Info */}
-                  <div className="flex flex-wrap gap-3 mb-6">
-                    {selected.experience.max_capacity && (
-                      <div className="flex items-center gap-2 bg-stone-100 dark:bg-stone-800 px-4 py-2 rounded-full">
-                        <Users className="w-5 h-5 text-moma-green" />
-                        <span className="text-stone-700 dark:text-stone-200">
-                          Hasta {selected.experience.max_capacity} personas
-                        </span>
-                      </div>
-                    )}
-                    {selected.experience.duration && (
-                      <div className="flex items-center gap-2 bg-stone-100 dark:bg-stone-800 px-4 py-2 rounded-full">
-                        <Clock className="w-5 h-5 text-moma-green" />
-                        <span className="text-stone-700 dark:text-stone-200">
-                          {selected.experience.duration}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* CTA Button */}
-                  <Link
-                    href={`/experiencia?slug=${selected.experience.slug}`}
-                    onClick={handleClose}
-                    className="inline-flex items-center gap-2 bg-moma-green text-white px-6 py-3 rounded-full font-bold hover:bg-[#229ca3] transition-colors"
-                  >
-                    <span>Reservar ahora</span>
-                    <ArrowRight className="w-5 h-5" />
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

@@ -24,9 +24,9 @@ export default function BlogPostClient({ post, relatedPosts }: { post: any, rela
                         className="object-cover scale-105"
                     />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-stone-50 dark:to-stone-950" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-stone-50 dark:to-stone-950" />
 
-                <div className="absolute inset-0 flex flex-col items-center justify-end pb-20 px-6 max-w-5xl mx-auto text-center">
+                <div className="absolute inset-0 flex flex-col items-center justify-end pb-32 sm:pb-40 px-6 max-w-5xl mx-auto text-center">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -42,13 +42,13 @@ export default function BlogPostClient({ post, relatedPosts }: { post: any, rela
                             <span>{format(new Date(post.created_at), 'dd MMMM, yyyy', { locale: language === 'es' ? es : enUS })}</span>
                         </div>
 
-                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-heading font-black text-white leading-[1.1] drop-shadow-2xl">
+                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-heading font-black text-white leading-[1.05] tracking-tighter drop-shadow-2xl">
                             {post.title}
                         </h1>
 
                         <div className="flex items-center justify-center gap-3 pt-8 pb-12">
-                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/20 relative shadow-2xl">
-                                <span className="absolute inset-0 flex items-center justify-center bg-stone-900 text-white font-black text-xs">M</span>
+                            <div className="w-12 h-12 rounded-full overflow-hidden border border-white/20 relative shadow-2xl backdrop-blur-md bg-stone-900/40">
+                                <span className="absolute inset-0 flex items-center justify-center text-white font-black text-sm tracking-wider">M</span>
                             </div>
                             <div className="text-left">
                                 <p className="text-white font-black text-sm">{post.author_name}</p>
@@ -61,7 +61,7 @@ export default function BlogPostClient({ post, relatedPosts }: { post: any, rela
 
             {/* Main Content */}
             <article className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 -mt-32 relative z-10">
-                <div className="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl p-6 sm:p-8 md:p-12 lg:p-16 border border-stone-100 dark:border-stone-800">
+                <div className="bg-white/95 dark:bg-stone-900/95 rounded-[2.5rem] shadow-[0_8px_40px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_40px_rgb(255,255,255,0.02)] p-8 sm:p-10 md:p-14 lg:p-20 border border-stone-100 dark:border-stone-800 backdrop-blur-xl">
                     <div
                         className="prose prose-xl dark:prose-invert max-w-none 
                         prose-headings:font-black prose-headings:italic prose-headings:leading-[1.1] 
@@ -79,8 +79,8 @@ export default function BlogPostClient({ post, relatedPosts }: { post: any, rela
                             <span className="text-[10px] font-black uppercase text-stone-400 tracking-widest">{t.nav.blogMetaShare}</span>
                             <div className="flex gap-2">
                                 {[1, 2, 3].map(i => (
-                                    <button key={i} className="flex items-center justify-center w-12 h-12 rounded-full bg-stone-100 dark:bg-stone-800 hover:bg-moma-green hover:text-white transition-all duration-300 hover:-translate-y-1">
-                                        <Share2 className="w-5 h-5" />
+                                    <button key={i} className="flex items-center justify-center w-12 h-12 rounded-full bg-stone-50 dark:bg-stone-800/50 hover:bg-white dark:hover:bg-stone-800 hover:text-moma-green hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-stone-100 dark:border-stone-800/50">
+                                        <Share2 className="w-4 h-4" />
                                     </button>
                                 ))}
                             </div>
@@ -115,7 +115,7 @@ export default function BlogPostClient({ post, relatedPosts }: { post: any, rela
                                         src={getImageUrl(rp.cover_image)}
                                         alt={rp.title}
                                         fill
-                                        className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                                        className="object-cover transition-transform duration-1000 group-hover:scale-105"
                                     />
                                 </div>
                                 <h3 className="text-xl font-black text-stone-900 dark:text-white leading-tight italic group-hover:text-moma-green transition-colors mb-2">
