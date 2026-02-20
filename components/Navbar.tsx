@@ -113,7 +113,7 @@ export default function Navbar() {
                     scrolled
                         ? "left-4 right-4 md:left-8 md:right-8 mx-auto bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl shadow-lg shadow-stone-900/5 max-w-5xl py-3"
                         : isSpecialPage
-                            ? "left-[10%] right-[10%] bg-stone-900/90 backdrop-blur-md py-4"
+                            ? "left-[10%] right-[10%] bg-transparent py-4"
                             : "left-4 right-4 md:left-8 md:right-8 mx-auto max-w-5xl py-6 bg-transparent"
                 )}
             >
