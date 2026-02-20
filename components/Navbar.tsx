@@ -56,6 +56,23 @@ export default function Navbar() {
         setMobileMenuOpen(false);
     }, [pathname]);
 
+    // Lock body scroll when mobile menu is open
+    useEffect(() => {
+        if (mobileMenuOpen) {
+            document.body.style.overflow = 'hidden';
+            // Also prevent touchmove on iOS to stop background scrolling
+            document.body.style.touchAction = 'none';
+        } else {
+            document.body.style.overflow = '';
+            document.body.style.touchAction = '';
+        }
+
+        return () => {
+            document.body.style.overflow = '';
+            document.body.style.touchAction = '';
+        };
+    }, [mobileMenuOpen]);
+
     // Handle hash on initial load
     useEffect(() => {
         if (pathname === '/' && window.location.hash) {
@@ -221,9 +238,20 @@ export default function Navbar() {
                         >
                             {/* Mobile Header */}
                             <div className="flex items-center justify-between p-6 border-b border-stone-100 dark:border-stone-800/50">
-                                <span className="text-xl font-heading font-black text-stone-900 dark:text-white tracking-tight">
-                                    Moma<span className="text-moma-green">.</span>
-                                </span>
+                                <div className="relative h-8 w-28">
+                                    <Image
+                                        src="/images/logo.png"
+                                        alt="Moma Logo"
+                                        fill
+                                        className="object-contain object-left dark:hidden"
+                                    />
+                                    <Image
+                                        src="/images/logo-white.png"
+                                        alt="Moma Logo"
+                                        fill
+                                        className="object-contain object-left hidden dark:block"
+                                    />
+                                </div>
                                 <button
                                     onClick={() => setMobileMenuOpen(false)}
                                     className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-500 transition-colors"
