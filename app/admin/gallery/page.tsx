@@ -70,8 +70,8 @@ export default function GalleryPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-heading font-bold text-stone-900">Galería Infinita</h1>
-                    <p className="text-stone-500 mt-2">Administra las imágenes que aparecen en la sección de galería de la página principal.</p>
+                    <h1 className="text-2xl md:text-3xl font-black text-[#1a1a1a] tracking-tight">Galería Infinita</h1>
+                    <p className="text-stone-500 font-medium text-sm md:text-base mt-1">Administra las imágenes que aparecen en la sección de galería de la página principal.</p>
                 </div>
             </div>
 

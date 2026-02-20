@@ -55,10 +55,10 @@ export default function BlogAdminPage() {
         <div className="p-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
-                    <h1 className="text-4xl font-black text-stone-900 dark:text-white flex items-center gap-3">
-                        Blog <span className="text-moma-green text-lg bg-moma-green/10 px-3 py-1 rounded-full">{posts.length}</span>
+                    <h1 className="text-2xl md:text-3xl font-black text-[#1a1a1a] tracking-tight flex items-center gap-3">
+                        Blog <span className="text-[#00b894] text-sm bg-[#ccfcf3] px-3 py-1 rounded-full">{posts.length}</span>
                     </h1>
-                    <p className="text-stone-500 mt-1">Gestiona las noticias y artículos de Moma Excursiones</p>
+                    <p className="text-stone-500 font-medium text-sm md:text-base mt-1">Gestiona las noticias y artículos de Moma Excursiones</p>
                 </div>
                 <Link href="/admin/blog/new">
                     <Button className="bg-moma-green text-stone-900 hover:bg-moma-green/90 rounded-2xl px-6 py-6 font-black text-lg shadow-xl shadow-moma-green/20">

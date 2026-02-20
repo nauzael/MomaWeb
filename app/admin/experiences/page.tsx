@@ -47,8 +47,8 @@ export default function ExperiencesPage() {
             {/* Header Section */}
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="space-y-2">
-                    <h1 className="text-4xl md:text-5xl font-black text-moma-dark tracking-tight">Experiencias</h1>
-                    <p className="text-stone-500 font-medium text-lg">
+                    <h1 className="text-2xl md:text-3xl font-black text-[#1a1a1a] tracking-tight">Experiencias</h1>
+                    <p className="text-stone-500 font-medium text-sm md:text-base mt-1">
                         Gestiona el catálogo de tours y aventuras de Moma.
                     </p>
                 </div>

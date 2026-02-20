@@ -112,12 +112,14 @@ export default function SocialMediaPage() {
 
     return (
         <div className="max-w-4xl mx-auto pb-12 space-y-8">
-            <header className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
-                    <h1 className="text-3xl font-black text-[#1a1a1a]">Redes Sociales</h1>
-                    <p className="text-stone-500 mt-2">Publica actualizaciones en Facebook e Instagram desde aquí.</p>
+                    <h1 className="text-2xl md:text-3xl font-black text-[#1a1a1a] tracking-tight">Redes Sociales</h1>
+                    <p className="text-stone-500 font-medium text-sm md:text-base mt-1">
+                        Crea, programa y publica contenido en Facebook e Instagram Moma
+                    </p>
                 </div>
-            </header>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Form Section */}

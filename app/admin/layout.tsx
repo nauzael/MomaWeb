@@ -74,7 +74,7 @@ export default function AdminLayout({
 
                 {/* Header */}
                 <header className="hidden md:flex h-20 bg-white border-b border-[#eef1f4] items-center justify-between px-8 shrink-0">
-                    <h1 className="text-2xl font-extrabold text-[#1a1a1a]">Hola, Administrador</h1>
+                    <span className="text-xl font-extrabold text-[#1a1a1a]">Hola, Administrador</span>
                 </header>
 
                 {/* Main Scrollable Content */}

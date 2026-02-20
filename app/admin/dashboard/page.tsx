@@ -64,6 +64,15 @@ export default function AdminDashboard() {
 
     return (
         <div className="space-y-6 md:space-y-8 max-w-[1600px] mx-auto pb-12">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2 md:mb-6">
+                <div>
+                    <h1 className="text-2xl md:text-3xl font-black text-[#1a1a1a] tracking-tight">Panel Principal</h1>
+                    <p className="text-stone-500 font-medium text-sm md:text-base mt-1">
+                        Resumen general de actividad y accesos rápidos.
+                    </p>
+                </div>
+            </div>
+
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 {[

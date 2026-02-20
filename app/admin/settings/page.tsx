@@ -61,7 +61,8 @@ export default function SettingsPage() {
 
     return (
         <div className="max-w-2xl mx-auto space-y-6">
-            <h1 className="text-2xl font-bold text-stone-900 dark:text-white">Configuración</h1>
+            <h1 className="text-2xl md:text-3xl font-black text-[#1a1a1a] tracking-tight">Configuración</h1>
+            <p className="text-stone-500 font-medium text-sm md:text-base mt-1 -mt-4 mb-6">Administra las preferencias generales del sistema.</p>
 
             {/* Quick Links */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -78,7 +79,7 @@ export default function SettingsPage() {
                 <Link href="/admin/settings/social" className="bg-white dark:bg-stone-900 p-6 rounded-2xl shadow-sm border border-stone-100 dark:border-stone-800 flex items-center gap-4 hover:border-moma-green transition-colors group">
                     <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
                         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                         </svg>
                     </div>
                     <div>
@@ -194,8 +195,8 @@ export default function SettingsPage() {
                                 {/* Header Logic */}
                                 <div className="flex justify-between items-start">
                                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isDeploying ? 'bg-moma-green/10 text-moma-green' :
-                                            deployResult ? (deployResult.success ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600') :
-                                                'bg-moma-green/10 text-moma-green'
+                                        deployResult ? (deployResult.success ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600') :
+                                            'bg-moma-green/10 text-moma-green'
                                         }`}>
                                         {isDeploying ? <RefreshCw className="w-6 h-6 animate-spin" /> :
                                             deployResult ? (deployResult.success ? <CheckCircle className="w-6 h-6" /> : <AlertTriangle className="w-6 h-6" />) :

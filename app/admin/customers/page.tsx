@@ -89,10 +89,15 @@ export default function CustomersPage() {
 
     return (
         <div className="space-y-6 md:space-y-8 max-w-[1600px] mx-auto pb-12">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-black text-[#1a1a1a]">Gestión de Clientes</h1>
-                    <p className="text-stone-400 font-medium text-sm md:text-base">Base de datos de tus viajeros y su historial.</p>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-[#ccfcf3] text-[#00b894] rounded-2xl flex items-center justify-center">
+                        <Users className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl md:text-3xl font-black text-[#1a1a1a] tracking-tight">Gestión de Clientes</h1>
+                        <p className="text-stone-500 font-medium text-sm md:text-base mt-1">Compradores y aventureros registrados.</p>
+                    </div>
                 </div>
             </div>
 

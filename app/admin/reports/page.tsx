@@ -93,8 +93,8 @@ export default function ReportsPage() {
         <div className="space-y-6 md:space-y-8 max-w-[1600px] mx-auto pb-12">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-black text-[#1a1a1a]">Reportes y Análisis</h1>
-                    <p className="text-stone-400 font-medium text-sm md:text-base">Resumen financiero y operativo de Moma.</p>
+                    <h1 className="text-2xl md:text-3xl font-black text-[#1a1a1a] tracking-tight">Reportes y Análisis</h1>
+                    <p className="text-stone-500 font-medium text-sm md:text-base mt-1">Resumen financiero y operativo de Moma.</p>
                 </div>
                 <ReportsExportBtn data={exportData} filename="Reporte_General_Moma" />
             </div>
