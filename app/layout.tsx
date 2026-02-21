@@ -65,10 +65,7 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
-        {/* Prevent aggressive caching of the HTML itself */}
-        <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-        <meta httpEquiv="Pragma" content="no-cache" />
-        <meta httpEquiv="Expires" content="0" />
+        {/* Next.js manages meta tags via metadata object, only include critical head elements here */}
       </head>
       <body
         className={cn(

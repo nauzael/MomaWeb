@@ -182,7 +182,7 @@ export default function Navbar() {
                         className={cn(
                             "px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5",
                             useDarkText
-                                ? "bg-moma-green text-white hover:bg-[#00796b]"
+                                ? "bg-moma-green-dark text-white hover:bg-moma-green"
                                 : "bg-white text-stone-900 hover:bg-stone-100"
                         )}
                     >

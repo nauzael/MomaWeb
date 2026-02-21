@@ -107,12 +107,12 @@ export default function Home() {
       {/* Hero Section / Carousel */}
       <section ref={heroRef} className="relative h-screen flex items-center overflow-hidden bg-stone-900 pb-0 border-b-0" style={{ clipPath: 'inset(0 0 0 0)', WebkitMask: 'none', mask: 'none' }}>
         {/* Background Images - Simplified for mobile */}
-        <motion.div 
-          style={{ 
-            y: parallaxEnabled ? heroY : 0, 
-            opacity: parallaxEnabled ? heroOpacity : 1, 
-            scale: parallaxEnabled ? heroScale : 1 
-          }} 
+        <motion.div
+          style={{
+            y: parallaxEnabled ? heroY : 0,
+            opacity: parallaxEnabled ? heroOpacity : 1,
+            scale: parallaxEnabled ? heroScale : 1
+          }}
           className={`absolute inset-0 z-0 ${isMobile ? 'h-full' : 'h-[130vh] -top-[30vh]'}`}
         >
           <AnimatePresence>
@@ -133,7 +133,7 @@ export default function Home() {
                 priority
                 className="object-cover"
                 sizes="100vw"
-                quality={isMobile ? 75 : 90}
+                quality={isMobile ? 65 : 85}
               />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(12,10,9,0.4)_50%,rgba(12,10,9,0.95)_100%)] mix-blend-multiply"></div>
               <div className="absolute inset-0 bg-linear-to-t from-stone-950/90 via-transparent to-transparent"></div>
@@ -141,7 +141,7 @@ export default function Home() {
           </AnimatePresence>
         </motion.div>
 
-        <div className="relative z-10 px-4 max-w-7xl mx-auto w-full pt-20">
+        <div id="main-content" className="relative z-10 px-4 max-w-7xl mx-auto w-full pt-20">
           <div className="max-w-3xl">
             <motion.div
               key={`content-${currentSlide}`}
@@ -179,7 +179,7 @@ export default function Home() {
                       }
                     }
                   }}
-                  className="bg-moma-green text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-sm sm:text-base font-bold hover:bg-white hover:text-moma-green transition-all shadow-lg shadow-moma-green/20 flex items-center justify-center w-full sm:w-auto sm:min-w-[200px]"
+                  className="bg-moma-green-dark text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-sm sm:text-base font-bold hover:bg-moma-green hover:text-white transition-all shadow-lg shadow-moma-green/20 flex items-center justify-center w-full sm:w-auto sm:min-w-[200px]"
                 >
                   {t.hero.viewExperience} <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
@@ -268,8 +268,8 @@ export default function Home() {
       <section ref={parallaxRef} className="relative py-24 bg-stone-900 overflow-hidden min-h-[700px] flex items-center" >
         {/* Background with color but dark overlay for contrast + Improved Parallax */}
         <motion.div
-          style={{ 
-            y: parallaxEnabled ? yParallax : 0, 
+          style={{
+            y: parallaxEnabled ? yParallax : 0,
             scale: parallaxEnabled ? scaleParallax : 1,
             backgroundImage: `url(${CTA_IMAGE_URL})`
           }}
@@ -287,7 +287,7 @@ export default function Home() {
 
             <Link
               href="/experiencias"
-              className="bg-[#009688] text-white px-10 py-4 rounded-full text-lg font-bold hover:bg-[#00796b] transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 inline-block"
+              className="bg-moma-green-dark text-white px-10 py-4 rounded-full text-lg font-bold hover:bg-moma-green transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 inline-block"
             >
               {t.cta.button}
             </Link>

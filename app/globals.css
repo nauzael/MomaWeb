@@ -15,6 +15,8 @@
   --popover-foreground: #1A202C;
   --primary: #29afb7;
   /* Moma Green */
+  --primary-dark: #16656a;
+  /* Darker for contrast */
   --primary-foreground: #fafafa;
   --secondary: #A0522D;
   /* Moma Earth */
@@ -60,9 +62,18 @@
   --font-sans: var(--font-sans), system-ui, sans-serif;
   --font-heading: var(--font-heading), Georgia, serif;
   --color-moma-green: #29afb7;
+  --color-moma-green-dark: #16656a;
   --color-moma-cream: #FDFBF7;
   --color-moma-earth: #A0522D;
   --color-moma-dark: #1A202C;
+}
+
+.bg-moma-green-dark {
+  background-color: var(--color-moma-green-dark);
+}
+
+.text-moma-green-dark {
+  color: var(--color-moma-green-dark);
 }
 
 body {
